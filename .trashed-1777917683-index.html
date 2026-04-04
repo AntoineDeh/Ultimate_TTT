@@ -179,26 +179,16 @@
     .btn.undo { color:#a78bfa; border-color:rgba(167,139,250,.5); background:rgba(167,139,250,.1); box-shadow:0 0 14px rgba(167,139,250,.2); flex:0 0 56px; font-size:1.4rem; padding:0; line-height:52px; }
     .btn.undo:hover { background:rgba(167,139,250,.2); box-shadow:0 0 24px rgba(167,139,250,.4); }
 
-    /* ── Game over banner ── */
-    .gameover {
-      position:fixed; top:0; left:0; right:0;
-      background:rgba(5,5,15,.97);
-      border-bottom:1px solid rgba(255,255,255,.1);
-      box-shadow:0 8px 40px rgba(0,0,0,.7);
-      display:flex; flex-direction:column; align-items:center;
-      gap:6px; padding:16px 20px 14px;
-      z-index:400; animation:slidedown .35s cubic-bezier(.34,1.2,.64,1);
-    }
-    .gameover.hidden { display:none; }
-    @keyframes slidedown { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
-    .go-winner { font-family:'Orbitron',sans-serif; font-weight:900; font-size:.75rem; letter-spacing:.25em; opacity:.55; text-transform:uppercase; }
-    .go-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:clamp(1.6rem,6vw,2.4rem); letter-spacing:.08em; animation:glow 1.5s ease-in-out infinite alternate; line-height:1; }
+    /* ── Game over ── */
+    .gameover { position:fixed; inset:0; background:rgba(0,0,0,.93); gap:16px; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:400; animation:fadein .25s ease; }
+    .go-winner { font-family:'Orbitron',sans-serif; font-weight:900; font-size:clamp(1rem,.78rem + 2vw,1.4rem); letter-spacing:.15em; opacity:.55; text-transform:uppercase; }
+    .go-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:clamp(2.5rem,10vw,5rem); letter-spacing:.1em; animation:glow 1.5s ease-in-out infinite alternate; line-height:1; }
     .go-title.x { color:var(--x); }
     .go-title.o { color:var(--o); }
-    .go-title.d { color:rgba(180,180,255,.75); }
-    .go-msg { font-size:.72rem; letter-spacing:.1em; opacity:.45; text-align:center; }
-    .go-btns { display:flex; gap:10px; justify-content:center; margin-top:6px; }
-    .go .btn { font-size:.68rem !important; letter-spacing:.1em !important; height:auto !important; line-height:normal !important; padding:10px 22px !important; border-color:rgba(200,200,255,.35) !important; flex:0 0 auto !important; white-space:nowrap !important; min-width:110px !important; }
+    .go-title.d { color:rgba(180,180,255,.75); font-size:clamp(1.8rem,8vw,3.5rem); }
+    .go-msg { font-size:.85rem; letter-spacing:.15em; opacity:.5; text-align:center; }
+    .go-btns { display:flex; gap:16px; justify-content:center; margin-top:16px; }
+    .go .btn { font-size:.78rem !important; letter-spacing:.1em !important; height:auto !important; line-height:normal !important; padding:14px 32px !important; border-color:rgba(200,200,255,.35) !important; flex:0 0 auto !important; white-space:nowrap !important; min-width:130px !important; }
     @keyframes glow { from{text-shadow:0 0 20px currentColor,0 0 40px currentColor} to{text-shadow:0 0 40px currentColor,0 0 80px currentColor,0 0 140px currentColor} }
 
     /* ── Abandon confirm ── */
@@ -323,7 +313,7 @@
 </div>
 
 <!-- Game over -->
-<div class="gameover hidden" id="gameover">
+<div class="overlay gameover hidden" id="gameover">
   <div class="go-winner" id="go-winner"></div>
   <div class="go-title" id="go-title"></div>
   <div class="go-msg" id="go-msg"></div>
