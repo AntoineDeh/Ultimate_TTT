@@ -608,35 +608,51 @@ function botMove() {
 }
 
 function botEasy(state) {
-  const moves=getValidMoves(state);
-  return moves[Math.floor(Math.random()*moves.length)]||null;
+  // Profondeur 1 : regarde seulement le coup suivant
+  const moves = getValidMoves(state);
+  if (!moves.length) return null;
+  const start = Date.now();
+  // Gagne immédiatement si possible
+  for (const [b,c] of moves) {
+    const ns = applyMove(state,b,c);
+    if (ns.winner === 'O') return [b,c];
+  }
+  // Sinon minimax profondeur 1
+  let best = null, bestScore = -Infinity;
+  for (const [b,c] of moves) {
+    const ns = applyMove(state,b,c);
+    const sc = minimax(ns, 1, false, -Infinity, Infinity, start, 5000);
+    if (sc > bestScore) { bestScore = sc; best = [b,c]; }
+  }
+  return best || moves[Math.floor(Math.random()*moves.length)];
 }
 
 function botMedium(state) {
-  const moves=getValidMoves(state);
-  // Win subboard if possible
-  for (const [b,c] of moves) { const ns=applyMove(state,b,c); if(ns.bw[b]==='O') return [b,c]; }
-  // Block human from winning subboard
-  for (const [b,c] of moves) { const ns=applyMove(state,b,c); if(ns.bw[b]==='X') {} }
-  // Block: temporarily place X and see if it wins
+  // Profondeur 3 : voit 3 coups à l'avance, gagne/bloque sous-grilles
+  const moves = getValidMoves(state);
+  if (!moves.length) return null;
+  const start = Date.now();
   for (const [b,c] of moves) {
-    const tmp=[...state.boards[b]]; tmp[c]='X';
-    if (checkResult(tmp)==='X') return [b,c];
+    const ns = applyMove(state,b,c);
+    if (ns.winner === 'O') return [b,c];
   }
-  // Prefer center cells
-  const centers = moves.filter(([b,c])=>c===4);
-  if (centers.length) return centers[Math.floor(Math.random()*centers.length)];
-  return moves[Math.floor(Math.random()*moves.length)]||null;
+  let best = null, bestScore = -Infinity;
+  for (const [b,c] of moves) {
+    if (Date.now()-start > 2000) break;
+    const ns = applyMove(state,b,c);
+    const sc = minimax(ns, 3, false, -Infinity, Infinity, start, 2000);
+    if (sc > bestScore) { bestScore = sc; best = [b,c]; }
+  }
+  return best || moves[Math.floor(Math.random()*moves.length)];
 }
 
 function botHard(state) {
-  const start=Date.now();
-  const MAX_TIME=4800;
-  let best=null, bestScore=-Infinity;
-  const moves=getValidMoves(state);
-  // Quick win check
+  // Profondeur 6 : approfondissement itératif jusqu'à 6
+  const start = Date.now();
+  const MAX_TIME = 4800;
+  let best = null, bestScore = -Infinity;
+  const moves = getValidMoves(state);
   for (const [b,c] of moves) { const ns=applyMove(state,b,c); if(ns.winner==='O') return [b,c]; }
-  // Iterative deepening minimax
   for (let depth=1; depth<=6; depth++) {
     let iterBest=null, iterScore=-Infinity;
     for (const [b,c] of moves) {
@@ -646,9 +662,9 @@ function botHard(state) {
       if (sc>iterScore) { iterScore=sc; iterBest=[b,c]; }
     }
     if (iterBest) { best=iterBest; bestScore=iterScore; }
-    if (Date.now()-start>MAX_TIME||bestScore===1000) break;
+    if (Date.now()-start>MAX_TIME||bestScore>=999) break;
   }
-  return best||botMedium(state);
+  return best || moves[Math.floor(Math.random()*moves.length)];
 }
 
 function minimax(state,depth,isMax,alpha,beta,start,maxTime) {
