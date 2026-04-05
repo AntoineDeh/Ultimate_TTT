@@ -131,6 +131,8 @@
     }
     .hint-btn:hover { background:rgba(255,193,7,.2); box-shadow:0 0 18px rgba(255,193,7,.35); }
     .hint-btn:disabled { opacity:.3; cursor:default; box-shadow:none; }
+    .hint-btn.thinking { animation: hintthink 0.6s ease-in-out infinite alternate; }
+    @keyframes hintthink { from{box-shadow:0 0 8px rgba(255,193,7,.2)} to{box-shadow:0 0 20px rgba(255,193,7,.6)} }
     .hint-btn.hidden { display:none; }
     .hint-count {
       position:absolute; top:-5px; right:-5px;
@@ -668,22 +670,7 @@ function minimax(state,depth,isMax,alpha,beta,start,maxTime) {
   }
 }
 
-function evalState(state) {
-  let score=0;
-  // Subboards won
-  for (let b=0;b<9;b++) {
-    if (state.bw[b]==='O') score+=10;
-    else if (state.bw[b]==='X') score-=10;
-  }
-  // Macro threats
-  for (const [a,b,c] of LINES) {
-    const trio=[state.bw[a],state.bw[b],state.bw[c]];
-    const bots=trio.filter(v=>v==='O').length, humans=trio.filter(v=>v==='X').length, nulls=trio.filter(v=>!v).length;
-    if (bots===2&&nulls===1) score+=5;
-    if (humans===2&&nulls===1) score-=5;
-  }
-  return score;
-}
+// evalState is defined in getBestHintMove section below
 
 // ════════════════════════════════════════════════════════
 // SETTINGS
@@ -723,42 +710,107 @@ function useHint() {
   if (mode === 'online' && myRole !== G.player) return;
   if (mode !== 'bot' && hints <= 0) return;
 
-  // Clear previous hint highlight
   hintCell = null;
 
-  // Find best move using bot medium logic
-  const move = getBestHintMove(G);
-  if (!move) return;
+  // Disable button and show thinking animation
+  const btn = document.getElementById('hint-btn');
+  const cnt = document.getElementById('hint-count');
+  const origText = cnt.textContent;
+  btn.style.pointerEvents = 'none';
+  btn.style.opacity = '0.6';
+  btn.classList.add('thinking');
+  cnt.textContent = '…';
 
-  if (mode !== 'bot') hints--;
-  hintCell = move;
-  updateHintBtn();
-  render(); // render will highlight the cell
+  // Let UI repaint before heavy computation
+  setTimeout(() => {
+    const move = getBestHintMove(G);
+    btn.style.pointerEvents = '';
+    btn.style.opacity = '';
+    btn.classList.remove('thinking');
+    cnt.textContent = origText;
+
+    if (!move) return;
+    if (mode !== 'bot') hints--;
+    hintCell = move;
+    updateHintBtn();
+    render();
+  }, 30);
+}
+
+function evalState(state) {
+  let score = 0;
+  const p = 'O', opp = 'X';
+
+  // Sous-grilles gagnées
+  for (let b=0;b<9;b++) {
+    if (state.bw[b]===p)   score += 100;
+    else if (state.bw[b]===opp) score -= 100;
+  }
+
+  // Menaces macro (2 alignées + 1 libre)
+  for (const [a,b,c] of LINES) {
+    const trio=[state.bw[a],state.bw[b],state.bw[c]];
+    const ps=trio.filter(v=>v===p).length, os=trio.filter(v=>v===opp).length, ns=trio.filter(v=>!v).length;
+    if (ps===2&&ns===1) score+=50;
+    if (os===2&&ns===1) score-=50;
+    if (ps===1&&ns===2) score+=10;
+    if (os===1&&ns===2) score-=10;
+  }
+
+  // Centre et coins macro
+  if (state.bw[4]===p) score+=30; else if (state.bw[4]===opp) score-=30;
+  for (const corner of [0,2,6,8]) {
+    if (state.bw[corner]===p) score+=15; else if (state.bw[corner]===opp) score-=15;
+  }
+
+  // Menaces micro dans chaque sous-grille
+  for (let b=0;b<9;b++) {
+    if (state.bw[b]) continue;
+    for (const [a,c,d] of LINES) {
+      const cells=[state.boards[b][a],state.boards[b][c],state.boards[b][d]];
+      const ps=cells.filter(v=>v===p).length, os=cells.filter(v=>v===opp).length, ns=cells.filter(v=>!v).length;
+      if (ps===2&&ns===1) score+=8;
+      if (os===2&&ns===1) score-=8;
+      if (ps===1&&ns===2) score+=2;
+      if (os===1&&ns===2) score-=2;
+    }
+    if (state.boards[b][4]===p) score+=4; else if (state.boards[b][4]===opp) score-=4;
+  }
+
+  return score;
 }
 
 function getBestHintMove(state) {
+  const start = Date.now();
+  const MAX_TIME = 4800;
   const moves = getValidMoves(state);
   if (!moves.length) return null;
-  // Win if possible
+
+  const myP = state.player;
+  const sign = myP === 'O' ? 1 : -1;
+
+  // Victoire immédiate
   for (const [b,c] of moves) {
     const ns = applyMove(state,b,c);
-    if (ns.winner === state.player) return [b,c];
+    if (ns.winner === myP) return [b,c];
   }
-  // Block opponent win
-  const opp = state.player === 'X' ? 'O' : 'X';
-  for (const [b,c] of moves) {
-    const tmp = [...state.boards[b]]; tmp[c] = opp;
-    if (checkResult(tmp) === opp) return [b,c];
+
+  // Iterative deepening jusqu'à profondeur 8
+  let best = null, bestScore = -Infinity;
+  for (let depth=1; depth<=8; depth++) {
+    let iterBest=null, iterScore=-Infinity;
+    for (const [b,c] of moves) {
+      if (Date.now()-start>MAX_TIME) break;
+      const ns = applyMove(state,b,c);
+      const isMax = myP === 'X'; // après notre coup c'est à l'adversaire (isMax=true si O joue ensuite)
+      const raw = minimax(ns, depth, isMax, -Infinity, Infinity, start, MAX_TIME);
+      const sc = sign * raw;
+      if (sc>iterScore) { iterScore=sc; iterBest=[b,c]; }
+    }
+    if (iterBest) { best=iterBest; bestScore=iterScore; }
+    if (Date.now()-start>MAX_TIME || Math.abs(bestScore)>=999) break;
   }
-  // Win a subboard
-  for (const [b,c] of moves) {
-    const ns = applyMove(state,b,c);
-    if (ns.bw[b] === state.player) return [b,c];
-  }
-  // Center cells
-  const centers = moves.filter(([b,c]) => c === 4);
-  if (centers.length) return centers[Math.floor(Math.random()*centers.length)];
-  return moves[Math.floor(Math.random()*moves.length)];
+  return best || botMedium(state);
 }
 
 // ════════════════════════════════════════════════════════
@@ -935,12 +987,13 @@ function showGameOver(abandon=false) {
   // Update hints based on result
   if (!abandon && w !== 'draw') {
     const mySymbol = mode === 'bot' ? 'X' : (mode === 'online' ? myRole : null);
-    if (mySymbol === null) {
-      // local: X wins → +1, O wins → -1 (from X perspective, but both play so just +1 for winner)
-      hints = Math.min(hints+1, 9);
-    } else {
+    if (mode === 'bot') {
+      // Bot: +1 si victoire, -1 si défaite
       if (w === mySymbol) hints = Math.min(hints+1, 9);
       else hints = Math.max(hints-1, 0);
+    } else {
+      // Local/online: +1 pour le gagnant, jamais de perte
+      hints = Math.min(hints+1, 9);
     }
     updateHintBtn();
   }
