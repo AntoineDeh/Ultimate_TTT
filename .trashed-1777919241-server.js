@@ -67,7 +67,6 @@ const server = http.createServer((req, res) => {
 // ── WebSocket ─────────────────────────────────────────────────────────────────
 const wss = new WebSocketServer({ server });
 let players = { X: null, O: null };
-let playerNames = { X: 'Joueur X', O: 'Joueur O' };
 let spectators = [];
 
 function send(ws, obj) {
@@ -90,7 +89,6 @@ wss.on('connection', ws => {
 
   send(ws, { type: 'role',  player: role });
   send(ws, { type: 'state', state: G });
-  send(ws, { type: 'names', names: playerNames });
 
   if (connectedCount() === 2) broadcast({ type: 'ready' });
   else if (role !== 'spectator') send(ws, { type: 'waiting' });
@@ -98,11 +96,6 @@ wss.on('connection', ws => {
   ws.on('message', raw => {
     try {
       const msg = JSON.parse(raw);
-
-      if (msg.type === 'name' && role !== 'spectator') {
-        playerNames[role] = msg.name.slice(0, 16) || `Joueur ${role}`;
-        broadcast({ type: 'names', names: playerNames });
-      }
 
       if (msg.type === 'move') {
         if (role === 'spectator' || role !== G.player) return;
@@ -115,15 +108,14 @@ wss.on('connection', ws => {
         G = newState();
         G.scores = scores;
         broadcast({ type: 'state', state: G });
-        broadcast({ type: 'names', names: playerNames });
         if (connectedCount() === 2) broadcast({ type: 'ready' });
       }
     } catch(_) {}
   });
 
   ws.on('close', () => {
-    if      (players.X === ws) { players.X = null; playerNames.X = 'Joueur X'; broadcast({ type: 'waiting' }); }
-    else if (players.O === ws) { players.O = null; playerNames.O = 'Joueur O'; broadcast({ type: 'waiting' }); }
+    if      (players.X === ws) { players.X = null; broadcast({ type: 'waiting' }); }
+    else if (players.O === ws) { players.O = null; broadcast({ type: 'waiting' }); }
     else spectators = spectators.filter(s => s !== ws);
   });
 });

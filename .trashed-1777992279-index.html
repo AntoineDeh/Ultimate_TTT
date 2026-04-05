@@ -119,31 +119,6 @@
     .score-center { flex:0 0 auto; }
     .score-right { flex:1; display:flex; justify-content:center; align-items:center; }
     .side-icons { display:flex; flex-direction:column; gap:6px; align-items:center; }
-    .left-icons { display:flex; flex-direction:column; gap:6px; align-items:center; }
-
-    /* ── Hint button ── */
-    .hint-btn {
-      position:relative; display:flex; align-items:center; justify-content:center;
-      width:44px; height:44px; border-radius:10px;
-      background:rgba(255,193,7,.1); border:1.5px solid rgba(255,193,7,.4);
-      cursor:pointer; transition:all .2s; font-size:1.2rem;
-      box-shadow:0 0 10px rgba(255,193,7,.15);
-    }
-    .hint-btn:hover { background:rgba(255,193,7,.2); box-shadow:0 0 18px rgba(255,193,7,.35); }
-    .hint-btn:disabled { opacity:.3; cursor:default; box-shadow:none; }
-    .hint-btn.hidden { display:none; }
-    .hint-count {
-      position:absolute; top:-5px; right:-5px;
-      background:var(--active); color:#000;
-      font-family:'Orbitron',sans-serif; font-weight:900; font-size:.55rem;
-      width:16px; height:16px; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 0 6px rgba(255,193,7,.6);
-    }
-    .hint-btn.empty { opacity:.3; cursor:default; }
-    /* ── Hint cell highlight ── */
-    .cell.hint-cell { background:rgba(255,193,7,.35) !important; box-shadow:inset 0 0 0 2px var(--active), 0 0 12px rgba(255,193,7,.4); animation:hintpulse 0.8s ease-in-out infinite alternate; }
-    @keyframes hintpulse { from{background:rgba(255,193,7,.25) !important} to{background:rgba(255,193,7,.45) !important} }
 
     .scoreboard { display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--border-out); border-radius:10px; padding:5px 12px; box-shadow:0 4px 20px rgba(0,0,0,.4); }
     .score-player { display:flex; flex-direction:column; align-items:center; gap:0; }
@@ -396,12 +371,7 @@
 
   <div class="score-row">
     <div class="score-left">
-      <div class="left-icons">
-        <button class="icon-btn home hidden" id="home-btn" onclick="backToMenu()" title="Menu">⌂</button>
-        <button class="hint-btn hidden" id="hint-btn" onclick="useHint()" title="Indice">
-          💡<span class="hint-count" id="hint-count">3</span>
-        </button>
-      </div>
+      <button class="icon-btn home hidden" id="home-btn" onclick="backToMenu()" title="Menu">⌂</button>
     </div>
     <div class="score-center">
       <div class="scoreboard">
@@ -454,7 +424,6 @@ let botThinking = false;
 let autoMode = false;
 let history = []; // stack of states for undo
 let undoUsed = false; // one-time undo for local/online
-let hints = 3; // starting hints per session
 
 // ════════════════════════════════════════════════════════
 // GAME LOGIC
@@ -531,16 +500,15 @@ function showSetup(m) {
 }
 function showGameIcons() {
   show('home-btn'); show('rules-btn'); show('settings-btn'); show('abandon-btn');
-  show('undo-btn'); show('hint-btn');
-  updateHintBtn();
+  show('undo-btn');
 }
 function backToMenu() {
   ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm','settings-panel'].forEach(hide);
   show('menu');
-  ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn'].forEach(hide);
+  ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn'].forEach(hide);
   hide('role-badge');
   if (ws) { ws.onclose=null; ws.close(); ws=null; }
-  scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false; hintCell=null; hints=3;
+  scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   document.getElementById('board').innerHTML='';
@@ -700,62 +668,6 @@ function toggleAuto() {
 }
 
 // ════════════════════════════════════════════════════════
-// HINTS
-// ════════════════════════════════════════════════════════
-let hintCell = null; // [b, c] currently highlighted
-
-function updateHintBtn() {
-  const btn = document.getElementById('hint-btn');
-  const cnt = document.getElementById('hint-count');
-  if (!btn) return;
-  cnt.textContent = hints;
-  if (hints <= 0) btn.classList.add('empty');
-  else btn.classList.remove('empty');
-}
-
-function useHint() {
-  if (!G || G.winner || hints <= 0) return;
-  if (mode === 'online' && myRole !== G.player) return;
-
-  // Clear previous hint highlight
-  hintCell = null;
-
-  // Find best move using bot medium logic
-  const move = getBestHintMove(G);
-  if (!move) return;
-
-  hints--;
-  hintCell = move;
-  updateHintBtn();
-  render(); // render will highlight the cell
-}
-
-function getBestHintMove(state) {
-  const moves = getValidMoves(state);
-  if (!moves.length) return null;
-  // Win if possible
-  for (const [b,c] of moves) {
-    const ns = applyMove(state,b,c);
-    if (ns.winner === state.player) return [b,c];
-  }
-  // Block opponent win
-  const opp = state.player === 'X' ? 'O' : 'X';
-  for (const [b,c] of moves) {
-    const tmp = [...state.boards[b]]; tmp[c] = opp;
-    if (checkResult(tmp) === opp) return [b,c];
-  }
-  // Win a subboard
-  for (const [b,c] of moves) {
-    const ns = applyMove(state,b,c);
-    if (ns.bw[b] === state.player) return [b,c];
-  }
-  // Center cells
-  const centers = moves.filter(([b,c]) => c === 4);
-  if (centers.length) return centers[Math.floor(Math.random()*centers.length)];
-  return moves[Math.floor(Math.random()*moves.length)];
-}
-
-// ════════════════════════════════════════════════════════
 // AUTO-COMPLETE LOOP
 // ════════════════════════════════════════════════════════
 function runAutoAndRender() {
@@ -880,8 +792,7 @@ function render() {
         cell.appendChild(m);
       } else if (!bw&&canPlay&&(G.active===null||G.active===b)) {
         if (winningCells.has(`${b}-${c}`)) cell.classList.add('winning-hint');
-        if (hintCell && hintCell[0]===b && hintCell[1]===c) cell.classList.add('hint-cell');
-        cell.addEventListener('click',()=>{ hintCell=null; mode==='online'?onlineClick(b,c):localClick(b,c); });
+        cell.addEventListener('click',()=>mode==='online'?onlineClick(b,c):localClick(b,c));
       } else { cell.classList.add('locked'); }
       sb.appendChild(cell);
     }
@@ -923,21 +834,7 @@ function updateHUD() {
 // GAME OVER
 // ════════════════════════════════════════════════════════
 function showGameOver(abandon=false) {
-  hintCell = null;
   const w=G.winner;
-
-  // Update hints based on result
-  if (!abandon && w !== 'draw') {
-    const mySymbol = mode === 'bot' ? 'X' : (mode === 'online' ? myRole : null);
-    if (mySymbol === null) {
-      // local: X wins → +1, O wins → -1 (from X perspective, but both play so just +1 for winner)
-      hints = Math.min(hints+1, 9);
-    } else {
-      if (w === mySymbol) hints = Math.min(hints+1, 9);
-      else hints = Math.max(hints-1, 0);
-    }
-    updateHintBtn();
-  }
   const winner_el=document.getElementById('go-winner');
   const title_el=document.getElementById('go-title');
   const msg_el=document.getElementById('go-msg');
@@ -957,7 +854,7 @@ function showGameOver(abandon=false) {
 function resetGame() {
   hide('gameover');
   if (mode==='online') { ws.send(JSON.stringify({type:'reset'})); return; }
-  G=newState(); botThinking=false; history=[]; undoUsed=false; hintCell=null;
+  G=newState(); botThinking=false; history=[]; undoUsed=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   runAutoAndRender();
