@@ -708,14 +708,20 @@ function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
   const cnt = document.getElementById('hint-count');
   if (!btn) return;
-  cnt.textContent = hints;
-  if (hints <= 0) btn.classList.add('empty');
-  else btn.classList.remove('empty');
+  if (mode === 'bot') {
+    cnt.textContent = '∞';
+    btn.classList.remove('empty');
+  } else {
+    cnt.textContent = hints;
+    if (hints <= 0) btn.classList.add('empty');
+    else btn.classList.remove('empty');
+  }
 }
 
 function useHint() {
-  if (!G || G.winner || hints <= 0) return;
+  if (!G || G.winner) return;
   if (mode === 'online' && myRole !== G.player) return;
+  if (mode !== 'bot' && hints <= 0) return;
 
   // Clear previous hint highlight
   hintCell = null;
@@ -724,7 +730,7 @@ function useHint() {
   const move = getBestHintMove(G);
   if (!move) return;
 
-  hints--;
+  if (mode !== 'bot') hints--;
   hintCell = move;
   updateHintBtn();
   render(); // render will highlight the cell
