@@ -579,6 +579,33 @@ function getValidMoves(state) {
   return moves;
 }
 
+// Priority: winning move > blocking move > center > corner > edge
+function orderMoves(state, moves) {
+  const p = state.player, opp = p==='O'?'X':'O';
+  return moves.slice().sort(([b1,c1],[b2,c2]) => {
+    const score = ([b,c]) => {
+      // Wins subboard
+      const tmp = [...state.boards[b]]; tmp[c] = p;
+      if (checkResult(tmp) === p) return 100;
+      // Blocks opponent subboard win
+      const tmp2 = [...state.boards[b]]; tmp2[c] = opp;
+      if (checkResult(tmp2) === opp) return 80;
+      // Center of subboard
+      if (c === 4) return 10;
+      // Corner of subboard
+      if ([0,2,6,8].includes(c)) return 5;
+      return 0;
+    };
+    return score([b2,c2]) - score([b1,c1]);
+  });
+}
+
+// Transposition table (cleared per search)
+let ttable = {};
+function stateKey(state) {
+  return state.bw.join('') + '|' + state.boards.map(b=>b.map(v=>v||'.').join('')).join('|') + '|' + state.active + '|' + state.player;
+}
+
 // Find a winning cell in a board for player (returns cell index or -1)
 function findWinningCell(board, player) {
   for (const [a,b,c] of LINES) {
@@ -752,13 +779,13 @@ function botMedium(state) {
 }
 
 function botHard(state) {
-  // Profondeur 6 : approfondissement itératif jusqu'à 6
+  clearTT();
   const start = Date.now();
   const MAX_TIME = 4800;
   let best = null, bestScore = -Infinity;
-  const moves = getValidMoves(state);
+  const moves = orderMoves(state, getValidMoves(state));
   for (const [b,c] of moves) { const ns=applyMove(state,b,c); if(ns.winner==='O') return [b,c]; }
-  for (let depth=1; depth<=6; depth++) {
+  for (let depth=1; depth<=8; depth++) {
     let iterBest=null, iterScore=-Infinity;
     for (const [b,c] of moves) {
       if (Date.now()-start>MAX_TIME) break;
@@ -772,24 +799,45 @@ function botHard(state) {
   return best || moves[Math.floor(Math.random()*moves.length)];
 }
 
-function minimax(state,depth,isMax,alpha,beta,start,maxTime) {
-  if (Date.now()-start>maxTime) return 0;
+function minimax(state, depth, isMax, alpha, beta, start, maxTime) {
+  if (Date.now()-start > maxTime) return 0;
   if (state.winner==='O') return 1000;
   if (state.winner==='X') return -1000;
   if (state.winner==='draw') return 0;
   if (depth===0) return evalState(state);
-  const moves=getValidMoves(state);
-  if (!moves.length) return 0;
-  if (isMax) {
-    let v=-Infinity;
-    for (const [b,c] of moves) { v=Math.max(v,minimax(applyMove(state,b,c),depth-1,false,alpha,beta,start,maxTime)); alpha=Math.max(alpha,v); if (beta<=alpha) break; }
-    return v;
-  } else {
-    let v=Infinity;
-    for (const [b,c] of moves) { v=Math.min(v,minimax(applyMove(state,b,c),depth-1,true,alpha,beta,start,maxTime)); beta=Math.min(beta,v); if (beta<=alpha) break; }
-    return v;
+
+  // Transposition table lookup
+  const key = stateKey(state);
+  const cached = ttable[key];
+  if (cached && cached.depth >= depth) {
+    if (cached.flag === 'exact') return cached.score;
+    if (cached.flag === 'lower' && cached.score > alpha) alpha = cached.score;
+    if (cached.flag === 'upper' && cached.score < beta)  beta  = cached.score;
+    if (alpha >= beta) return cached.score;
   }
+
+  const moves = orderMoves(state, getValidMoves(state));
+  if (!moves.length) return 0;
+
+  let origAlpha = alpha;
+  let best = isMax ? -Infinity : Infinity;
+
+  for (const [b,c] of moves) {
+    const sc = minimax(applyMove(state,b,c), depth-1, !isMax, alpha, beta, start, maxTime);
+    if (isMax) { if (sc > best) best=sc; if (sc > alpha) alpha=sc; }
+    else        { if (sc < best) best=sc; if (sc < beta)  beta=sc;  }
+    if (beta <= alpha) break;
+    if (Date.now()-start > maxTime) break;
+  }
+
+  // Store in transposition table
+  const flag = best <= origAlpha ? 'upper' : best >= beta ? 'lower' : 'exact';
+  ttable[key] = { score: best, depth, flag };
+
+  return best;
 }
+
+function clearTT() { ttable = {}; }
 
 // evalState is defined in getBestHintMove section below
 
@@ -1067,9 +1115,10 @@ function evalState(state) {
 }
 
 function getBestHintMove(state) {
+  clearTT();
   const start = Date.now();
   const MAX_TIME = 4800;
-  const moves = getValidMoves(state);
+  const moves = orderMoves(state, getValidMoves(state));
   if (!moves.length) return null;
 
   const myP = state.player;
@@ -1081,14 +1130,14 @@ function getBestHintMove(state) {
     if (ns.winner === myP) return [b,c];
   }
 
-  // Iterative deepening jusqu'à profondeur 8
+  // Iterative deepening jusqu'à profondeur 10
   let best = null, bestScore = -Infinity;
-  for (let depth=1; depth<=8; depth++) {
+  for (let depth=1; depth<=10; depth++) {
     let iterBest=null, iterScore=-Infinity;
     for (const [b,c] of moves) {
       if (Date.now()-start>MAX_TIME) break;
       const ns = applyMove(state,b,c);
-      const isMax = myP === 'X'; // après notre coup c'est à l'adversaire (isMax=true si O joue ensuite)
+      const isMax = myP === 'X';
       const raw = minimax(ns, depth, isMax, -Infinity, Infinity, start, MAX_TIME);
       const sc = sign * raw;
       if (sc>iterScore) { iterScore=sc; iterBest=[b,c]; }
