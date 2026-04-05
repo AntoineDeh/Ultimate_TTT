@@ -213,8 +213,9 @@
       border-bottom:1px solid rgba(255,255,255,.1);
       box-shadow:0 8px 40px rgba(0,0,0,.7);
       display:flex; flex-direction:column; align-items:center;
-      gap:6px; padding:16px 20px 14px;
+      gap:6px; padding:14px 12px 12px;
       z-index:400; animation:slidedown .35s cubic-bezier(.34,1.2,.64,1);
+      width:100%;
     }
     .gameover.hidden { display:none; }
     @keyframes slidedown { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
@@ -224,8 +225,8 @@
     .go-title.o { color:var(--o); }
     .go-title.d { color:rgba(180,180,255,.75); }
     .go-msg { font-size:.72rem; letter-spacing:.1em; opacity:.45; text-align:center; }
-    .go-btns { display:flex; gap:10px; justify-content:center; margin-top:6px; }
-    .go .btn { font-size:.68rem !important; letter-spacing:.1em !important; height:auto !important; line-height:normal !important; padding:10px 22px !important; border-color:rgba(200,200,255,.35) !important; flex:0 0 auto !important; white-space:nowrap !important; min-width:110px !important; }
+    .go-btns { display:flex; gap:8px; justify-content:center; margin-top:8px; width:100%; padding:0 4px; }
+    .go .btn { font-size:.62rem !important; letter-spacing:.08em !important; height:46px !important; line-height:46px !important; padding:0 4px !important; border-color:rgba(200,200,255,.35) !important; flex:1 !important; white-space:nowrap !important; min-width:0 !important; }
     @keyframes glow { from{text-shadow:0 0 20px currentColor,0 0 40px currentColor} to{text-shadow:0 0 40px currentColor,0 0 80px currentColor,0 0 140px currentColor} }
 
     /* ── Abandon confirm ── */
@@ -315,6 +316,22 @@
       .score-val { font-size:2.4rem; }
       .title { font-size:2.2rem; }
     }
+    /* ── Analysis legend ── */
+    .analysis-legend { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; width:100%; max-width:420px; }
+    .legend-item { font-size:.6rem; letter-spacing:.06em; padding:3px 10px; border-radius:12px; border:1px solid; }
+    .legend-item.excellent  { color:#4ade80; border-color:rgba(74,222,128,.4); background:rgba(74,222,128,.08); }
+    .legend-item.good       { color:var(--x); border-color:rgba(0,229,255,.4); background:rgba(0,229,255,.08); }
+    .legend-item.inaccuracy { color:var(--active); border-color:rgba(255,193,7,.4); background:rgba(255,193,7,.08); }
+    .legend-item.mistake    { color:#f97316; border-color:rgba(249,115,22,.4); background:rgba(249,115,22,.08); }
+    .legend-item.blunder    { color:var(--o); border-color:rgba(255,31,122,.4); background:rgba(255,31,122,.08); }
+    .analysis-loading { display:flex; flex-direction:column; align-items:center; gap:12px; padding:20px; }
+    .analysis-loading-bar { width:200px; height:6px; background:rgba(180,180,255,.1); border-radius:3px; overflow:hidden; }
+    .analysis-loading-fill { height:100%; background:var(--active); border-radius:3px; transition:width .3s; }
+    .analysis-loading-txt { font-size:.75rem; letter-spacing:.1em; opacity:.5; }
+    .analysis-hint-legend { display:flex; gap:14px; font-size:.68rem; letter-spacing:.06em; opacity:.6; }
+    .analysis-hint-legend span { display:flex; align-items:center; gap:4px; }
+    .dot-played { width:10px; height:10px; border-radius:2px; background:rgba(180,180,255,.4); border:1px solid rgba(180,180,255,.6); display:inline-block; }
+    .dot-best { width:10px; height:10px; border-radius:2px; background:rgba(74,222,128,.4); border:1px solid #4ade80; display:inline-block; }
   </style>
 </head>
 <body>
@@ -400,17 +417,41 @@
     <div class="analysis-title">🔍 ANALYSE</div>
     <button class="analysis-close" onclick="closeAnalysis()">✕ FERMER</button>
   </div>
-  <div class="analysis-move-info">
-    <div class="analysis-step" id="analysis-step">Coup 0 / 0</div>
-    <div class="analysis-quality start" id="analysis-quality">—</div>
-    <div class="analysis-desc" id="analysis-desc">Navigue avec les flèches</div>
+
+  <!-- Loading state -->
+  <div class="analysis-loading hidden" id="analysis-loading">
+    <div class="analysis-loading-txt" id="analysis-loading-txt">Analyse en cours… 0 / 0</div>
+    <div class="analysis-loading-bar"><div class="analysis-loading-fill" id="analysis-loading-fill" style="width:0%"></div></div>
   </div>
-  <div class="analysis-nav">
-    <button class="analysis-nav-btn" id="ana-prev" onclick="analysisPrev()">←</button>
-    <div class="analysis-progress" id="ana-progress">0 / 0</div>
-    <button class="analysis-nav-btn" id="ana-next" onclick="analysisNext()">→</button>
+
+  <!-- Content (hidden while loading) -->
+  <div id="analysis-content" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
+    <!-- Legend qualités -->
+    <div class="analysis-legend">
+      <span class="legend-item excellent">✅ Excellent</span>
+      <span class="legend-item good">👍 Bon</span>
+      <span class="legend-item inaccuracy">⚠ Imprécis</span>
+      <span class="legend-item mistake">❌ Erreur</span>
+      <span class="legend-item blunder">💀 Gaffe</span>
+    </div>
+    <!-- Legend cases -->
+    <div class="analysis-hint-legend">
+      <span><span class="dot-played"></span> Coup joué</span>
+      <span><span class="dot-best"></span> Meilleur coup</span>
+    </div>
+
+    <div class="analysis-move-info">
+      <div class="analysis-step" id="analysis-step">Coup 0 / 0</div>
+      <div class="analysis-quality start" id="analysis-quality">—</div>
+      <div class="analysis-desc" id="analysis-desc">Navigue avec les flèches</div>
+    </div>
+    <div class="analysis-nav">
+      <button class="analysis-nav-btn" id="ana-prev" onclick="analysisPrev()">←</button>
+      <div class="analysis-progress" id="ana-progress">0 / 0</div>
+      <button class="analysis-nav-btn" id="ana-next" onclick="analysisNext()">→</button>
+    </div>
+    <div class="board" id="analysis-board"></div>
   </div>
-  <div class="board" id="analysis-board"></div>
 </div>
 
 <!-- Game over -->
@@ -599,7 +640,7 @@ function backToMenu() {
   ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn'].forEach(hide);
   hide('role-badge');
   if (ws) { ws.onclose=null; ws.close(); ws=null; }
-  scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false; hintCell=null; hints=3; gameLog=[]; analysisCache={};
+  scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false; hintCell=null; hints=3; gameLog=[]; analysisCache={}; analysisReady=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   document.getElementById('board').innerHTML='';
@@ -755,13 +796,65 @@ function minimax(state,depth,isMax,alpha,beta,start,maxTime) {
 // ════════════════════════════════════════════════════════
 // ANALYSIS
 // ════════════════════════════════════════════════════════
+let analysisReady = false; // true once all moves computed
+
 function startAnalysis() {
   if (!gameLog.length) return;
-  analysisStep = 0;
-  analysisCache = {};
   hide('gameover');
   show('analysis');
-  renderAnalysisStep();
+
+  // Already computed — just show
+  if (analysisReady) {
+    hide('analysis-loading');
+    const content = document.getElementById('analysis-content');
+    content.classList.remove('hidden');
+    content.style.display = 'flex';
+    renderAnalysisStep();
+    return;
+  }
+
+  analysisStep = 0;
+  analysisCache = {};
+
+  // Show loading, hide content
+  show('analysis-loading');
+  document.getElementById('analysis-content').classList.add('hidden');
+  document.getElementById('analysis-content').style.display = 'none';
+  document.getElementById('analysis-loading-fill').style.width = '0%';
+  document.getElementById('analysis-loading-txt').textContent = 'Analyse en cours… 0 / ' + gameLog.length;
+
+  let i = 0;
+  const total = gameLog.length;
+
+  function computeNext() {
+    if (i >= total) {
+      analysisReady = true;
+      hide('analysis-loading');
+      const content = document.getElementById('analysis-content');
+      content.classList.remove('hidden');
+      content.style.display = 'flex';
+      renderAnalysisStep();
+      return;
+    }
+
+    // Update progress bar
+    document.getElementById('analysis-loading-txt').textContent =
+      `Analyse en cours… ${i + 1} / ${total}`;
+    document.getElementById('analysis-loading-fill').style.width =
+      `${Math.round((i + 1) / total * 100)}%`;
+
+    // Compute step i+1
+    const entry = gameLog[i];
+    const best = getBestHintMove(entry.state);
+    const scorePlayed = scoreMove(entry.state, entry.move);
+    const scoreBest   = best ? scoreMove(entry.state, best) : scorePlayed;
+    analysisCache[i + 1] = { best, scorePlayed, scoreBest };
+
+    i++;
+    setTimeout(computeNext, 20); // 20ms delay — enough for browser to repaint
+  }
+
+  setTimeout(computeNext, 80); // initial delay to let overlay render first
 }
 
 function closeAnalysis() {
@@ -778,11 +871,10 @@ function analysisNext() {
 }
 
 function getMoveQuality(scorePlayed, scoreBest, player) {
-  // Both scores from O's perspective (positive = good for O)
   const sign = player === 'O' ? 1 : -1;
   const played = sign * scorePlayed;
   const best   = sign * scoreBest;
-  const diff   = best - played; // how much worse than best (positive = worse)
+  const diff   = best - played;
 
   if (diff <= 0)   return { label:'✅ EXCELLENT', cls:'excellent', desc:'Meilleur coup possible !' };
   if (diff <= 15)  return { label:'👍 BON',       cls:'good',      desc:'Coup correct.' };
@@ -806,27 +898,18 @@ function renderAnalysisStep() {
   document.getElementById('ana-prev').disabled = analysisStep === 0;
   document.getElementById('ana-next').disabled = analysisStep === total;
 
-  // State to display
   const entry = analysisStep === 0 ? null : gameLog[analysisStep - 1];
   const displayState = analysisStep === 0
     ? gameLog[0].state
     : applyMove(gameLog[analysisStep - 1].state, ...gameLog[analysisStep - 1].move);
 
-  let playedMove = null, bestMove = null, quality = null;
+  let playedMove = null, bestMove = null;
 
   if (entry) {
     playedMove = entry.move;
-
-    // Get or compute best move (cached)
-    if (!analysisCache[analysisStep]) {
-      const best = getBestHintMove(entry.state);
-      const scorePlayed = scoreMove(entry.state, entry.move);
-      const scoreBest   = best ? scoreMove(entry.state, best) : scorePlayed;
-      analysisCache[analysisStep] = { best, scorePlayed, scoreBest };
-    }
     const cached = analysisCache[analysisStep];
     bestMove = cached.best;
-    quality = getMoveQuality(cached.scorePlayed, cached.scoreBest, entry.player);
+    const quality = getMoveQuality(cached.scorePlayed, cached.scoreBest, entry.player);
 
     const qEl = document.getElementById('analysis-quality');
     qEl.textContent = quality.label;
@@ -864,15 +947,9 @@ function renderAnalysisBoard(state, playedMove, bestMove) {
         m.textContent = val;
         cell.appendChild(m);
       }
-      // Highlight played move
-      if (playedMove && playedMove[0]===b && playedMove[1]===c) {
-        cell.classList.add('played-move');
-      }
-      // Highlight best move (only if different from played)
+      if (playedMove && playedMove[0]===b && playedMove[1]===c) cell.classList.add('played-move');
       if (bestMove && bestMove[0]===b && bestMove[1]===c &&
-          !(playedMove && playedMove[0]===b && playedMove[1]===c)) {
-        cell.classList.add('best-move');
-      }
+          !(playedMove && playedMove[0]===b && playedMove[1]===c)) cell.classList.add('best-move');
       sb.appendChild(cell);
     }
     if (bw) {
@@ -1238,7 +1315,7 @@ function showGameOver(abandon=false) {
 function resetGame() {
   hide('gameover');
   if (mode==='online') { ws.send(JSON.stringify({type:'reset'})); return; }
-  G=newState(); botThinking=false; history=[]; undoUsed=false; hintCell=null; gameLog=[]; analysisCache={};
+  G=newState(); botThinking=false; history=[]; undoUsed=false; hintCell=null; gameLog=[]; analysisCache={}; analysisReady=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   runAutoAndRender();
