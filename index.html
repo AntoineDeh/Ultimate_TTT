@@ -60,6 +60,7 @@
 
     /* ── Overlays base ── */
     .overlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:500; animation:fadein .25s ease; }
+    .hidden { display:none !important; }
     .overlay.hidden { display:none; }
     @keyframes fadein { from{opacity:0} to{opacity:1} }
 
@@ -1594,7 +1595,7 @@ function resetGame() {
   gameLog=[]; analysisCache={}; analysisReady=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
-  runAutoAndRender();
+  if (mode !== 'bot') hide('undo-btn');
 }
 
 // ════════════════════════════════════════════════════════
@@ -1617,8 +1618,6 @@ function closeDesign() { document.getElementById('design-panel').classList.remov
   const t = localStorage.getItem('ttt-theme') || 'cyberpunk';
   setTheme(t);
 })();
-
-// ════════════════════════════════════════════════════════
 // FIRST RUN
 // ════════════════════════════════════════════════════════
 function showFirstRunRules() { hide('first-run'); localStorage.setItem('ttt-seen','1'); toggleRules(); }
