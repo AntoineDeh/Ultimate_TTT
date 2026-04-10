@@ -22,7 +22,8 @@ function newState() {
     active : null,
     player : 'X',
     winner : null,
-    scores : {X:0, O:0}
+    scores : {X:0, O:0},
+    _firstPlayer: 'X'
   };
 }
 
@@ -104,6 +105,10 @@ wss.on('connection', ws => {
         broadcast({ type: 'names', names: playerNames });
       }
 
+      if (msg.type === 'automode' && role === 'X') {
+        broadcast({ type: 'automode', autoMode: !!msg.autoMode });
+      }
+
       if (msg.type === 'move') {
         if (role === 'spectator' || role !== G.player) return;
         if (processMove(msg.board, msg.cell))
@@ -112,8 +117,11 @@ wss.on('connection', ws => {
 
       if (msg.type === 'reset' && role !== 'spectator') {
         const scores = G.scores;
+        const nextStarter = G._firstPlayer === 'X' ? 'O' : 'X';
         G = newState();
         G.scores = scores;
+        G._firstPlayer = nextStarter;
+        G.player = nextStarter;
         broadcast({ type: 'state', state: G });
         broadcast({ type: 'names', names: playerNames });
         if (connectedCount() === 2) broadcast({ type: 'ready' });

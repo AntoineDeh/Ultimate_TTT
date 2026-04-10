@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ultimate Tic-Tac-Toe</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -80,7 +81,7 @@
     /* ── Setup screens ── */
     .setup { background:rgba(5,5,15,.98); gap:24px; }
     .setup-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1rem; letter-spacing:.2em; color:#fff; text-align:center; }
-    .setup-form { display:flex; flex-direction:column; gap:14px; width:min(300px,85vw); }
+    .setup-form { display:flex; flex-direction:column; gap:14px; width:min(300px,85vw); max-height:75vh; overflow-y:auto; padding-bottom:8px; }
     .setup-label { font-size:.7rem; letter-spacing:.18em; opacity:.5; margin-bottom:2px; display:block; }
     .setup-input { width:100%; background:var(--surface); border:1px solid var(--border-out); border-radius:8px; padding:11px 14px; color:#fff; font-family:'Share Tech Mono',monospace; font-size:.9rem; outline:none; transition:border .2s; }
     .setup-input:focus { border-color:rgba(0,229,255,.5); box-shadow:0 0 12px rgba(0,229,255,.1); }
@@ -309,6 +310,102 @@
     .pt { position:absolute; border-radius:50%; animation:fly linear forwards; }
     @keyframes fly { from{transform:translateY(0) scale(1);opacity:1} to{transform:translateY(-110vh) scale(.3);opacity:0} }
 
+    /* ── Themes ── */
+    body { transition: background .5s, color .5s; }
+
+    /* NEON (default) — déjà dans :root */
+
+    /* CYBER — orange/violet, fond cuir brûlé */
+    body.theme-cyber {
+      --x:#ff9500; --o:#a855f7; --active:#00ff88;
+      --bg:#080400; --surface:#140a00; --border-out:#3d2200; --border-in:#1f0e00;
+    }
+    body.theme-cyber::after { background: radial-gradient(ellipse,rgba(180,80,0,.12) 0%,transparent 65%); }
+    body.theme-cyber .menu-btn.local { color:#ff9500; border-color:rgba(255,149,0,.3); }
+    body.theme-cyber .menu-btn.bot   { color:#a855f7; border-color:rgba(168,85,247,.3); }
+    body.theme-cyber .menu-btn.online{ color:#00ff88; border-color:rgba(0,255,136,.3); }
+
+    /* FOREST — vert/ambre, fond forêt profonde */
+    body.theme-forest {
+      --x:#4ade80; --o:#f59e0b; --active:#86efac;
+      --bg:#010a02; --surface:#061508; --border-out:#1a3d1f; --border-in:#0c1f0e;
+    }
+    body.theme-forest::after { background: radial-gradient(ellipse,rgba(20,80,30,.15) 0%,transparent 65%); }
+    body.theme-forest .menu-btn.local { color:#4ade80; border-color:rgba(74,222,128,.3); }
+    body.theme-forest .menu-btn.bot   { color:#f59e0b; border-color:rgba(245,158,11,.3); }
+    body.theme-forest .menu-btn.online{ color:#86efac; border-color:rgba(134,239,172,.3); }
+
+    /* ICE — bleu glacial/mauve */
+    body.theme-ice {
+      --x:#7dd3fc; --o:#c084fc; --active:#bae6fd;
+      --bg:#010510; --surface:#040d1e; --border-out:#1e3a5f; --border-in:#0e1f38;
+    }
+    body.theme-ice::after { background: radial-gradient(ellipse,rgba(20,60,160,.15) 0%,transparent 65%); }
+    body.theme-ice .menu-btn.local { color:#7dd3fc; border-color:rgba(125,211,252,.3); }
+    body.theme-ice .menu-btn.bot   { color:#c084fc; border-color:rgba(192,132,252,.3); }
+    body.theme-ice .menu-btn.online{ color:#bae6fd; border-color:rgba(186,230,253,.3); }
+
+    /* FIRE — rouge/doré, fond braises */
+    body.theme-fire {
+      --x:#fb923c; --o:#ef4444; --active:#fbbf24;
+      --bg:#080100; --surface:#180600; --border-out:#4a1000; --border-in:#280800;
+    }
+    body.theme-fire::after { background: radial-gradient(ellipse,rgba(180,40,0,.18) 0%,transparent 65%); }
+    body.theme-fire .menu-btn.local { color:#fb923c; border-color:rgba(251,146,60,.3); }
+    body.theme-fire .menu-btn.bot   { color:#ef4444; border-color:rgba(239,68,68,.3); }
+    body.theme-fire .menu-btn.online{ color:#fbbf24; border-color:rgba(251,191,36,.3); }
+
+    /* SUNSET — rose/violet doux */
+    body.theme-sunset {
+      --x:#f472b6; --o:#818cf8; --active:#fda4af;
+      --bg:#080008; --surface:#130813; --border-out:#3d1050; --border-in:#200828;
+    }
+    body.theme-sunset::after { background: radial-gradient(ellipse,rgba(120,20,120,.15) 0%,transparent 65%); }
+    body.theme-sunset .menu-btn.local { color:#f472b6; border-color:rgba(244,114,182,.3); }
+    body.theme-sunset .menu-btn.bot   { color:#818cf8; border-color:rgba(129,140,248,.3); }
+    body.theme-sunset .menu-btn.online{ color:#fda4af; border-color:rgba(253,164,175,.3); }
+
+    /* ── Design panel (slide depuis droite, pas un overlay plein écran) ── */
+    .design-panel {
+      position:fixed; top:0; right:0; bottom:0; width:min(280px,80vw);
+      background:var(--surface); border-left:1px solid var(--border-out);
+      box-shadow:-8px 0 40px rgba(0,0,0,.6);
+      display:flex; flex-direction:column; gap:0;
+      z-index:450; transform:translateX(100%);
+      transition:transform .3s cubic-bezier(.34,1.2,.64,1);
+      overflow-y:auto;
+    }
+    .design-panel.open { transform:translateX(0); }
+    .design-panel-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 18px; border-bottom:1px solid var(--border-out);
+      font-family:'Orbitron',sans-serif; font-weight:900; font-size:.8rem; letter-spacing:.2em; color:#fff;
+    }
+    .design-panel-close { background:none; border:none; color:rgba(180,180,255,.5); font-size:1.1rem; cursor:pointer; padding:4px 8px; transition:color .2s; }
+    .design-panel-close:hover { color:#fff; }
+    .design-section { padding:16px 18px; display:flex; flex-direction:column; gap:10px; border-bottom:1px solid var(--border-out); }
+    .design-section-title { font-size:.6rem; letter-spacing:.2em; opacity:.4; text-transform:uppercase; }
+    .theme-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .theme-card {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      padding:12px 8px; border-radius:10px; border:1px solid rgba(180,180,255,.15);
+      background:rgba(255,255,255,.03); cursor:pointer; transition:all .2s;
+    }
+    .theme-card:hover { border-color:rgba(180,180,255,.4); background:rgba(255,255,255,.06); }
+    .theme-card.active { border-color:var(--active); background:rgba(255,193,7,.08); box-shadow:0 0 12px rgba(255,193,7,.2); }
+    .theme-card-preview { width:48px; height:32px; border-radius:6px; display:grid; grid-template-columns:1fr 1fr; gap:2px; overflow:hidden; }
+    .theme-card-preview div { border-radius:2px; }
+    .theme-card-name { font-family:'Orbitron',sans-serif; font-size:.6rem; letter-spacing:.1em; opacity:.7; }
+    .theme-card.active .theme-card-name { opacity:1; color:var(--active); }
+
+    /* ── First-run rules popup ── */
+    .first-run { background:rgba(0,0,8,.97); gap:20px; z-index:600; }
+    .first-run-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.1rem; letter-spacing:.2em; color:#fff; text-align:center; }
+    .first-run-sub { font-size:.75rem; letter-spacing:.12em; opacity:.45; text-align:center; }
+    .first-run-btns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+    .first-run-yes { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.75rem; letter-spacing:.15em; padding:12px 24px; background:rgba(0,229,255,.1); color:var(--x); border:1px solid rgba(0,229,255,.4); border-radius:8px; cursor:pointer; text-transform:uppercase; }
+    .first-run-skip { font-family:'Share Tech Mono',monospace; font-size:.72rem; opacity:.35; cursor:pointer; background:none; border:none; color:inherit; padding:8px; }
+
     @media (min-width:600px) {
       :root { --og:10px; --ig:3px; }
       .wrap { gap:20px; padding:28px; }
@@ -337,6 +434,16 @@
 <body>
 <div class="particles" id="pts"></div>
 
+<!-- First-run rules popup -->
+<div class="overlay first-run hidden" id="first-run">
+  <div class="first-run-title">🎮 BIENVENUE !</div>
+  <div class="first-run-sub">Première fois ? Consulte les règles avant de jouer.</div>
+  <div class="first-run-btns">
+    <button class="first-run-yes" onclick="showFirstRunRules()">📋 VOIR LES RÈGLES</button>
+    <button class="first-run-skip" onclick="dismissFirstRun()">Passer →</button>
+  </div>
+</div>
+
 <!-- Rules -->
 <div class="overlay rules-overlay hidden" id="rules-overlay">
   <div class="rules-box">
@@ -347,8 +454,8 @@
     <div class="rules-section s4"><h3>Coup gagnant</h3><p>En mode <b>auto-complétion</b> (⚙), si un coup gagne la sous-grille active, il est joué automatiquement. Sinon, les <b>cases gagnantes sont surlignées en jaune</b> — tu dois cliquer dessus.</p></div>
     <div class="rules-section s1"><h3>Victoire</h3><p>Aligner <b>3 sous-grilles gagnées</b> en ligne, colonne ou diagonale pour remporter la manche.</p></div>
     <div class="rules-section s2"><h3>Abandon</h3><p>Le bouton <b>⚑ ABANDON</b> attribue la manche à l'adversaire immédiatement.</p></div>
-    <div class="rules-section s3"><h3>Annuler un coup</h3><p>Le bouton <b>↩</b> annule ton dernier coup. Disponible <b>une seule fois</b> en local et en ligne. <b>Illimité</b> contre le bot.</p></div>
-    <div class="rules-section s4"><h3>Bot</h3><p><b>Facile</b> : coups aléatoires. <b>Moyen</b> : tente de gagner/bloquer. <b>Difficile</b> : minimax avec élagage alpha-bêta (jusqu'à 5s de réflexion).</p></div>
+    <div class="rules-section s3"><h3>Annuler un coup</h3><p>Le bouton <b>↩</b> est disponible <b>uniquement contre le bot</b>, en nombre illimité.</p></div>
+    <div class="rules-section s4"><h3>Indices 💡</h3><p>Tu disposes de <b>3 indices par manche</b>. Chaque indice surligne le meilleur coup possible. Illimités contre le bot.</p></div>
     <button class="rules-close" onclick="toggleRules()">✕ FERMER</button>
   </div>
 </div>
@@ -361,6 +468,10 @@
     <button class="menu-btn local" onclick="showSetup('local')">◈ LOCAL — 2 joueurs<span class="menu-btn-sub">Même appareil, à tour de rôle</span></button>
     <button class="menu-btn bot" onclick="showSetup('bot')">◆ CONTRE LE BOT<span class="menu-btn-sub">Facile, Moyen ou Difficile</span></button>
     <button class="menu-btn online" onclick="showSetup('online')">◉ EN LIGNE — Réseau<span class="menu-btn-sub">Via WiFi ou internet</span></button>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="menu-btn" style="flex:1;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);font-size:.72rem;padding:12px 10px;" onclick="toggleRules()">📋 RÈGLES</button>
+      <button class="menu-btn" style="flex:1;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);font-size:.72rem;padding:12px 10px;" onclick="openDesign()">🎨 DESIGN</button>
+    </div>
   </div>
 </div>
 
@@ -370,6 +481,10 @@
   <div class="setup-form">
     <div><label class="setup-label">PSEUDO JOUEUR X</label><input class="setup-input" id="name-x" placeholder="Joueur X" maxlength="16"></div>
     <div><label class="setup-label">PSEUDO JOUEUR O</label><input class="setup-input" id="name-o" placeholder="Joueur O" maxlength="16"></div>
+    <div class="settings-row" style="background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:var(--active)">⚡ Auto-complétion</span>
+      <label class="toggle"><input type="checkbox" id="auto-local" onchange="autoMode=this.checked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
     <button class="setup-go" onclick="startLocal()">▶ JOUER</button>
     <button class="setup-back" onclick="backToMenu()">← RETOUR</button>
   </div>
@@ -388,6 +503,11 @@
         <button class="diff-btn hard" id="diff-hard" onclick="setDiff('hard')">Difficile</button>
       </div>
     </div>
+    <div class="settings-row" style="background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:var(--active)">⚡ Auto-complétion</span>
+      <label class="toggle"><input type="checkbox" id="auto-bot" onchange="autoMode=this.checked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
+    <div><label class="setup-label">RÈGLES DU BOT</label><div style="font-size:.7rem;opacity:.45;line-height:1.5">Facile : coups aléatoires<br>Moyen : voit 3 coups<br>Difficile : minimax profondeur 8</div></div>
     <button class="setup-go" onclick="startBot()">▶ JOUER</button>
     <button class="setup-back" onclick="backToMenu()">← RETOUR</button>
   </div>
@@ -398,10 +518,69 @@
   <div class="setup-title">◉ EN LIGNE</div>
   <div class="setup-form">
     <div><label class="setup-label">VOTRE PSEUDO</label><input class="setup-input" id="name-online" placeholder="Joueur" maxlength="16"></div>
+    <div class="settings-row" style="background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:var(--active)">⚡ Auto-complétion</span>
+      <label class="toggle"><input type="checkbox" id="auto-online" onchange="autoMode=this.checked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
     <button class="setup-go" onclick="startOnline()">▶ REJOINDRE</button>
     <button class="setup-back" onclick="backToMenu()">← RETOUR</button>
   </div>
 </div>
+<!-- Design panel (slide depuis droite) -->
+<div class="design-panel" id="design-panel">
+  <div class="design-panel-header">
+    🎨 DESIGN
+    <button class="design-panel-close" onclick="closeDesign()">✕</button>
+  </div>
+  <div class="design-section">
+    <div class="design-section-title">Thème</div>
+    <div class="theme-grid">
+      <div class="theme-card active" id="tc-neon" onclick="setTheme('neon')">
+        <div class="theme-card-preview">
+          <div style="background:#05050f"></div><div style="background:#00e5ff"></div>
+          <div style="background:#ff1f7a"></div><div style="background:#ffc107"></div>
+        </div>
+        <div class="theme-card-name">🌌 NEON</div>
+      </div>
+      <div class="theme-card" id="tc-cyber" onclick="setTheme('cyber')">
+        <div class="theme-card-preview">
+          <div style="background:#080400"></div><div style="background:#ff9500"></div>
+          <div style="background:#a855f7"></div><div style="background:#00ff88"></div>
+        </div>
+        <div class="theme-card-name">🟠 CYBER</div>
+      </div>
+      <div class="theme-card" id="tc-forest" onclick="setTheme('forest')">
+        <div class="theme-card-preview">
+          <div style="background:#010a02"></div><div style="background:#4ade80"></div>
+          <div style="background:#f59e0b"></div><div style="background:#86efac"></div>
+        </div>
+        <div class="theme-card-name">🌿 FOREST</div>
+      </div>
+      <div class="theme-card" id="tc-ice" onclick="setTheme('ice')">
+        <div class="theme-card-preview">
+          <div style="background:#010510"></div><div style="background:#7dd3fc"></div>
+          <div style="background:#c084fc"></div><div style="background:#bae6fd"></div>
+        </div>
+        <div class="theme-card-name">❄️ ICE</div>
+      </div>
+      <div class="theme-card" id="tc-fire" onclick="setTheme('fire')">
+        <div class="theme-card-preview">
+          <div style="background:#080100"></div><div style="background:#fb923c"></div>
+          <div style="background:#ef4444"></div><div style="background:#fbbf24"></div>
+        </div>
+        <div class="theme-card-name">🔥 FIRE</div>
+      </div>
+      <div class="theme-card" id="tc-sunset" onclick="setTheme('sunset')">
+        <div class="theme-card-preview">
+          <div style="background:#080008"></div><div style="background:#f472b6"></div>
+          <div style="background:#818cf8"></div><div style="background:#fda4af"></div>
+        </div>
+        <div class="theme-card-name">🌅 SUNSET</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay abandon-confirm hidden" id="abandon-confirm">
   <div class="abandon-title">⚠ ABANDONNER ?</div>
   <div class="abandon-sub">Le point sera attribué à l'adversaire.</div>
@@ -459,8 +638,8 @@
   <div class="go-winner" id="go-winner"></div>
   <div class="go-title" id="go-title"></div>
   <div class="go-msg" id="go-msg"></div>
-  <div class="go-btns">
-    <button class="btn" onclick="resetGame()">▶ REJOUER</button>
+  <div class="go-btns" id="go-btns">
+    <button class="btn" id="go-replay-btn" onclick="resetGame()">▶ REJOUER</button>
     <button class="btn" id="analyse-btn" onclick="startAnalysis()" style="color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.1);">🔍 ANALYSER</button>
     <button class="btn" onclick="backToMenu()">⌂ MENU</button>
   </div>
@@ -475,18 +654,26 @@
 
 <!-- Game UI -->
 <div class="wrap">
-  <div class="title">ULTIMATE <span>TTT</span></div>
+  <div class="title">
+    <svg width="28" height="28" viewBox="0 0 28 28" style="vertical-align:middle;margin-right:6px;filter:drop-shadow(0 0 6px var(--x))" fill="none">
+      <rect x="1" y="1" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <rect x="10" y="1" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <rect x="19" y="1" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <rect x="1" y="10" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <rect x="10" y="10" width="8" height="8" rx="1.5" stroke="var(--active)" stroke-width="2"/>
+      <rect x="19" y="10" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <rect x="1" y="19" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <rect x="10" y="19" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <rect x="19" y="19" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
+      <line x1="4" y1="4" x2="6" y2="6" stroke="var(--o)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="6" y1="4" x2="4" y2="6" stroke="var(--o)" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="14" cy="23" r="2" stroke="var(--x)" stroke-width="1.5"/>
+    </svg>ULTIMATE <span>TTT</span>
+  </div>
 
-  <!-- Settings panel -->
+  <!-- Settings panel (thèmes uniquement) -->
   <div class="settings-panel hidden" id="settings-panel">
     <div class="settings-title">⚙ Paramètres</div>
-    <div class="settings-row">
-      <span class="settings-lbl">Auto-complétion des coups gagnants</span>
-      <label class="toggle">
-        <input type="checkbox" id="auto-toggle" onchange="toggleAuto()">
-        <div class="toggle-track"><div class="toggle-thumb"></div></div>
-      </label>
-    </div>
   </div>
 
   <div class="role-badge hidden" id="role-badge"></div>
@@ -530,13 +717,63 @@
   </div>
   <div class="board" id="board"></div>
   <div class="action-row">
-    <button class="btn reset" onclick="resetGame()">↺ REJOUER</button>
+    <button class="btn reset hidden" id="reset-btn" onclick="resetGame()">↺ REJOUER</button>
     <button class="btn abandon hidden" id="abandon-btn" onclick="showAbandon()">⚑ ABANDON</button>
     <button class="btn undo hidden" id="undo-btn" onclick="undoMove()">↩</button>
   </div>
 </div>
 
 <script>
+// ════════════════════════════════════════════════════════
+// NEURAL NETWORK (optionnel — chargé depuis model/model.json)
+// ════════════════════════════════════════════════════════
+let nnModel = null;
+let nnReady = false;
+
+async function loadNNModel() {
+  try {
+    // Cherche le modèle dans le même dossier que index.html
+    const base = window.location.href.replace(/\/[^/]*$/, '');
+    const url  = base + '/model/model.json';
+    nnModel  = await tf.loadLayersModel(url);
+    nnReady  = true;
+    console.log('✅ Modèle IA chargé — analyse et indices améliorés');
+  } catch(e) {
+    nnReady = false;
+    console.info('ℹ️ Modèle IA absent — minimax standard utilisé');
+  }
+}
+
+// Encodage état → 281 features (identique à generate_data.py)
+function encodeStateNN(state) {
+  const f = [];
+  for (let b=0;b<9;b++) for (let c=0;c<9;c++) {
+    const v=state.boards[b][c];
+    f.push(v==='X'?1:0, v==='O'?1:0, !v?1:0);
+  }
+  for (let b=0;b<9;b++) {
+    const v=state.bw[b];
+    f.push(v==='X'?1:0, v==='O'?1:0, !v?1:0);
+  }
+  const act=state.active;
+  for (let i=0;i<9;i++) f.push(act===i?1:0);
+  f.push(act===null?1:0);
+  f.push(state.player==='O'?1:0);
+  return f; // 281 valeurs
+}
+
+// Évaluation par le réseau (synchrone via dataSync)
+function evalStateNN(state) {
+  if (!nnReady||!nnModel) return evalState(state);
+  const input = tf.tensor2d([encodeStateNN(state)]);
+  const pred  = nnModel.predict(input);
+  const score = pred.dataSync()[0]; // [-1, 1]
+  input.dispose(); pred.dispose();
+  return score * 1000; // ramène à l'échelle minimax
+}
+
+// Charge le modèle au démarrage (non bloquant)
+loadNNModel();
 // ════════════════════════════════════════════════════════
 // CONSTANTS & STATE
 // ════════════════════════════════════════════════════════
@@ -657,14 +894,16 @@ function showSetup(m) {
   show(`setup-${m}`);
 }
 function showGameIcons() {
-  show('home-btn'); show('rules-btn'); show('settings-btn'); show('abandon-btn');
-  show('undo-btn'); show('hint-btn');
+  show('home-btn'); show('rules-btn'); show('abandon-btn');
+  show('hint-btn');
+  if (mode === 'bot') { show('undo-btn'); show('reset-btn'); }
   updateHintBtn();
 }
 function backToMenu() {
   ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm','settings-panel'].forEach(hide);
+  closeDesign();
   show('menu');
-  ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn'].forEach(hide);
+  ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn','reset-btn'].forEach(hide);
   hide('role-badge');
   if (ws) { ws.onclose=null; ws.close(); ws=null; }
   scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false; hintCell=null; hints=3; gameLog=[]; analysisCache={}; analysisReady=false;
@@ -688,13 +927,16 @@ function startLocal() {
   names = {X:nx, O:no};
   scores = {X:0,O:0};
   mode='local';
+  autoMode = document.getElementById('auto-local').checked;
   hide('setup-local'); showGameIcons();
-  G = newState();
+  G = newState(); G._firstPlayer = 'X';
+  hints = 3; updateHintBtn();
   runAutoAndRender();
 }
 
 function localClick(b,c) {
   if (!G||G.winner||botThinking) return;
+  if (mode==='bot' && G.player !== humanSide) return;
   if (G.active!==null&&G.active!==b) return;
   if (G.bw[b]||G.boards[b][c]) return;
   history.push(JSON.stringify(G));
@@ -714,13 +956,15 @@ function startBot() {
   names = {X:nh, O:`Bot (${difficulty})`};
   scores = {X:0,O:0};
   mode='bot';
+  autoMode = document.getElementById('auto-bot').checked;
   hide('setup-bot'); showGameIcons();
-  G = newState();
+  G = newState(); G._firstPlayer = 'X';
+  hints = 3; updateHintBtn();
   runAutoAndRender();
 }
 
 function botMove() {
-  if (!G||G.winner||G.player!=='O') return;
+  if (!G||G.winner||G.player===humanSide) return;
   botThinking=true;
   const delay = difficulty==='hard'?300:150;
   setTimeout(()=>{
@@ -804,7 +1048,7 @@ function minimax(state, depth, isMax, alpha, beta, start, maxTime) {
   if (state.winner==='O') return 1000;
   if (state.winner==='X') return -1000;
   if (state.winner==='draw') return 0;
-  if (depth===0) return evalState(state);
+  if (depth===0) return nnReady ? evalStateNN(state) : evalState(state);
 
   // Transposition table lookup
   const key = stateKey(state);
@@ -1015,10 +1259,6 @@ function toggleSettings() {
   panel.classList.toggle('hidden');
   btn.classList.toggle('active', !panel.classList.contains('hidden'));
 }
-function toggleAuto() {
-  autoMode = document.getElementById('auto-toggle').checked;
-  if (G && !G.winner) render();
-}
 
 // ════════════════════════════════════════════════════════
 // HINTS
@@ -1163,7 +1403,7 @@ function runAutoAndRender() {
     }
   }
   render();
-  if (mode==='bot'&&!G.winner&&G.player==='O') setTimeout(botMove,400);
+  if (mode==='bot'&&!G.winner&&G.player!==humanSide) setTimeout(botMove,400);
 }
 
 // ════════════════════════════════════════════════════════
@@ -1205,18 +1445,24 @@ function startOnline() {
   const n = document.getElementById('name-online').value.trim() || 'Joueur';
   myName = n;
   mode='online'; names={X:'?', O:'?'};
+  autoMode = document.getElementById('auto-online').checked;
   hide('setup-online'); showGameIcons();
+  hints = 3; updateHintBtn();
   connect();
 }
 
 function connect() {
   const proto=location.protocol==='https:'?'wss':'ws';
   ws=new WebSocket(`${proto}://${location.host}`);
-  ws.onopen=()=>{ ws.send(JSON.stringify({type:'name', name:myName})); };
+  ws.onopen=()=>{
+    ws.send(JSON.stringify({type:'name', name:myName}));
+    ws.send(JSON.stringify({type:'automode', autoMode}));
+  };
   ws.onmessage=({data})=>{
     const msg=JSON.parse(data);
     if (msg.type==='role') { myRole=msg.player; updateRoleBadge(); }
     if (msg.type==='names') { names=msg.names; updateHUD(); }
+    if (msg.type==='automode') { autoMode=msg.autoMode; }
     if (msg.type==='state') {
       const prev = G;
       G=msg.state; scores=G.scores;
@@ -1256,7 +1502,11 @@ function onlineClick(b,c) {
 function render() {
   if (!G) return;
   const boardEl=document.getElementById('board'); boardEl.innerHTML='';
-  const canPlay = mode==='online'?(myRole===G.player&&!G.winner):!G.winner;
+  const canPlay = mode==='online'
+    ? (myRole===G.player&&!G.winner)
+    : mode==='bot'
+      ? (G.player===humanSide&&!G.winner&&!botThinking)
+      : !G.winner;
   const autoCell = G._lastAuto;
 
   // In manual mode, find winning cells to highlight
@@ -1331,20 +1581,6 @@ function updateHUD() {
 function showGameOver(abandon=false) {
   hintCell = null;
   const w=G.winner;
-
-  // Update hints based on result
-  if (!abandon && w !== 'draw') {
-    const mySymbol = mode === 'bot' ? 'X' : (mode === 'online' ? myRole : null);
-    if (mode === 'bot') {
-      // Bot: +1 si victoire, -1 si défaite
-      if (w === mySymbol) hints = Math.min(hints+1, 9);
-      else hints = Math.max(hints-1, 0);
-    } else {
-      // Local/online: +1 pour le gagnant, jamais de perte
-      hints = Math.min(hints+1, 9);
-    }
-    updateHintBtn();
-  }
   const winner_el=document.getElementById('go-winner');
   const title_el=document.getElementById('go-title');
   const msg_el=document.getElementById('go-msg');
@@ -1359,16 +1595,49 @@ function showGameOver(abandon=false) {
     if (mode!=='online'||myRole===w) spawnParticles(w);
   }
   show('gameover');
+  const replayBtn = document.getElementById('go-replay-btn');
+  if (mode === 'bot') replayBtn.style.display = '';
+  else replayBtn.style.display = 'none';
 }
 
 function resetGame() {
   hide('gameover');
   if (mode==='online') { ws.send(JSON.stringify({type:'reset'})); return; }
-  G=newState(); botThinking=false; history=[]; undoUsed=false; hintCell=null; gameLog=[]; analysisCache={}; analysisReady=false;
+  const nextStarter = G && G._firstPlayer === 'X' ? 'O' : 'X';
+  if (mode === 'bot') humanSide = nextStarter; // le joueur humain commence la manche suivante
+  G=newState(); G._firstPlayer = nextStarter; G.player = nextStarter;
+  botThinking=false; history=[]; undoUsed=false; hintCell=null;
+  hints=3; updateHintBtn();
+  gameLog=[]; analysisCache={}; analysisReady=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   runAutoAndRender();
 }
+
+// ════════════════════════════════════════════════════════
+// THEME / DESIGN
+// ════════════════════════════════════════════════════════
+const THEMES = ['neon','cyber','forest','ice','fire','sunset'];
+function setTheme(t) {
+  THEMES.forEach(th => {
+    document.body.classList.remove(`theme-${th}`);
+    document.getElementById(`tc-${th}`)?.classList.remove('active');
+  });
+  if (t !== 'neon') document.body.classList.add(`theme-${t}`);
+  document.getElementById(`tc-${t}`)?.classList.add('active');
+  localStorage.setItem('ttt-theme', t);
+}
+function openDesign() { document.getElementById('design-panel').classList.add('open'); }
+function closeDesign() { document.getElementById('design-panel').classList.remove('open'); }
+// Restore saved theme
+(function(){ const t=localStorage.getItem('ttt-theme'); if(t) setTheme(t); })();
+
+// ════════════════════════════════════════════════════════
+// FIRST RUN
+// ════════════════════════════════════════════════════════
+function showFirstRunRules() { hide('first-run'); localStorage.setItem('ttt-seen','1'); toggleRules(); }
+function dismissFirstRun() { hide('first-run'); localStorage.setItem('ttt-seen','1'); }
+if (!localStorage.getItem('ttt-seen')) { show('first-run'); }
 
 // ════════════════════════════════════════════════════════
 // RULES
