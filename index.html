@@ -648,9 +648,29 @@
   <div class="wait-sub">Partagez l'adresse réseau à votre ami<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div></div>
 </div>
 
+<!-- Cheat code overlay -->
+<div class="overlay hidden" id="cheat-overlay" style="z-index:700;background:rgba(0,0,0,.97)">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:18px;width:min(300px,85vw)">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="font-size:1.8rem">🔐</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:900;letter-spacing:.18em;color:var(--active);text-shadow:0 0 16px var(--active),0 0 40px rgba(255,193,7,.3)">CHEAT CODE</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--x);opacity:.8">✦ CRÉATEUR ✦</div>
+    </div>
+    <div style="width:100%;height:1px;background:linear-gradient(to right,transparent,var(--active),transparent)"></div>
+    <div id="cheat-attempts" style="font-size:.62rem;letter-spacing:.15em;opacity:.5;font-family:'Orbitron',sans-serif"></div>
+    <input id="cheat-input" type="password" maxlength="20"
+      style="width:100%;background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.4);border-radius:10px;padding:14px 16px;color:#fff;font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:700;outline:none;text-align:center;letter-spacing:.3em"
+      placeholder="• • • • • •" onkeydown="if(event.key==='Enter')cheatSubmit()">
+    <div style="display:flex;gap:10px;width:100%;flex-direction:row-reverse">
+      <button onclick="cheatSubmit()" style="flex:1;font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.15em;padding:13px;background:rgba(255,193,7,.15);color:var(--active);border:1.5px solid rgba(255,193,7,.5);border-radius:8px;cursor:pointer;box-shadow:0 0 12px rgba(255,193,7,.2)">✓ VALIDER</button>
+      <button onclick="cheatClose()" style="flex:1;font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.15em;padding:13px;background:transparent;color:rgba(180,180,255,.4);border:1px solid rgba(180,180,255,.15);border-radius:8px;cursor:pointer">✕ ANNULER</button>
+    </div>
+  </div>
+</div>
+
 <!-- Game UI -->
 <div class="wrap">
-  <div class="title">
+  <div class="title" id="main-title" onclick="cheatClick()" style="cursor:default;user-select:none">
     <svg width="28" height="28" viewBox="0 0 28 28" style="vertical-align:middle;margin-right:6px;filter:drop-shadow(0 0 6px var(--x))" fill="none">
       <rect x="1" y="1" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
       <rect x="10" y="1" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
@@ -1611,7 +1631,57 @@ function resetGame() {
 }
 
 // ════════════════════════════════════════════════════════
-// THEME / DESIGN
+// CHEAT CODE
+// ════════════════════════════════════════════════════════
+let cheatClicks = 0, cheatTimer = null, cheatTries = 0;
+
+function cheatClick() {
+  cheatClicks++;
+  clearTimeout(cheatTimer);
+  cheatTimer = setTimeout(() => { cheatClicks = 0; }, 800);
+  if (cheatClicks >= 3) {
+    cheatClicks = 0;
+    cheatTries = 0;
+    cheatOpen();
+  }
+}
+
+function cheatOpen() {
+  document.getElementById('cheat-input').value = '';
+  document.getElementById('cheat-attempts').textContent = `Tentative 1 / 3`;
+  show('cheat-overlay');
+  setTimeout(() => document.getElementById('cheat-input').focus(), 100);
+}
+
+function cheatClose() {
+  hide('cheat-overlay');
+}
+
+function cheatSubmit() {
+  const val = document.getElementById('cheat-input').value;
+  cheatTries++;
+
+  if (val === 'Antoine') {
+    hints = Math.min(hints + 3, 99);
+    updateHintBtn();
+    hide('cheat-overlay');
+    // Flash le bouton indice
+    const btn = document.getElementById('hint-btn');
+    btn.style.transform = 'scale(1.3)';
+    btn.style.boxShadow = '0 0 30px var(--active)';
+    setTimeout(() => { btn.style.transform=''; btn.style.boxShadow=''; }, 600);
+  } else if (cheatTries >= 3) {
+    hide('cheat-overlay');
+    cheatTries = 0;
+    // Ferme la page après 3 échecs
+    setTimeout(() => window.close(), 300);
+  } else {
+    document.getElementById('cheat-input').value = '';
+    document.getElementById('cheat-attempts').textContent = `Tentative ${cheatTries + 1} / 3`;
+    document.getElementById('cheat-input').style.borderColor = '#ef4444';
+    setTimeout(() => document.getElementById('cheat-input').style.borderColor = 'var(--active)', 500);
+  }
+}
 // ════════════════════════════════════════════════════════
 const THEMES = ['cyberpunk','mario','jungle','princess'];
 function setTheme(t) {
