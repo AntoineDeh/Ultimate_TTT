@@ -356,19 +356,21 @@
     body.theme-mario .gameover{background:rgba(92,148,252,.97)}
 
     /* 🌴 JUNGLE */
-    body.theme-jungle { --x:#f97316; --o:#4ade80; --active:#fbbf24; --bg:#0a1a05; --surface:#0f2208; --border-out:#1a4010; --border-in:#0d2208; color:#d4f0c0; }
-    body.theme-jungle::before { background:radial-gradient(ellipse,rgba(20,80,10,.6) 0%,transparent 70%); pointer-events:none; z-index:0; animation:jungleBreeze 8s ease-in-out infinite alternate; }
+    body.theme-jungle { --x:#22c55e; --o:#eab308; --active:#86efac; --bg:#021a04; --surface:#042808; --border-out:#14520a; --border-in:#092b05; color:#bbf7d0; }
+    body.theme-jungle::before { background:radial-gradient(ellipse,rgba(20,82,10,.8) 0%,transparent 70%); pointer-events:none; z-index:0; animation:jungleBreeze 8s ease-in-out infinite alternate; }
     @keyframes jungleBreeze { from{opacity:.7} to{opacity:1} }
-    body.theme-jungle::after { background:radial-gradient(ellipse,rgba(74,222,128,.08) 0%,transparent 65%); }
-    body.theme-jungle .board{background:#1a4010;border:2px solid #2d6b1a;box-shadow:0 0 40px rgba(74,222,128,.15)}
-    body.theme-jungle .sb{background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2)}
-    body.theme-jungle .sb.active{background:rgba(251,191,36,.12);box-shadow:0 0 0 2px #fbbf24,0 0 20px rgba(251,191,36,.3)}
-    body.theme-jungle .scoreboard{background:rgba(0,0,0,.5);border-color:#1a4010}
-    body.theme-jungle .title{color:#4ade80;text-shadow:0 0 20px rgba(74,222,128,.5)}
-    body.theme-jungle .menu-btn.local{color:#f97316;border-color:rgba(249,115,22,.4);background:rgba(249,115,22,.1)} body.theme-jungle .menu-btn.bot{color:#4ade80;border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.1)} body.theme-jungle .menu-btn.online{color:#fbbf24;border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.1)}
+    body.theme-jungle::after { background:radial-gradient(ellipse,rgba(34,197,94,.1) 0%,transparent 65%); }
+    body.theme-jungle .board{background:#0f3d08;border:2px solid #166534;box-shadow:0 0 40px rgba(34,197,94,.2)}
+    body.theme-jungle .sb{background:rgba(0,0,0,.4);border:1px solid rgba(34,197,94,.25)}
+    body.theme-jungle .sb.active{background:rgba(234,179,8,.15);box-shadow:0 0 0 2px #eab308,0 0 20px rgba(234,179,8,.4)}
+    body.theme-jungle .scoreboard{background:rgba(0,0,0,.6);border-color:#166534}
+    body.theme-jungle .title{color:#4ade80;text-shadow:0 0 20px rgba(74,222,128,.6),0 2px 0 #000}
+    body.theme-jungle .menu { background:#021a04; }
+    body.theme-jungle .setup { background:#021a04; }
+    body.theme-jungle .menu-btn.local{color:#22c55e;border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.12)} body.theme-jungle .menu-btn.bot{color:#eab308;border-color:rgba(234,179,8,.5);background:rgba(234,179,8,.12)} body.theme-jungle .menu-btn.online{color:#86efac;border-color:rgba(134,239,172,.5);background:rgba(134,239,172,.1)}
     body.theme-jungle .mark.x{font-size:0} body.theme-jungle .mark.x::before{content:'🦁';font-size:clamp(16px,5vmin,34px)}
     body.theme-jungle .mark.o{font-size:0} body.theme-jungle .mark.o::before{content:'🐸';font-size:clamp(16px,5vmin,34px)}
-    body.theme-jungle .turn-banner.x{border-color:rgba(249,115,22,.5);background:rgba(249,115,22,.1)} body.theme-jungle .turn-banner.o{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1)}
+    body.theme-jungle .turn-banner.x{border-color:rgba(34,197,94,.6);background:rgba(34,197,94,.12)} body.theme-jungle .turn-banner.o{border-color:rgba(234,179,8,.6);background:rgba(234,179,8,.12)}
 
     /* 👸 PRINCESSE */
     body.theme-princess { --x:#f472b6; --o:#818cf8; --active:#fde68a; --bg:#1a0a2e; --surface:#2d1155; --border-out:#5b21b6; --border-in:#3b0764; color:#fce7f3; }
@@ -385,7 +387,8 @@
     body.theme-princess .mark.x{font-size:0} body.theme-princess .mark.x::before{content:'🌸';font-size:clamp(16px,5vmin,34px)}
     body.theme-princess .mark.o{font-size:0} body.theme-princess .mark.o::before{content:'💎';font-size:clamp(16px,5vmin,34px)}
     body.theme-princess .turn-banner.x{border-color:rgba(244,114,182,.5);background:rgba(244,114,182,.1);border-radius:20px} body.theme-princess .turn-banner.o{border-color:rgba(129,140,248,.5);background:rgba(129,140,248,.1);border-radius:20px}
-    body.theme-princess .gameover{background:rgba(26,10,46,.97)}
+    body.theme-princess .menu { background:#1a0a2e; }
+    body.theme-princess .setup { background:#1a0a2e; }
 
     /* ── First-run rules popup ── */
     .first-run { background:rgba(0,0,8,.97); gap:20px; z-index:600; }
