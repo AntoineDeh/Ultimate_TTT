@@ -330,8 +330,17 @@
     body.theme-mario::before { background:radial-gradient(ellipse 60px 30px at 15% 20%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 40px 20px at 18% 14%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 50px 25px at 23% 17%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 60px 30px at 65% 10%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 40px 20px at 68% 5%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 50px 25px at 73% 8%,rgba(255,255,255,.9) 50%,transparent 51%),linear-gradient(to bottom,#5c94fc 0%,#5c94fc 84%,#00b050 84%,#00b050 90%,#8B4513 90%,#8B4513 100%); pointer-events:none; z-index:0; opacity:.35; }
     body.theme-mario::after { background:none; pointer-events:none; }
     body.theme-mario .board{background:#8B4513;border:3px solid #5a2d0c;box-shadow:0 8px 0 #5a2d0c,0 0 0 4px #f7c948}
-    body.theme-mario .sb{background:rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.3);border-radius:4px}
-    body.theme-mario .sb.active{background:rgba(0,176,80,.3);box-shadow:0 0 0 3px #00b050,0 0 20px rgba(0,176,80,.5)}
+    body.theme-mario .sb{background:#3a6bc4;border:2px solid rgba(255,255,255,.5);border-radius:4px}
+    body.theme-mario .sb.active{background:#4a7de0;box-shadow:0 0 0 3px #00b050,0 0 20px rgba(0,176,80,.5)}
+    body.theme-mario .cell{background:#5c94fc}
+    body.theme-mario .cell:hover:not(.taken):not(.locked){background:#6ea8ff}
+    body.theme-mario .scoreboard{background:rgba(0,0,40,.8);border:3px solid #f7c948;border-radius:4px}
+    body.theme-mario .btn{background:rgba(0,0,40,.7);color:#fff;border-width:2px}
+    body.theme-mario .btn.abandon{background:#cc0000;border-color:#ff3333;color:#fff;box-shadow:0 4px 0 #880000}
+    body.theme-mario .icon-btn.home{background:#1a1a80;border-color:#f7c948;border-width:2px;color:#f7c948;box-shadow:0 3px 0 #00008b}
+    body.theme-mario .icon-btn.info{background:#1a1a80;border-color:#00e5ff;border-width:2px;color:#fff;box-shadow:0 3px 0 #00008b}
+    body.theme-mario .hint-btn{background:#cc8800;border-color:#f7c948;border-width:2px;box-shadow:0 3px 0 #885500}
+    body.theme-mario .turn-banner.x{border-color:#e8003d;background:rgba(0,0,40,.7)} body.theme-mario .turn-banner.o{border-color:#f7c948;background:rgba(0,0,40,.7)}
     body.theme-mario .menu { background:#1e50c8; color:#fff; }
     body.theme-mario .menu .menu-title { color:#fff; text-shadow:3px 3px 0 #e8003d; }
     body.theme-mario .menu .menu-title span { color:#f7c948; text-shadow:2px 2px 0 #e8003d; }
