@@ -1263,7 +1263,7 @@ function renderAnalysisBoard(state, playedMove, bestMove) {
     if (bw) {
       const ov = document.createElement('div');
       ov.className = `ov ${bw==='draw'?'d':bw.toLowerCase()}`;
-      ov.textContent = bw === 'draw' ? 'NUL' : bw;
+      ov.textContent = bw === 'draw' ? 'NUL' : getThemeMark(bw);
       sb.appendChild(ov);
     }
     boardEl.appendChild(sb);
@@ -1557,7 +1557,7 @@ function render() {
       } else { cell.classList.add('locked'); }
       sb.appendChild(cell);
     }
-    if (bw) { const ov=document.createElement('div'); ov.className=`ov ${bw==='draw'?'d':bw.toLowerCase()}`; ov.textContent=bw==='draw'?'NUL':bw; sb.appendChild(ov); }
+    if (bw) { const ov=document.createElement('div'); ov.className=`ov ${bw==='draw'?'d':bw.toLowerCase()}`; ov.textContent=bw==='draw'?'NUL':getThemeMark(bw); sb.appendChild(ov); }
     boardEl.appendChild(sb);
   }
   if (G._lastAuto) delete G._lastAuto;
@@ -1604,9 +1604,9 @@ function showGameOver(abandon=false) {
   if (w==='draw') {
     winner_el.textContent=''; title_el.textContent='MATCH NUL'; title_el.className='go-title d'; msg_el.textContent='Égalité parfaite !';
   } else {
-    const wname=names[w];
+    const wname = names[w];
     winner_el.textContent=abandon?'ABANDON':'VICTOIRE';
-    title_el.textContent=wname; title_el.className=`go-title ${w.toLowerCase()}`;
+    title_el.textContent = getThemeMark(w) !== w ? `${getThemeMark(w)} ${wname}` : wname; title_el.className=`go-title ${w.toLowerCase()}`;
     msg_el.textContent=abandon?`${names[w==='X'?'O':'X']} a abandonné. Point pour ${wname} !`:`${wname} remporte la manche !`;
     if (mode!=='online'||myRole===w) spawnParticles(w);
   }
@@ -1631,7 +1631,18 @@ function resetGame() {
 }
 
 // ════════════════════════════════════════════════════════
-// CHEAT CODE
+// THEME MARKS
+// ════════════════════════════════════════════════════════
+const THEME_MARKS = {
+  mario:    { X: '🍄', O: '⭐' },
+  jungle:   { X: '🦁', O: '🐸' },
+  princess: { X: '🌸', O: '💎' },
+  cyberpunk:{ X: 'X',  O: 'O'  },
+};
+function getThemeMark(player) {
+  const t = localStorage.getItem('ttt-theme') || 'cyberpunk';
+  return (THEME_MARKS[t] || THEME_MARKS.cyberpunk)[player] || player;
+}
 // ════════════════════════════════════════════════════════
 let cheatClicks = 0, cheatTimer = null, cheatTries = 0;
 
