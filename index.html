@@ -6,6 +6,7 @@
   <title>Ultimate Tic-Tac-Toe</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="design.css">
   <style>
     :root {
       --x: #00e5ff; --o: #ff1f7a; --active: #ffc107;
@@ -22,7 +23,7 @@
     body::before {
       content:''; position:fixed; inset:0;
       background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);
-      pointer-events:none; z-index:100;
+      pointer-events:none; z-index:0;
     }
     body::after {
       content:''; position:fixed; top:-30%; left:50%; transform:translateX(-50%);
@@ -31,7 +32,7 @@
       pointer-events:none; z-index:0;
     }
 
-    .wrap { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px 8px 24px; height:100dvh; justify-content:space-between; overflow:hidden; }
+    .wrap { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px 8px 24px; height:100dvh; justify-content:space-between; overflow:hidden; }
 
     /* ── Settings panel ── */
     .settings-panel {
@@ -58,7 +59,7 @@
     @keyframes winhint { from{background:rgba(255,193,7,.12)} to{background:rgba(255,193,7,.28)} }
 
     /* ── Overlays base ── */
-    .overlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:400; animation:fadein .25s ease; }
+    .overlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:500; animation:fadein .25s ease; }
     .overlay.hidden { display:none; }
     @keyframes fadein { from{opacity:0} to{opacity:1} }
 
@@ -310,96 +311,96 @@
     .pt { position:absolute; border-radius:50%; animation:fly linear forwards; }
     @keyframes fly { from{transform:translateY(0) scale(1);opacity:1} to{transform:translateY(-110vh) scale(.3);opacity:0} }
 
-    /* ── Themes ── */
-    body { transition: background .5s, color .5s; }
+    /* ── First-run rules popup ── */
 
-    /* NEON (default) — déjà dans :root */
+    /* ══ THÈMES ════════════════════════════════════════════════ */
 
-    /* CYBER — orange/violet, fond cuir brûlé */
-    body.theme-cyber {
-      --x:#ff9500; --o:#a855f7; --active:#00ff88;
-      --bg:#080400; --surface:#140a00; --border-out:#3d2200; --border-in:#1f0e00;
-    }
-    body.theme-cyber::after { background: radial-gradient(ellipse,rgba(180,80,0,.12) 0%,transparent 65%); }
-    body.theme-cyber .menu-btn.local { color:#ff9500; border-color:rgba(255,149,0,.3); }
-    body.theme-cyber .menu-btn.bot   { color:#a855f7; border-color:rgba(168,85,247,.3); }
-    body.theme-cyber .menu-btn.online{ color:#00ff88; border-color:rgba(0,255,136,.3); }
+    /* 🤖 CYBERPUNK */
+    body.theme-cyberpunk { --x:#00e5ff; --o:#ff1f7a; --active:#ffc107; --bg:#05050f; --surface:#0d0d20; --border-out:#1e1e45; --border-in:#111128; color:#dde0ff; }
+    body.theme-cyberpunk::before { background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.04) 2px,rgba(0,229,255,.04) 4px); pointer-events:none; z-index:0; animation:scanlines 10s linear infinite; }
+    @keyframes scanlines { from{background-position:0 0} to{background-position:0 100px} }
+    body.theme-cyberpunk::after { background:radial-gradient(ellipse,rgba(0,229,255,.07) 0%,rgba(255,31,122,.04) 40%,transparent 65%); animation:neonPulse 4s ease-in-out infinite alternate; }
+    @keyframes neonPulse { from{opacity:.6} to{opacity:1} }
+    body.theme-cyberpunk .menu-btn.local{color:#00e5ff;border-color:rgba(0,229,255,.3)} body.theme-cyberpunk .menu-btn.bot{color:#a78bfa;border-color:rgba(167,139,250,.3)} body.theme-cyberpunk .menu-btn.online{color:#ff1f7a;border-color:rgba(255,31,122,.3)}
+    body.theme-cyberpunk .mark.x{color:#00e5ff;text-shadow:0 0 10px #00e5ff,0 0 20px #00e5ff} body.theme-cyberpunk .mark.o{color:#ff1f7a;text-shadow:0 0 10px #ff1f7a,0 0 20px #ff1f7a}
 
-    /* FOREST — vert/ambre, fond forêt profonde */
-    body.theme-forest {
-      --x:#4ade80; --o:#f59e0b; --active:#86efac;
-      --bg:#010a02; --surface:#061508; --border-out:#1a3d1f; --border-in:#0c1f0e;
-    }
-    body.theme-forest::after { background: radial-gradient(ellipse,rgba(20,80,30,.15) 0%,transparent 65%); }
-    body.theme-forest .menu-btn.local { color:#4ade80; border-color:rgba(74,222,128,.3); }
-    body.theme-forest .menu-btn.bot   { color:#f59e0b; border-color:rgba(245,158,11,.3); }
-    body.theme-forest .menu-btn.online{ color:#86efac; border-color:rgba(134,239,172,.3); }
+    /* 🎮 MARIO */
+    body.theme-mario { --x:#e8003d; --o:#f7c948; --active:#00b050; --bg:#5c94fc; --surface:#4a7de0; --border-out:#2855b8; --border-in:#1e3fa0; color:#fff; }
+    body.theme-mario::before { background:radial-gradient(ellipse 60px 30px at 15% 20%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 40px 20px at 18% 14%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 50px 25px at 23% 17%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 60px 30px at 65% 10%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 40px 20px at 68% 5%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(ellipse 50px 25px at 73% 8%,rgba(255,255,255,.9) 50%,transparent 51%),linear-gradient(to bottom,#5c94fc 0%,#5c94fc 84%,#00b050 84%,#00b050 90%,#8B4513 90%,#8B4513 100%); pointer-events:none; z-index:0; opacity:.35; }
+    body.theme-mario::after { background:none; pointer-events:none; }
+    body.theme-mario .board{background:#8B4513;border:3px solid #5a2d0c;box-shadow:0 8px 0 #5a2d0c,0 0 0 4px #f7c948}
+    body.theme-mario .sb{background:rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.3);border-radius:4px}
+    body.theme-mario .sb.active{background:rgba(0,176,80,.3);box-shadow:0 0 0 3px #00b050,0 0 20px rgba(0,176,80,.5)}
+    body.theme-mario .menu { background:rgba(255,255,255,.97); color:#1a0a00; }
+    body.theme-mario .menu .menu-title { color:#1a0a00; text-shadow:3px 3px 0 #e8003d; }
+    body.theme-mario .menu .menu-title span { color:#e8003d; }
+    body.theme-mario .menu .menu-sub { color:#555; }
+    body.theme-mario .menu .menu-btn { background:#fff; color:#1a0a00; border-width:3px; border-radius:6px; }
+    body.theme-mario .menu .menu-btn.local { color:#e8003d; border-color:#e8003d; background:rgba(232,0,61,.08); }
+    body.theme-mario .menu .menu-btn.bot   { color:#8B4513; border-color:#f7c948; background:rgba(247,201,72,.15); }
+    body.theme-mario .menu .menu-btn.online{ color:#00b050; border-color:#00b050; background:rgba(0,176,80,.08); }
+    body.theme-mario .menu .menu-btn-sub { color:#888; }
+    body.theme-mario .setup { background:rgba(255,255,255,.97); color:#1a0a00; }
+    body.theme-mario .setup .setup-title { color:#e8003d; text-shadow:2px 2px 0 rgba(232,0,61,.3); }
+    body.theme-mario .setup .setup-label { color:#555; }
+    body.theme-mario .setup .setup-input { background:#f5f5f5; border-color:#ddd; color:#1a0a00; }
+    body.theme-mario .setup .setup-go { background:rgba(0,176,80,.15); color:#00b050; border-color:#00b050; }
+    body.theme-mario .setup .setup-back { color:#888; }
+    body.theme-mario .scoreboard{background:rgba(0,0,0,.5);border:3px solid #f7c948;border-radius:4px}
+    body.theme-mario .title{text-shadow:3px 3px 0 #e8003d}
+    body.theme-mario .menu-btn.local{color:#e8003d;border-color:#e8003d} body.theme-mario .menu-btn.bot{color:#f7c948;border-color:#f7c948} body.theme-mario .menu-btn.online{color:#00b050;border-color:#00b050}
+    body.theme-mario .mark.x{font-size:0} body.theme-mario .mark.x::before{content:'🍄';font-size:clamp(16px,5vmin,34px)}
+    body.theme-mario .mark.o{font-size:0} body.theme-mario .mark.o::before{content:'⭐';font-size:clamp(16px,5vmin,34px)}
+    body.theme-mario .turn-banner.x{border-color:#e8003d;background:rgba(232,0,61,.2)} body.theme-mario .turn-banner.o{border-color:#f7c948;background:rgba(247,201,72,.2)}
+    body.theme-mario .gameover{background:rgba(92,148,252,.97)}
 
-    /* ICE — bleu glacial/mauve */
-    body.theme-ice {
-      --x:#7dd3fc; --o:#c084fc; --active:#bae6fd;
-      --bg:#010510; --surface:#040d1e; --border-out:#1e3a5f; --border-in:#0e1f38;
-    }
-    body.theme-ice::after { background: radial-gradient(ellipse,rgba(20,60,160,.15) 0%,transparent 65%); }
-    body.theme-ice .menu-btn.local { color:#7dd3fc; border-color:rgba(125,211,252,.3); }
-    body.theme-ice .menu-btn.bot   { color:#c084fc; border-color:rgba(192,132,252,.3); }
-    body.theme-ice .menu-btn.online{ color:#bae6fd; border-color:rgba(186,230,253,.3); }
+    /* 🌴 JUNGLE */
+    body.theme-jungle { --x:#f97316; --o:#4ade80; --active:#fbbf24; --bg:#0a1a05; --surface:#0f2208; --border-out:#1a4010; --border-in:#0d2208; color:#d4f0c0; }
+    body.theme-jungle::before { background:radial-gradient(ellipse,rgba(20,80,10,.6) 0%,transparent 70%); pointer-events:none; z-index:0; animation:jungleBreeze 8s ease-in-out infinite alternate; }
+    @keyframes jungleBreeze { from{opacity:.7} to{opacity:1} }
+    body.theme-jungle::after { background:radial-gradient(ellipse,rgba(74,222,128,.08) 0%,transparent 65%); }
+    body.theme-jungle .board{background:#1a4010;border:2px solid #2d6b1a;box-shadow:0 0 40px rgba(74,222,128,.15)}
+    body.theme-jungle .sb{background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2)}
+    body.theme-jungle .sb.active{background:rgba(251,191,36,.12);box-shadow:0 0 0 2px #fbbf24,0 0 20px rgba(251,191,36,.3)}
+    body.theme-jungle .scoreboard{background:rgba(0,0,0,.5);border-color:#1a4010}
+    body.theme-jungle .title{color:#4ade80;text-shadow:0 0 20px rgba(74,222,128,.5)}
+    body.theme-jungle .menu-btn.local{color:#f97316;border-color:rgba(249,115,22,.4);background:rgba(249,115,22,.1)} body.theme-jungle .menu-btn.bot{color:#4ade80;border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.1)} body.theme-jungle .menu-btn.online{color:#fbbf24;border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.1)}
+    body.theme-jungle .mark.x{font-size:0} body.theme-jungle .mark.x::before{content:'🦁';font-size:clamp(16px,5vmin,34px)}
+    body.theme-jungle .mark.o{font-size:0} body.theme-jungle .mark.o::before{content:'🐸';font-size:clamp(16px,5vmin,34px)}
+    body.theme-jungle .turn-banner.x{border-color:rgba(249,115,22,.5);background:rgba(249,115,22,.1)} body.theme-jungle .turn-banner.o{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1)}
 
-    /* FIRE — rouge/doré, fond braises */
-    body.theme-fire {
-      --x:#fb923c; --o:#ef4444; --active:#fbbf24;
-      --bg:#080100; --surface:#180600; --border-out:#4a1000; --border-in:#280800;
-    }
-    body.theme-fire::after { background: radial-gradient(ellipse,rgba(180,40,0,.18) 0%,transparent 65%); }
-    body.theme-fire .menu-btn.local { color:#fb923c; border-color:rgba(251,146,60,.3); }
-    body.theme-fire .menu-btn.bot   { color:#ef4444; border-color:rgba(239,68,68,.3); }
-    body.theme-fire .menu-btn.online{ color:#fbbf24; border-color:rgba(251,191,36,.3); }
-
-    /* SUNSET — rose/violet doux */
-    body.theme-sunset {
-      --x:#f472b6; --o:#818cf8; --active:#fda4af;
-      --bg:#080008; --surface:#130813; --border-out:#3d1050; --border-in:#200828;
-    }
-    body.theme-sunset::after { background: radial-gradient(ellipse,rgba(120,20,120,.15) 0%,transparent 65%); }
-    body.theme-sunset .menu-btn.local { color:#f472b6; border-color:rgba(244,114,182,.3); }
-    body.theme-sunset .menu-btn.bot   { color:#818cf8; border-color:rgba(129,140,248,.3); }
-    body.theme-sunset .menu-btn.online{ color:#fda4af; border-color:rgba(253,164,175,.3); }
-
-    /* ── Design panel (slide depuis droite, pas un overlay plein écran) ── */
-    .design-panel {
-      position:fixed; top:0; right:0; bottom:0; width:min(280px,80vw);
-      background:var(--surface); border-left:1px solid var(--border-out);
-      box-shadow:-8px 0 40px rgba(0,0,0,.6);
-      display:flex; flex-direction:column; gap:0;
-      z-index:450; transform:translateX(100%);
-      transition:transform .3s cubic-bezier(.34,1.2,.64,1);
-      overflow-y:auto;
-    }
-    .design-panel.open { transform:translateX(0); }
-    .design-panel-header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:16px 18px; border-bottom:1px solid var(--border-out);
-      font-family:'Orbitron',sans-serif; font-weight:900; font-size:.8rem; letter-spacing:.2em; color:#fff;
-    }
-    .design-panel-close { background:none; border:none; color:rgba(180,180,255,.5); font-size:1.1rem; cursor:pointer; padding:4px 8px; transition:color .2s; }
-    .design-panel-close:hover { color:#fff; }
-    .design-section { padding:16px 18px; display:flex; flex-direction:column; gap:10px; border-bottom:1px solid var(--border-out); }
-    .design-section-title { font-size:.6rem; letter-spacing:.2em; opacity:.4; text-transform:uppercase; }
-    .theme-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .theme-card {
-      display:flex; flex-direction:column; align-items:center; gap:6px;
-      padding:12px 8px; border-radius:10px; border:1px solid rgba(180,180,255,.15);
-      background:rgba(255,255,255,.03); cursor:pointer; transition:all .2s;
-    }
-    .theme-card:hover { border-color:rgba(180,180,255,.4); background:rgba(255,255,255,.06); }
-    .theme-card.active { border-color:var(--active); background:rgba(255,193,7,.08); box-shadow:0 0 12px rgba(255,193,7,.2); }
-    .theme-card-preview { width:48px; height:32px; border-radius:6px; display:grid; grid-template-columns:1fr 1fr; gap:2px; overflow:hidden; }
-    .theme-card-preview div { border-radius:2px; }
-    .theme-card-name { font-family:'Orbitron',sans-serif; font-size:.6rem; letter-spacing:.1em; opacity:.7; }
-    .theme-card.active .theme-card-name { opacity:1; color:var(--active); }
+    /* 👸 PRINCESSE */
+    body.theme-princess { --x:#f472b6; --o:#818cf8; --active:#fde68a; --bg:#1a0a2e; --surface:#2d1155; --border-out:#5b21b6; --border-in:#3b0764; color:#fce7f3; }
+    body.theme-princess::before { background:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,.9) 50%,transparent 51%),radial-gradient(1px 1px at 25% 8%,rgba(255,255,255,.7) 50%,transparent 51%),radial-gradient(2px 2px at 40% 20%,rgba(253,230,138,.9) 50%,transparent 51%),radial-gradient(1px 1px at 55% 5%,rgba(255,255,255,.8) 50%,transparent 51%),radial-gradient(1px 1px at 70% 18%,rgba(255,255,255,.6) 50%,transparent 51%),radial-gradient(2px 2px at 82% 10%,rgba(244,114,182,.9) 50%,transparent 51%),radial-gradient(1px 1px at 90% 22%,rgba(255,255,255,.7) 50%,transparent 51%); pointer-events:none; z-index:0; animation:twinkle 3s ease-in-out infinite alternate; }
+    @keyframes twinkle { from{opacity:.7} to{opacity:1} }
+    body.theme-princess::after { background:radial-gradient(ellipse at 30% 50%,rgba(244,114,182,.12) 0%,transparent 60%),radial-gradient(ellipse at 70% 50%,rgba(129,140,248,.12) 0%,transparent 60%); animation:castleGlow 5s ease-in-out infinite alternate; }
+    @keyframes castleGlow { from{opacity:.6} to{opacity:1} }
+    body.theme-princess .board{background:linear-gradient(135deg,#3b0764,#2d1155);border:2px solid #7c3aed;box-shadow:0 0 0 1px rgba(244,114,182,.3),0 0 40px rgba(244,114,182,.1)}
+    body.theme-princess .sb{background:rgba(91,33,182,.2);border:1px solid rgba(244,114,182,.2)}
+    body.theme-princess .sb.active{background:rgba(253,230,138,.08);box-shadow:0 0 0 2px #fde68a,0 0 20px rgba(253,230,138,.3);border-color:transparent}
+    body.theme-princess .scoreboard{background:rgba(91,33,182,.3);border-color:rgba(244,114,182,.3);border-radius:16px}
+    body.theme-princess .title{color:#fde68a;text-shadow:0 0 20px rgba(253,230,138,.6),0 0 40px rgba(244,114,182,.3)}
+    body.theme-princess .menu-btn{border-radius:20px} body.theme-princess .menu-btn.local{color:#f472b6;border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.08)} body.theme-princess .menu-btn.bot{color:#818cf8;border-color:rgba(129,140,248,.4);background:rgba(129,140,248,.08)} body.theme-princess .menu-btn.online{color:#fde68a;border-color:rgba(253,230,138,.4);background:rgba(253,230,138,.08)}
+    body.theme-princess .mark.x{font-size:0} body.theme-princess .mark.x::before{content:'🌸';font-size:clamp(16px,5vmin,34px)}
+    body.theme-princess .mark.o{font-size:0} body.theme-princess .mark.o::before{content:'💎';font-size:clamp(16px,5vmin,34px)}
+    body.theme-princess .turn-banner.x{border-color:rgba(244,114,182,.5);background:rgba(244,114,182,.1);border-radius:20px} body.theme-princess .turn-banner.o{border-color:rgba(129,140,248,.5);background:rgba(129,140,248,.1);border-radius:20px}
+    body.theme-princess .gameover{background:rgba(26,10,46,.97)}
 
     /* ── First-run rules popup ── */
     .first-run { background:rgba(0,0,8,.97); gap:20px; z-index:600; }
+    .design-panel { position:fixed; top:0; right:0; bottom:0; width:min(280px,80vw); background:var(--surface); border-left:1px solid var(--border-out); box-shadow:-8px 0 40px rgba(0,0,0,.6); display:flex; flex-direction:column; z-index:600; transform:translateX(100%); transition:transform .3s cubic-bezier(.34,1.2,.64,1); overflow-y:auto; }
+    .design-panel.open { transform:translateX(0); }
+    .design-panel-header { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border-out); font-family:'Orbitron',sans-serif; font-weight:900; font-size:.8rem; letter-spacing:.2em; color:#fff; }
+    .design-panel-close { background:none; border:none; color:rgba(180,180,255,.5); font-size:1.1rem; cursor:pointer; padding:4px 8px; }
+    .design-section { padding:16px 18px; display:flex; flex-direction:column; gap:10px; border-bottom:1px solid var(--border-out); }
+    .design-section-title { font-size:.6rem; letter-spacing:.2em; opacity:.4; text-transform:uppercase; margin-bottom:4px; }
+    .theme-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .theme-card { display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 8px; border-radius:10px; border:1px solid rgba(180,180,255,.15); background:rgba(255,255,255,.03); cursor:pointer; transition:all .2s; }
+    .theme-card:hover { border-color:rgba(180,180,255,.4); background:rgba(255,255,255,.06); }
+    .theme-card.active { border-color:var(--active); background:rgba(255,193,7,.08); box-shadow:0 0 12px rgba(255,193,7,.2); }
+    .theme-card-preview { width:56px; height:36px; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:space-around; font-size:16px; }
+    .theme-card-name { font-family:'Orbitron',sans-serif; font-size:.58rem; letter-spacing:.08em; opacity:.7; text-align:center; }
+    .theme-card.active .theme-card-name { opacity:1; color:var(--active); }
     .first-run-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.1rem; letter-spacing:.2em; color:#fff; text-align:center; }
     .first-run-sub { font-size:.75rem; letter-spacing:.12em; opacity:.45; text-align:center; }
     .first-run-btns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
@@ -533,49 +534,31 @@
     <button class="design-panel-close" onclick="closeDesign()">✕</button>
   </div>
   <div class="design-section">
-    <div class="design-section-title">Thème</div>
+    <div class="design-section-title">Choisir un thème</div>
     <div class="theme-grid">
-      <div class="theme-card active" id="tc-neon" onclick="setTheme('neon')">
-        <div class="theme-card-preview">
-          <div style="background:#05050f"></div><div style="background:#00e5ff"></div>
-          <div style="background:#ff1f7a"></div><div style="background:#ffc107"></div>
+      <div class="theme-card" id="tc-cyberpunk" onclick="setTheme('cyberpunk')">
+        <div class="theme-card-preview" style="background:linear-gradient(135deg,#05050f,#0d0d20);border:1px solid #00e5ff;display:flex;align-items:center;justify-content:space-around;font-size:14px;">
+          <span>⚡</span><span style="color:#ff1f7a">💜</span>
         </div>
-        <div class="theme-card-name">🌌 NEON</div>
+        <div class="theme-card-name">🤖 CYBERPUNK</div>
       </div>
-      <div class="theme-card" id="tc-cyber" onclick="setTheme('cyber')">
-        <div class="theme-card-preview">
-          <div style="background:#080400"></div><div style="background:#ff9500"></div>
-          <div style="background:#a855f7"></div><div style="background:#00ff88"></div>
+      <div class="theme-card" id="tc-mario" onclick="setTheme('mario')">
+        <div class="theme-card-preview" style="background:linear-gradient(135deg,#5c94fc,#4a7de0);border:2px solid #f7c948;display:flex;align-items:center;justify-content:space-around;font-size:14px;">
+          <span>🍄</span><span>⭐</span>
         </div>
-        <div class="theme-card-name">🟠 CYBER</div>
+        <div class="theme-card-name">🎮 MARIO</div>
       </div>
-      <div class="theme-card" id="tc-forest" onclick="setTheme('forest')">
-        <div class="theme-card-preview">
-          <div style="background:#010a02"></div><div style="background:#4ade80"></div>
-          <div style="background:#f59e0b"></div><div style="background:#86efac"></div>
+      <div class="theme-card" id="tc-jungle" onclick="setTheme('jungle')">
+        <div class="theme-card-preview" style="background:linear-gradient(135deg,#0a1a05,#0f2208);border:1px solid #4ade80;display:flex;align-items:center;justify-content:space-around;font-size:14px;">
+          <span>🦁</span><span>🐸</span>
         </div>
-        <div class="theme-card-name">🌿 FOREST</div>
+        <div class="theme-card-name">🌴 JUNGLE</div>
       </div>
-      <div class="theme-card" id="tc-ice" onclick="setTheme('ice')">
-        <div class="theme-card-preview">
-          <div style="background:#010510"></div><div style="background:#7dd3fc"></div>
-          <div style="background:#c084fc"></div><div style="background:#bae6fd"></div>
+      <div class="theme-card" id="tc-princess" onclick="setTheme('princess')">
+        <div class="theme-card-preview" style="background:linear-gradient(135deg,#1a0a2e,#2d1155);border:1px solid #f472b6;display:flex;align-items:center;justify-content:space-around;font-size:14px;">
+          <span>🌸</span><span>💎</span>
         </div>
-        <div class="theme-card-name">❄️ ICE</div>
-      </div>
-      <div class="theme-card" id="tc-fire" onclick="setTheme('fire')">
-        <div class="theme-card-preview">
-          <div style="background:#080100"></div><div style="background:#fb923c"></div>
-          <div style="background:#ef4444"></div><div style="background:#fbbf24"></div>
-        </div>
-        <div class="theme-card-name">🔥 FIRE</div>
-      </div>
-      <div class="theme-card" id="tc-sunset" onclick="setTheme('sunset')">
-        <div class="theme-card-preview">
-          <div style="background:#080008"></div><div style="background:#f472b6"></div>
-          <div style="background:#818cf8"></div><div style="background:#fda4af"></div>
-        </div>
-        <div class="theme-card-name">🌅 SUNSET</div>
+        <div class="theme-card-name">👸 PRINCESSE</div>
       </div>
     </div>
   </div>
@@ -1617,20 +1600,23 @@ function resetGame() {
 // ════════════════════════════════════════════════════════
 // THEME / DESIGN
 // ════════════════════════════════════════════════════════
-const THEMES = ['neon','cyber','forest','ice','fire','sunset'];
+const THEMES = ['cyberpunk','mario','jungle','princess'];
 function setTheme(t) {
   THEMES.forEach(th => {
     document.body.classList.remove(`theme-${th}`);
     document.getElementById(`tc-${th}`)?.classList.remove('active');
   });
-  if (t !== 'neon') document.body.classList.add(`theme-${t}`);
+  document.body.classList.add(`theme-${t}`);
   document.getElementById(`tc-${t}`)?.classList.add('active');
   localStorage.setItem('ttt-theme', t);
 }
 function openDesign() { document.getElementById('design-panel').classList.add('open'); }
 function closeDesign() { document.getElementById('design-panel').classList.remove('open'); }
-// Restore saved theme
-(function(){ const t=localStorage.getItem('ttt-theme'); if(t) setTheme(t); })();
+// Restore saved theme — cyberpunk par défaut
+(function(){
+  const t = localStorage.getItem('ttt-theme') || 'cyberpunk';
+  setTheme(t);
+})();
 
 // ════════════════════════════════════════════════════════
 // FIRST RUN
