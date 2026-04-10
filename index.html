@@ -1579,15 +1579,16 @@ function updateHUD() {
 
   const p=G.player, pl=p.toLowerCase();
   const pname=names[p];
+  const mark=getThemeMark(p);
   banner.className=`turn-banner ${pl}`;
   dot.className=`turn-dot ${pl}`;
   text.className=`turn-text ${pl}`;
 
   if (mode==='online') {
     const isMe=myRole===p;
-    text.textContent=isMe?`▶ ${pname} — À VOUS !`:`⏳ ${pname}…`;
+    text.textContent=isMe?`${mark} ${pname} — À VOUS !`:`⏳ ${mark} ${pname}…`;
   } else {
-    text.textContent=`▶ ${pname}`;
+    text.textContent=`${mark} ${pname}`;
   }
 }
 
