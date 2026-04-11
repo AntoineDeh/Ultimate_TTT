@@ -273,31 +273,90 @@
     .rules-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.8rem; letter-spacing:.2em; padding:13px; background:rgba(255,31,122,.08); color:var(--o); border:1px solid rgba(255,31,122,.3); border-radius:8px; cursor:pointer; text-transform:uppercase; transition:all .2s; text-align:center; }
     .rules-close:hover { background:rgba(255,31,122,.18); box-shadow:0 0 16px rgba(255,31,122,.25); }
 
-    /* ── Stats overlay ── */
-    .stats-overlay { background:rgba(5,5,15,.98); gap:0; overflow-y:auto; padding:20px 12px; z-index:600; align-items:center; justify-content:flex-start; }
-    .stats-header { display:flex; align-items:center; justify-content:space-between; width:100%; max-width:420px; margin-bottom:16px; }
-    .stats-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:.9rem; letter-spacing:.2em; color:#fff; }
-    .stats-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.65rem; padding:7px 14px; background:rgba(255,31,122,.1); color:var(--o); border:1px solid rgba(255,31,122,.3); border-radius:6px; cursor:pointer; }
-    .stats-section { width:100%; max-width:420px; margin-bottom:14px; }
-    .stats-section-title { font-size:.6rem; letter-spacing:.2em; opacity:.4; text-transform:uppercase; margin-bottom:8px; padding-left:2px; }
+    /* ── Stats overlay — thème unique ── */
+    .stats-overlay {
+      background: linear-gradient(160deg, #0a0018 0%, #000d1a 40%, #0a0800 100%);
+      gap:0; overflow-y:auto; padding:20px 12px 32px; z-index:600;
+      align-items:center; justify-content:flex-start;
+    }
+    .stats-overlay::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(255,193,7,.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(167,139,250,.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0,229,255,.04) 0%, transparent 60%);
+    }
+    .stats-overlay > * { position:relative; z-index:1; }
+    .stats-header { display:flex; align-items:center; justify-content:space-between; width:100%; max-width:420px; margin-bottom:4px; }
+    .stats-title {
+      font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.1rem;
+      letter-spacing:.25em; color:#fff;
+      background: linear-gradient(135deg, #ffc107, #ff9500, #ffc107);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip:text;
+      filter: drop-shadow(0 0 12px rgba(255,193,7,.5));
+    }
+    .stats-subtitle { font-size:.58rem; letter-spacing:.22em; color:rgba(255,193,7,.4); text-align:center; width:100%; max-width:420px; margin-bottom:16px; text-transform:uppercase; }
+    .stats-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.65rem; padding:8px 16px; background:rgba(255,193,7,.1); color:#ffc107; border:1px solid rgba(255,193,7,.3); border-radius:8px; cursor:pointer; transition:all .2s; }
+    .stats-close:hover { background:rgba(255,193,7,.2); box-shadow:0 0 12px rgba(255,193,7,.3); }
+    .stats-section { width:100%; max-width:420px; margin-bottom:16px; }
+    .stats-section-title {
+      font-family:'Orbitron',sans-serif; font-size:.58rem; letter-spacing:.2em;
+      color:rgba(255,193,7,.5); text-transform:uppercase; margin-bottom:10px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .stats-section-title::before { content:'◆'; font-size:.5rem; }
+    .stats-section-title::after { content:''; flex:1; height:1px; background:linear-gradient(to right,rgba(255,193,7,.2),transparent); }
     .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
     .stats-grid.wide { grid-template-columns:repeat(2,1fr); }
-    .stat-card { background:var(--surface); border:1px solid var(--border-out); border-radius:10px; padding:10px 8px; display:flex; flex-direction:column; align-items:center; gap:3px; }
-    .stat-val { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.3rem; line-height:1; }
-    .stat-val.win  { color:#4ade80; } .stat-val.loss { color:var(--o); } .stat-val.draw { color:var(--active); }
-    .stat-val.rate { color:var(--x); } .stat-val.streak { color:#a78bfa; } .stat-val.total { color:rgba(180,180,255,.7); }
-    .stat-lbl { font-size:.55rem; letter-spacing:.1em; opacity:.45; text-align:center; }
-    .stats-mode-tabs { display:flex; gap:6px; width:100%; max-width:420px; margin-bottom:10px; flex-wrap:wrap; }
-    .stats-tab { font-family:'Orbitron',sans-serif; font-size:.55rem; letter-spacing:.1em; padding:6px 10px; border-radius:6px; border:1px solid var(--border-out); background:transparent; color:rgba(180,180,255,.5); cursor:pointer; transition:all .2s; }
-    .stats-tab.active { border-color:var(--active); color:var(--active); background:rgba(255,193,7,.08); }
-    .stats-reset { font-size:.6rem; letter-spacing:.1em; opacity:.35; cursor:pointer; background:none; border:none; color:inherit; padding:4px; margin-top:8px; }
-    .stats-reset:hover { opacity:.6; }
+    .stat-card {
+      background: rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px; padding:16px 8px 12px;
+      display:flex; flex-direction:column; align-items:center; gap:5px;
+      position:relative; overflow:hidden;
+      backdrop-filter: blur(10px);
+      transition: all .25s;
+    }
+    .stat-card:hover { transform:translateY(-2px); border-color:rgba(255,193,7,.25); box-shadow:0 8px 24px rgba(0,0,0,.4); }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+    .stat-card.win-card::before   { background:linear-gradient(90deg,transparent,#4ade80,transparent); box-shadow:0 0 8px #4ade80; }
+    .stat-card.loss-card::before  { background:linear-gradient(90deg,transparent,#ff1f7a,transparent); box-shadow:0 0 8px #ff1f7a; }
+    .stat-card.draw-card::before  { background:linear-gradient(90deg,transparent,#ffc107,transparent); box-shadow:0 0 8px #ffc107; }
+    .stat-card.rate-card::before  { background:linear-gradient(90deg,transparent,#00e5ff,transparent); box-shadow:0 0 8px #00e5ff; }
+    .stat-card.total-card::before { background:linear-gradient(90deg,transparent,rgba(180,180,255,.6),transparent); }
+    .stat-card.streak-card::before{ background:linear-gradient(90deg,transparent,#a78bfa,transparent); box-shadow:0 0 8px #a78bfa; }
+    .stat-card.record-card::before{ background:linear-gradient(90deg,transparent,#fbbf24,transparent); box-shadow:0 0 8px #fbbf24; }
+    .stat-val { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.8rem; line-height:1; }
+    .stat-val.win    { color:#4ade80; text-shadow:0 0 16px rgba(74,222,128,.5); }
+    .stat-val.loss   { color:#ff1f7a; text-shadow:0 0 16px rgba(255,31,122,.5); }
+    .stat-val.draw   { color:#ffc107; text-shadow:0 0 16px rgba(255,193,7,.5); }
+    .stat-val.rate   { color:#00e5ff; text-shadow:0 0 16px rgba(0,229,255,.5); }
+    .stat-val.streak { color:#a78bfa; text-shadow:0 0 16px rgba(167,139,250,.5); }
+    .stat-val.total  { color:rgba(200,200,255,.8); }
+    .stat-val.record { color:#fbbf24; text-shadow:0 0 16px rgba(251,191,36,.5); font-size:1rem; }
+    .stat-lbl { font-size:.5rem; letter-spacing:.1em; color:rgba(200,200,255,.35); text-align:center; line-height:1.4; text-transform:uppercase; }
+    .stats-mode-tabs { display:flex; gap:6px; width:100%; max-width:420px; margin-bottom:16px; flex-wrap:wrap; }
+    .stats-tab { font-family:'Orbitron',sans-serif; font-size:.52rem; letter-spacing:.08em; padding:7px 11px; border-radius:8px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); color:rgba(200,200,255,.4); cursor:pointer; transition:all .2s; }
+    .stats-tab:hover { border-color:rgba(255,193,7,.3); color:rgba(255,193,7,.7); }
+    .stats-tab.active { border-color:#ffc107; color:#ffc107; background:rgba(255,193,7,.1); box-shadow:0 0 10px rgba(255,193,7,.2); }
+    .stats-reset { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.1em; color:rgba(255,100,100,.35); cursor:pointer; background:transparent; border:1px solid rgba(255,100,100,.15); border-radius:6px; padding:7px 16px; margin-top:8px; transition:all .2s; }
+    .stats-reset:hover { color:rgba(255,100,100,.7); border-color:rgba(255,100,100,.4); }
+
     /* Mini stats in gameover */
-    .go-stats { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:4px; width:100%; }
-    .go-stat { font-size:.62rem; letter-spacing:.08em; padding:3px 10px; border-radius:12px; border:1px solid; }
-    .go-stat.win  { color:#4ade80; border-color:rgba(74,222,128,.3); background:rgba(74,222,128,.08); }
-    .go-stat.loss { color:var(--o);  border-color:rgba(255,31,122,.3);  background:rgba(255,31,122,.08);  }
+    .go-stats { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:4px; width:100%; }
+    .go-stat { font-size:.6rem; letter-spacing:.08em; padding:3px 10px; border-radius:12px; border:1px solid; }
+    .go-stat.win    { color:#4ade80; border-color:rgba(74,222,128,.3); background:rgba(74,222,128,.08); }
+    .go-stat.loss   { color:#ff1f7a; border-color:rgba(255,31,122,.3);  background:rgba(255,31,122,.08); }
     .go-stat.streak { color:#a78bfa; border-color:rgba(167,139,250,.3); background:rgba(167,139,250,.08); }
+    .stats-confirm { display:none; position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.92); flex-direction:column; align-items:center; justify-content:center; gap:20px; }
+    .stats-confirm.open { display:flex; animation:fadein .2s ease; }
+    .stats-confirm-box { background:#0d0010; border:1px solid rgba(255,100,100,.3); border-radius:16px; padding:28px 24px; display:flex; flex-direction:column; align-items:center; gap:14px; max-width:280px; box-shadow:0 0 40px rgba(255,100,100,.1); }
+    .stats-confirm-icon { font-size:2rem; }
+    .stats-confirm-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:.85rem; letter-spacing:.15em; color:#ff6464; text-align:center; }
+    .stats-confirm-sub { font-size:.72rem; letter-spacing:.08em; color:rgba(200,200,255,.45); text-align:center; line-height:1.5; }
+    .stats-confirm-btns { display:flex; gap:10px; width:100%; }
+    .stats-confirm-yes { flex:1; font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700; letter-spacing:.12em; padding:11px; background:rgba(255,100,100,.15); color:#ff6464; border:1px solid rgba(255,100,100,.4); border-radius:8px; cursor:pointer; }
+    .stats-confirm-no  { flex:1; font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700; letter-spacing:.12em; padding:11px; background:transparent; color:rgba(180,180,255,.5); border:1px solid rgba(180,180,255,.2); border-radius:8px; cursor:pointer; }
     .analysis {
       position:fixed; inset:0; background:rgba(5,5,15,.98);
       display:flex; flex-direction:column; align-items:center;
@@ -682,7 +741,7 @@
     <div class="stats-title">📊 STATISTIQUES</div>
     <button class="stats-close" onclick="hide('stats-overlay')">✕ FERMER</button>
   </div>
-  <!-- Tabs -->
+  <div class="stats-subtitle">PERFORMANCES PAR MODE DE JEU</div>
   <div class="stats-mode-tabs" id="stats-tabs">
     <button class="stats-tab active" onclick="showStatsTab('global')">🌐 Global</button>
     <button class="stats-tab" onclick="showStatsTab('local')">◈ Local</button>
@@ -691,34 +750,49 @@
     <button class="stats-tab" onclick="showStatsTab('bot-hard')">◆ Difficile</button>
     <button class="stats-tab" onclick="showStatsTab('online')">◉ En ligne</button>
   </div>
-  <!-- Stats grid -->
   <div class="stats-section">
-    <div class="stats-grid" id="stats-main-grid">
-      <div class="stat-card"><div class="stat-val win" id="sv-win">0</div><div class="stat-lbl">VICTOIRES</div></div>
-      <div class="stat-card"><div class="stat-val loss" id="sv-loss">0</div><div class="stat-lbl">DÉFAITES</div></div>
-      <div class="stat-card"><div class="stat-val draw" id="sv-draw">0</div><div class="stat-lbl">ÉGALITÉS</div></div>
+    <div class="stats-section-title">Résultats</div>
+    <div class="stats-grid">
+      <div class="stat-card win-card"><div class="stat-val win" id="sv-win">0</div><div class="stat-lbl">VICTOIRES</div></div>
+      <div class="stat-card loss-card"><div class="stat-val loss" id="sv-loss">0</div><div class="stat-lbl">DÉFAITES</div></div>
+      <div class="stat-card draw-card"><div class="stat-val draw" id="sv-draw">0</div><div class="stat-lbl">ÉGALITÉS</div></div>
     </div>
   </div>
   <div class="stats-section">
+    <div class="stats-section-title">Performance</div>
     <div class="stats-grid wide">
-      <div class="stat-card"><div class="stat-val rate" id="sv-rate">0%</div><div class="stat-lbl">TAUX VICTOIRE</div></div>
-      <div class="stat-card"><div class="stat-val total" id="sv-total">0</div><div class="stat-lbl">TOTAL PARTIES</div></div>
+      <div class="stat-card rate-card"><div class="stat-val rate" id="sv-rate">0%</div><div class="stat-lbl">TAUX DE VICTOIRE</div></div>
+      <div class="stat-card total-card"><div class="stat-val total" id="sv-total">0</div><div class="stat-lbl">TOTAL PARTIES</div></div>
     </div>
   </div>
   <div class="stats-section">
+    <div class="stats-section-title">Séries</div>
     <div class="stats-grid wide">
-      <div class="stat-card"><div class="stat-val streak" id="sv-streak">0</div><div class="stat-lbl">STREAK ACTUEL 🔥</div></div>
-      <div class="stat-card"><div class="stat-val streak" id="sv-best">0</div><div class="stat-lbl">MEILLEUR STREAK ⭐</div></div>
+      <div class="stat-card streak-card"><div class="stat-val streak" id="sv-streak">0</div><div class="stat-lbl">STREAK ACTUEL 🔥</div></div>
+      <div class="stat-card streak-card"><div class="stat-val streak" id="sv-best">0</div><div class="stat-lbl">MEILLEUR STREAK ⭐</div></div>
     </div>
   </div>
   <div class="stats-section">
-    <div class="stats-section-title">Records de parties</div>
+    <div class="stats-section-title">Records</div>
     <div class="stats-grid wide">
-      <div class="stat-card"><div class="stat-val win" id="sv-fastest" style="font-size:.95rem">—</div><div class="stat-lbl">VICTOIRE LA + RAPIDE ⚡</div></div>
-      <div class="stat-card"><div class="stat-val total" id="sv-longest" style="font-size:.95rem">—</div><div class="stat-lbl">PARTIE LA + LONGUE 🏁</div></div>
+      <div class="stat-card record-card"><div class="stat-val record" id="sv-fastest">—</div><div class="stat-lbl">VICTOIRE LA + RAPIDE ⚡</div></div>
+      <div class="stat-card record-card"><div class="stat-val record" id="sv-longest">—</div><div class="stat-lbl">PARTIE LA + LONGUE 🏁</div></div>
     </div>
   </div>
-  <button class="stats-reset" onclick="confirmResetStats()">🗑 Réinitialiser les stats</button>
+  <button class="stats-reset" onclick="confirmResetStats()">🗑 Réinitialiser les statistiques</button>
+</div>
+
+<!-- Stats confirm reset -->
+<div class="stats-confirm" id="stats-confirm">
+  <div class="stats-confirm-box">
+    <div class="stats-confirm-icon">⚠️</div>
+    <div class="stats-confirm-title">RÉINITIALISER ?</div>
+    <div class="stats-confirm-sub">Toutes tes statistiques seront effacées définitivement. Cette action est irréversible.</div>
+    <div class="stats-confirm-btns" style="flex-direction:row-reverse">
+      <button class="stats-confirm-yes" onclick="doResetStats()">🗑 EFFACER</button>
+      <button class="stats-confirm-no"  onclick="document.getElementById('stats-confirm').classList.remove('open')">← ANNULER</button>
+    </div>
+  </div>
 </div>
 
 <!-- Rules -->
@@ -2073,10 +2147,12 @@ function renderStats(tab) {
 }
 
 function confirmResetStats() {
-  if (confirm('Réinitialiser toutes les statistiques ?')) {
-    localStorage.removeItem('ttt-stats');
-    renderStats(currentStatsTab);
-  }
+  document.getElementById('stats-confirm').classList.add('open');
+}
+function doResetStats() {
+  localStorage.removeItem('ttt-stats');
+  document.getElementById('stats-confirm').classList.remove('open');
+  renderStats(currentStatsTab);
 }
 
 function updateGoStats() {
