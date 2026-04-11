@@ -273,7 +273,31 @@
     .rules-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.8rem; letter-spacing:.2em; padding:13px; background:rgba(255,31,122,.08); color:var(--o); border:1px solid rgba(255,31,122,.3); border-radius:8px; cursor:pointer; text-transform:uppercase; transition:all .2s; text-align:center; }
     .rules-close:hover { background:rgba(255,31,122,.18); box-shadow:0 0 16px rgba(255,31,122,.25); }
 
-    /* ── Analysis overlay ── */
+    /* ── Stats overlay ── */
+    .stats-overlay { background:rgba(5,5,15,.98); gap:0; overflow-y:auto; padding:20px 12px; z-index:600; align-items:center; justify-content:flex-start; }
+    .stats-header { display:flex; align-items:center; justify-content:space-between; width:100%; max-width:420px; margin-bottom:16px; }
+    .stats-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:.9rem; letter-spacing:.2em; color:#fff; }
+    .stats-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.65rem; padding:7px 14px; background:rgba(255,31,122,.1); color:var(--o); border:1px solid rgba(255,31,122,.3); border-radius:6px; cursor:pointer; }
+    .stats-section { width:100%; max-width:420px; margin-bottom:14px; }
+    .stats-section-title { font-size:.6rem; letter-spacing:.2em; opacity:.4; text-transform:uppercase; margin-bottom:8px; padding-left:2px; }
+    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .stats-grid.wide { grid-template-columns:repeat(2,1fr); }
+    .stat-card { background:var(--surface); border:1px solid var(--border-out); border-radius:10px; padding:10px 8px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .stat-val { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1.3rem; line-height:1; }
+    .stat-val.win  { color:#4ade80; } .stat-val.loss { color:var(--o); } .stat-val.draw { color:var(--active); }
+    .stat-val.rate { color:var(--x); } .stat-val.streak { color:#a78bfa; } .stat-val.total { color:rgba(180,180,255,.7); }
+    .stat-lbl { font-size:.55rem; letter-spacing:.1em; opacity:.45; text-align:center; }
+    .stats-mode-tabs { display:flex; gap:6px; width:100%; max-width:420px; margin-bottom:10px; flex-wrap:wrap; }
+    .stats-tab { font-family:'Orbitron',sans-serif; font-size:.55rem; letter-spacing:.1em; padding:6px 10px; border-radius:6px; border:1px solid var(--border-out); background:transparent; color:rgba(180,180,255,.5); cursor:pointer; transition:all .2s; }
+    .stats-tab.active { border-color:var(--active); color:var(--active); background:rgba(255,193,7,.08); }
+    .stats-reset { font-size:.6rem; letter-spacing:.1em; opacity:.35; cursor:pointer; background:none; border:none; color:inherit; padding:4px; margin-top:8px; }
+    .stats-reset:hover { opacity:.6; }
+    /* Mini stats in gameover */
+    .go-stats { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:4px; width:100%; }
+    .go-stat { font-size:.62rem; letter-spacing:.08em; padding:3px 10px; border-radius:12px; border:1px solid; }
+    .go-stat.win  { color:#4ade80; border-color:rgba(74,222,128,.3); background:rgba(74,222,128,.08); }
+    .go-stat.loss { color:var(--o);  border-color:rgba(255,31,122,.3);  background:rgba(255,31,122,.08);  }
+    .go-stat.streak { color:#a78bfa; border-color:rgba(167,139,250,.3); background:rgba(167,139,250,.08); }
     .analysis {
       position:fixed; inset:0; background:rgba(5,5,15,.98);
       display:flex; flex-direction:column; align-items:center;
@@ -611,7 +635,8 @@
     .first-run-sub { font-size:.75rem; letter-spacing:.12em; opacity:.45; text-align:center; }
     .first-run-btns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
     .first-run-yes { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.75rem; letter-spacing:.15em; padding:12px 24px; background:rgba(0,229,255,.1); color:var(--x); border:1px solid rgba(0,229,255,.4); border-radius:8px; cursor:pointer; text-transform:uppercase; }
-    .first-run-skip { font-family:'Share Tech Mono',monospace; font-size:.72rem; opacity:.35; cursor:pointer; background:none; border:none; color:inherit; padding:8px; }
+    .first-run-skip { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.65rem; letter-spacing:.12em; padding:10px 24px; cursor:pointer; background:transparent; border:1px solid rgba(180,180,255,.25); border-radius:8px; color:rgba(180,180,255,.6); transition:all .2s; text-transform:uppercase; }
+    .first-run-skip:hover { border-color:rgba(180,180,255,.5); color:#fff; }
 
     @media (min-width:600px) {
       :root { --og:10px; --ig:3px; }
@@ -651,6 +676,51 @@
   </div>
 </div>
 
+<!-- Stats overlay -->
+<div class="overlay stats-overlay hidden" id="stats-overlay">
+  <div class="stats-header">
+    <div class="stats-title">📊 STATISTIQUES</div>
+    <button class="stats-close" onclick="hide('stats-overlay')">✕ FERMER</button>
+  </div>
+  <!-- Tabs -->
+  <div class="stats-mode-tabs" id="stats-tabs">
+    <button class="stats-tab active" onclick="showStatsTab('global')">🌐 Global</button>
+    <button class="stats-tab" onclick="showStatsTab('local')">◈ Local</button>
+    <button class="stats-tab" onclick="showStatsTab('bot-easy')">◆ Facile</button>
+    <button class="stats-tab" onclick="showStatsTab('bot-medium')">◆ Moyen</button>
+    <button class="stats-tab" onclick="showStatsTab('bot-hard')">◆ Difficile</button>
+    <button class="stats-tab" onclick="showStatsTab('online')">◉ En ligne</button>
+  </div>
+  <!-- Stats grid -->
+  <div class="stats-section">
+    <div class="stats-grid" id="stats-main-grid">
+      <div class="stat-card"><div class="stat-val win" id="sv-win">0</div><div class="stat-lbl">VICTOIRES</div></div>
+      <div class="stat-card"><div class="stat-val loss" id="sv-loss">0</div><div class="stat-lbl">DÉFAITES</div></div>
+      <div class="stat-card"><div class="stat-val draw" id="sv-draw">0</div><div class="stat-lbl">ÉGALITÉS</div></div>
+    </div>
+  </div>
+  <div class="stats-section">
+    <div class="stats-grid wide">
+      <div class="stat-card"><div class="stat-val rate" id="sv-rate">0%</div><div class="stat-lbl">TAUX VICTOIRE</div></div>
+      <div class="stat-card"><div class="stat-val total" id="sv-total">0</div><div class="stat-lbl">TOTAL PARTIES</div></div>
+    </div>
+  </div>
+  <div class="stats-section">
+    <div class="stats-grid wide">
+      <div class="stat-card"><div class="stat-val streak" id="sv-streak">0</div><div class="stat-lbl">STREAK ACTUEL 🔥</div></div>
+      <div class="stat-card"><div class="stat-val streak" id="sv-best">0</div><div class="stat-lbl">MEILLEUR STREAK ⭐</div></div>
+    </div>
+  </div>
+  <div class="stats-section">
+    <div class="stats-section-title">Records de parties</div>
+    <div class="stats-grid wide">
+      <div class="stat-card"><div class="stat-val win" id="sv-fastest" style="font-size:.95rem">—</div><div class="stat-lbl">VICTOIRE LA + RAPIDE ⚡</div></div>
+      <div class="stat-card"><div class="stat-val total" id="sv-longest" style="font-size:.95rem">—</div><div class="stat-lbl">PARTIE LA + LONGUE 🏁</div></div>
+    </div>
+  </div>
+  <button class="stats-reset" onclick="confirmResetStats()">🗑 Réinitialiser les stats</button>
+</div>
+
 <!-- Rules -->
 <div class="overlay rules-overlay hidden" id="rules-overlay">
   <div class="rules-box">
@@ -679,6 +749,7 @@
       <button class="menu-btn" style="flex:1;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);font-size:.72rem;padding:12px 10px;" onclick="show('rules-overlay')">📋 RÈGLES</button>
       <button class="menu-btn" style="flex:1;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);font-size:.72rem;padding:12px 10px;" onclick="openDesign()">🎨 DESIGN</button>
     </div>
+    <button class="menu-btn" style="color:rgba(74,222,128,.8);border-color:rgba(74,222,128,.25);font-size:.72rem;padding:12px 10px;margin-top:0;text-align:center;" onclick="openStats()">📊 STATISTIQUES</button>
   </div>
 </div>
 
@@ -911,6 +982,7 @@
   <div class="go-winner" id="go-winner"></div>
   <div class="go-title" id="go-title"></div>
   <div class="go-msg" id="go-msg"></div>
+  <div class="go-stats" id="go-stats-row"></div>
   <div class="go-btns" id="go-btns">
     <button class="btn" id="go-replay-btn" onclick="resetGame()">▶ REJOUER</button>
     <button class="btn" id="analyse-btn" onclick="startAnalysis()" style="color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.1);">🔍 ANALYSER</button>
@@ -1766,6 +1838,7 @@ function connect() {
         }
       }
       render();
+      if (G.winner) setTimeout(showGameOver, 600);
     }
     if (msg.type==='waiting') { show('waiting-screen'); document.getElementById('wait-title').textContent="EN ATTENTE D'UN JOUEUR"; }
     if (msg.type==='ready') { hide('waiting-screen'); hide('gameover'); }
@@ -1775,8 +1848,8 @@ function connect() {
 
 function updateRoleBadge() {
   const el=document.getElementById('role-badge'); el.classList.remove('hidden');
-  if (myRole==='X') { el.textContent=`Vous : X`; el.className='role-badge x'; }
-  else if (myRole==='O') { el.textContent=`Vous : O`; el.className='role-badge o'; }
+  if (myRole==='X') { el.textContent=`Vous : ${getThemeMark('X')}`; el.className='role-badge x'; }
+  else if (myRole==='O') { el.textContent=`Vous : ${getThemeMark('O')}`; el.className='role-badge o'; }
   else { el.textContent='Spectateur'; el.className='role-badge s'; }
 }
 
@@ -1836,7 +1909,6 @@ function render() {
   }
   if (G._lastAuto) delete G._lastAuto;
   updateHUD();
-  if (G.winner) setTimeout(showGameOver,600);
 }
 
 function updateHUD() {
@@ -1844,6 +1916,8 @@ function updateHUD() {
   document.getElementById('so').textContent=scores.O;
   document.getElementById('sname-x').textContent=names.X;
   document.getElementById('sname-o').textContent=names.O;
+  document.getElementById('lbl-x').textContent=getThemeMark('X');
+  document.getElementById('lbl-o').textContent=getThemeMark('O');
 
   const banner=document.getElementById('turn-banner');
   const dot=document.getElementById('turn-dot');
@@ -1876,6 +1950,21 @@ function showGameOver(abandon=false) {
   const title_el=document.getElementById('go-title');
   const msg_el=document.getElementById('go-msg');
 
+  // Record stats
+  if (!abandon) {
+    if (w === 'draw') {
+      recordResult('draw');
+    } else if (mode === 'bot') {
+      recordResult(w === humanSide ? 'win' : 'loss');
+    } else if (mode === 'online') {
+      if (myRole === w) recordResult('win');
+      else if (myRole) recordResult('loss');
+    } else {
+      // local : on enregistre pour les deux joueurs, on compte juste win global
+      recordResult('win');
+    }
+  }
+
   if (w==='draw') {
     winner_el.textContent=''; title_el.textContent='MATCH NUL'; title_el.className='go-title d'; msg_el.textContent='Égalité parfaite !';
   } else {
@@ -1885,6 +1974,7 @@ function showGameOver(abandon=false) {
     msg_el.textContent=abandon?`${names[w==='X'?'O':'X']} a abandonné. Point pour ${wname} !`:`${wname} remporte la manche !`;
     if (mode!=='online'||myRole===w) spawnParticles(w);
   }
+  updateGoStats();
   show('gameover');
   const replayBtn = document.getElementById('go-replay-btn');
   if (mode === 'bot') replayBtn.style.display = '';
@@ -1906,7 +1996,102 @@ function resetGame() {
 }
 
 // ════════════════════════════════════════════════════════
-// THEME MARKS
+// STATISTIQUES
+// ════════════════════════════════════════════════════════
+const STAT_KEYS = ['global','local','bot-easy','bot-medium','bot-hard','online'];
+
+function emptyStats() {
+  return { win:0, loss:0, draw:0, streak:0, bestStreak:0, fastest:null, longest:0 };
+}
+
+function loadStats() {
+  try { return JSON.parse(localStorage.getItem('ttt-stats')) || {}; } catch(e) { return {}; }
+}
+
+function saveStats(s) { localStorage.setItem('ttt-stats', JSON.stringify(s)); }
+
+function getStatKey() {
+  if (mode === 'local') return 'local';
+  if (mode === 'online') return 'online';
+  if (mode === 'bot') return `bot-${difficulty}`;
+  return null;
+}
+
+function recordResult(result) {
+  const key = getStatKey();
+  if (!key) return;
+  const all = loadStats();
+  const moves = gameLog.length;
+  ['global', key].forEach(k => {
+    if (!all[k]) all[k] = emptyStats();
+    const s = all[k];
+    s[result]++;
+    if (result === 'win') {
+      s.streak++;
+      if (s.streak > s.bestStreak) s.bestStreak = s.streak;
+      // Fastest win (fewest moves)
+      if (s.fastest === null || moves < s.fastest) s.fastest = moves;
+    } else {
+      s.streak = 0;
+    }
+    // Longest game (most moves, any result)
+    if (moves > s.longest) s.longest = moves;
+  });
+  saveStats(all);
+}
+
+let currentStatsTab = 'global';
+
+function openStats() {
+  currentStatsTab = 'global';
+  renderStats('global');
+  show('stats-overlay');
+}
+
+function showStatsTab(tab) {
+  currentStatsTab = tab;
+  document.querySelectorAll('.stats-tab').forEach((el,i) => {
+    el.classList.toggle('active', ['global','local','bot-easy','bot-medium','bot-hard','online'][i] === tab);
+  });
+  renderStats(tab);
+}
+
+function renderStats(tab) {
+  const all = loadStats();
+  const s = all[tab] || emptyStats();
+  const total = s.win + s.loss + s.draw;
+  const rate = total > 0 ? Math.round(s.win / total * 100) : 0;
+  document.getElementById('sv-win').textContent    = s.win;
+  document.getElementById('sv-loss').textContent   = s.loss;
+  document.getElementById('sv-draw').textContent   = s.draw;
+  document.getElementById('sv-total').textContent  = total;
+  document.getElementById('sv-rate').textContent   = rate + '%';
+  document.getElementById('sv-streak').textContent = s.streak;
+  document.getElementById('sv-best').textContent   = s.bestStreak;
+  document.getElementById('sv-fastest').textContent = s.fastest !== null ? s.fastest + ' coups' : '—';
+  document.getElementById('sv-longest').textContent = s.longest > 0 ? s.longest + ' coups' : '—';
+}
+
+function confirmResetStats() {
+  if (confirm('Réinitialiser toutes les statistiques ?')) {
+    localStorage.removeItem('ttt-stats');
+    renderStats(currentStatsTab);
+  }
+}
+
+function updateGoStats() {
+  const key = getStatKey();
+  if (!key) { document.getElementById('go-stats-row').innerHTML = ''; return; }
+  const all = loadStats();
+  const s = all[key] || emptyStats();
+  const total = s.win + s.loss + s.draw;
+  const rate = total > 0 ? Math.round(s.win / total * 100) : 0;
+  document.getElementById('go-stats-row').innerHTML =
+    `<span class="go-stat win">✓ ${s.win}V</span>` +
+    `<span class="go-stat loss">✗ ${s.loss}D</span>` +
+    (s.streak > 1 ? `<span class="go-stat streak">🔥 ${s.streak} streak</span>` : '') +
+    `<span class="go-stat win" style="color:var(--x);border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.06)">${rate}% win</span>`;
+}
 // ════════════════════════════════════════════════════════
 const THEME_MARKS = {
   mario:    { X:'🍄', O:'⭐' }, jungle:   { X:'🦁', O:'🐸' },
