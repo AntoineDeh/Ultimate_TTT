@@ -94,8 +94,8 @@
     .diff-btn.active.hard { color:var(--o); border-color:var(--o); background:rgba(255,31,122,.1); box-shadow:0 0 12px rgba(255,31,122,.2); }
     .setup-go { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.8rem; letter-spacing:.2em; padding:13px; background:rgba(0,229,255,.1); color:var(--x); border:1px solid rgba(0,229,255,.4); border-radius:8px; cursor:pointer; text-transform:uppercase; transition:all .2s; }
     .setup-go:hover { background:rgba(0,229,255,.2); box-shadow:0 0 20px rgba(0,229,255,.25); }
-    .setup-back { font-family:'Share Tech Mono',monospace; font-size:.72rem; letter-spacing:.1em; opacity:.35; cursor:pointer; background:none; border:none; color:inherit; padding:4px; transition:opacity .2s; }
-    .setup-back:hover { opacity:.7; }
+    .setup-back { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.65rem; letter-spacing:.12em; padding:10px 20px; cursor:pointer; background:rgba(255,255,255,.06); border:1px solid rgba(180,180,255,.25); border-radius:8px; color:rgba(180,180,255,.7); transition:all .2s; text-transform:uppercase; }
+    .setup-back:hover { background:rgba(255,255,255,.12); border-color:rgba(180,180,255,.5); color:#fff; }
 
     /* ── Role badge ── */
     .role-badge { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.75rem; letter-spacing:.2em; padding:5px 16px; border-radius:20px; border:1px solid; text-transform:uppercase; }
@@ -923,6 +923,7 @@
   <div class="wait-icon">◎</div>
   <div class="wait-title" id="wait-title">EN ATTENTE D'UN JOUEUR</div>
   <div class="wait-sub">Partagez l'adresse réseau à votre ami<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div></div>
+  <button onclick="backToMenu()" style="font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.15em;padding:12px 28px;background:rgba(255,31,122,.1);color:var(--o);border:1px solid rgba(255,31,122,.35);border-radius:8px;cursor:pointer;margin-top:8px;">⌂ RETOUR AU MENU</button>
 </div>
 
 <!-- Cheat code overlay -->
