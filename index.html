@@ -65,7 +65,7 @@
     @keyframes fadein { from{opacity:0} to{opacity:1} }
 
     /* ── Menu redesign ── */
-    .menu { background:var(--bg); gap:0; justify-content:space-between; padding:0 0 20px; overflow:hidden; }
+    .menu { background:var(--bg); gap:20px; justify-content:center; padding:24px 0; overflow:hidden; }
 
     /* Logo zone */
     .menu-logo-zone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:20px 20px 16px; position:relative; }
@@ -952,8 +952,8 @@
 <div class="overlay menu" id="menu">
   <!-- Logo zone -->
   <div class="menu-logo-zone">
-    <div id="menu-logo" class="menu-logo-svg" style="margin-bottom:14px;"></div>
-    <div class="menu-title" style="margin-bottom:10px;">ULTIMATE <span>TTT</span></div>
+    <div id="menu-logo" class="menu-logo-svg" style="margin-bottom:20px;"></div>
+    <div class="menu-title" style="margin-bottom:6px;">ULTIMATE <span>TTT</span></div>
     <div id="rank-badge" class="rank-badge-menu" onclick="openScoreInfo()"></div>
   </div>
 
@@ -995,7 +995,7 @@
   </div><!-- fin menu-btns -->
 
   <!-- Boutons secondaires -->
-  <div style="display:flex;flex-direction:column;gap:8px;width:min(340px,88vw);padding:0 16px;margin-top:6px;">
+  <div style="display:flex;flex-direction:column;gap:8px;width:min(340px,88vw);padding:0 16px;">
     <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);padding:11px;" onclick="openStats()">📊 STATISTIQUES</button>
     <div style="display:flex;gap:8px;">
       <button class="menu-bottom-btn" style="border-color:rgba(180,180,255,.25);color:rgba(180,180,255,.7);padding:11px;" onclick="show('rules-overlay')">📋 RÈGLES</button>
