@@ -64,33 +64,90 @@
     .overlay.hidden { display:none; }
     @keyframes fadein { from{opacity:0} to{opacity:1} }
 
-    /* ── Menu ── */
-    .menu { background:rgba(5,5,15,.98); gap:28px; }
-    .menu-btns { display:flex; flex-direction:column; gap:14px; width:min(320px,85vw); }
-    .menu-btn { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.82rem; letter-spacing:.15em; padding:16px 20px; background:var(--surface); border-radius:10px; cursor:pointer; text-transform:uppercase; transition:all .2s; display:flex; flex-direction:column; gap:5px; text-align:left; }
-    .menu-btn:hover { transform:translateY(-2px); }
-    .menu-btn.local { color:var(--x); border:1px solid rgba(0,229,255,.3); box-shadow:0 0 20px rgba(0,229,255,.08); }
-    .menu-btn.local:hover { border-color:var(--x); box-shadow:0 0 30px rgba(0,229,255,.22); }
-    .menu-btn.bot { color:#a78bfa; border:1px solid rgba(167,139,250,.3); box-shadow:0 0 20px rgba(167,139,250,.08); }
-    .menu-btn.bot:hover { border-color:#a78bfa; box-shadow:0 0 30px rgba(167,139,250,.22); }
-    .menu-btn.online { color:var(--o); border:1px solid rgba(255,31,122,.3); box-shadow:0 0 20px rgba(255,31,122,.08); }
-    .menu-btn.online:hover { border-color:var(--o); box-shadow:0 0 30px rgba(255,31,122,.22); }
-    .menu-btn-sub { font-family:'Share Tech Mono',monospace; font-size:.68rem; opacity:.5; font-weight:400; letter-spacing:.08em; }
-    .menu-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:clamp(1.4rem,5vw,2.2rem); letter-spacing:.2em; color:#fff; text-shadow:0 0 18px rgba(80,100,255,.9); text-align:center; }
-    .menu-title span { color:var(--x); text-shadow:0 0 14px var(--x); }
-    .menu-sub { font-size:.75rem; letter-spacing:.18em; opacity:.4; }
-    .menu-btns { display:flex; flex-direction:column; gap:14px; width:min(320px,85vw); }
-    .menu-btn { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.82rem; letter-spacing:.15em; padding:16px 20px; background:var(--surface); border-radius:10px; cursor:pointer; text-transform:uppercase; transition:all .2s; display:flex; flex-direction:column; gap:5px; text-align:left; }
-    .menu-btn:hover { transform:translateY(-2px); }
-    .menu-btn.local { color:var(--x); border:1px solid rgba(0,229,255,.3); box-shadow:0 0 20px rgba(0,229,255,.08); }
-    .menu-btn.local:hover { border-color:var(--x); box-shadow:0 0 30px rgba(0,229,255,.22); }
-    .menu-btn.bot { color:#a78bfa; border:1px solid rgba(167,139,250,.3); box-shadow:0 0 20px rgba(167,139,250,.08); }
-    .menu-btn.bot:hover { border-color:#a78bfa; box-shadow:0 0 30px rgba(167,139,250,.22); }
-    .menu-btn.online { color:var(--o); border:1px solid rgba(255,31,122,.3); box-shadow:0 0 20px rgba(255,31,122,.08); }
-    .menu-btn.online:hover { border-color:var(--o); box-shadow:0 0 30px rgba(255,31,122,.22); }
-    .menu-btn-sub { font-family:'Share Tech Mono',monospace; font-size:.68rem; opacity:.5; font-weight:400; letter-spacing:.08em; }
+    /* ── Menu redesign ── */
+    .menu { background:var(--bg); gap:0; justify-content:space-between; padding:0 0 24px; overflow:hidden; }
 
-    /* ── Setup screens ── */
+    /* Logo zone */
+    .menu-logo-zone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:32px 20px 20px; position:relative; flex:1; }
+    .menu-logo-zone::after { content:''; position:absolute; bottom:0; left:10%; right:10%; height:1px; background:linear-gradient(to right,transparent,var(--x),var(--o),transparent); opacity:.3; }
+
+    /* Animated SVG logo */
+    .menu-logo-svg { width:clamp(60px,20vw,90px); height:clamp(60px,20vw,90px); filter:drop-shadow(0 0 12px var(--x)); animation:logoFloat 3s ease-in-out infinite; }
+    @keyframes logoFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-6px) rotate(3deg)} }
+    .menu-logo-svg rect { stroke-dasharray:40; stroke-dashoffset:40; animation:drawLine 1.2s ease forwards; }
+    .menu-logo-svg rect:nth-child(1){animation-delay:.0s} .menu-logo-svg rect:nth-child(2){animation-delay:.1s}
+    .menu-logo-svg rect:nth-child(3){animation-delay:.2s} .menu-logo-svg rect:nth-child(4){animation-delay:.3s}
+    .menu-logo-svg rect:nth-child(5){animation-delay:.4s} .menu-logo-svg rect:nth-child(6){animation-delay:.5s}
+    .menu-logo-svg rect:nth-child(7){animation-delay:.6s} .menu-logo-svg rect:nth-child(8){animation-delay:.7s}
+    .menu-logo-svg rect:nth-child(9){animation-delay:.8s}
+    @keyframes drawLine { to{stroke-dashoffset:0} }
+
+    .menu-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:clamp(1.6rem,6vw,2.4rem); letter-spacing:.15em; color:#fff; text-align:center; animation:titleReveal .8s ease .3s both; }
+    .menu-title span { color:var(--x); text-shadow:0 0 20px var(--x); }
+    @keyframes titleReveal { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Rank badge */
+    .rank-badge-menu { display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; padding:7px 18px; border-radius:20px; border:1px solid rgba(200,160,40,.25); background:rgba(200,134,10,.07); transition:all .2s; animation:titleReveal .8s ease .5s both; }
+    .rank-badge-menu:hover { border-color:rgba(200,160,40,.5); background:rgba(200,134,10,.15); transform:scale(1.03); }
+
+    /* Buttons */
+    .menu-btns { display:flex; flex-direction:column; gap:10px; width:min(340px,88vw); padding:0 16px; }
+    .menu-btn { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.8rem; letter-spacing:.12em; padding:0; background:transparent; border-radius:14px; cursor:pointer; text-transform:uppercase; transition:all .25s; display:flex; align-items:stretch; text-align:left; border:none; overflow:hidden; opacity:0; animation:btnSlideIn .4s ease forwards; }
+    .menu-btn:nth-child(1){animation-delay:.1s} .menu-btn:nth-child(2){animation-delay:.2s} .menu-btn:nth-child(3){animation-delay:.3s}
+    @keyframes btnSlideIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+    .menu-btn:hover { transform:translateX(4px) scale(1.01); }
+    .menu-btn:active { transform:scale(.98); }
+
+    .menu-btn-accent { width:5px; flex-shrink:0; border-radius:14px 0 0 14px; }
+    .menu-btn.local  .menu-btn-accent { background:var(--x); box-shadow:0 0 12px var(--x); }
+    .menu-btn.bot    .menu-btn-accent { background:#a78bfa; box-shadow:0 0 12px #a78bfa; }
+    .menu-btn.online .menu-btn-accent { background:var(--o); box-shadow:0 0 12px var(--o); }
+
+    .menu-btn-inner { flex:1; display:flex; align-items:center; gap:14px; padding:16px 18px; background:var(--surface); border:1px solid; border-left:none; border-radius:0 14px 14px 0; transition:background .2s,border-color .2s; }
+    .menu-btn.local  .menu-btn-inner { border-color:rgba(0,229,255,.2); }
+    .menu-btn.bot    .menu-btn-inner { border-color:rgba(167,139,250,.2); }
+    .menu-btn.online .menu-btn-inner { border-color:rgba(255,31,122,.2); }
+    .menu-btn.local:hover  .menu-btn-inner { background:rgba(0,229,255,.06); border-color:rgba(0,229,255,.4); }
+    .menu-btn.bot:hover    .menu-btn-inner { background:rgba(167,139,250,.06); border-color:rgba(167,139,250,.4); }
+    .menu-btn.online:hover .menu-btn-inner { background:rgba(255,31,122,.06); border-color:rgba(255,31,122,.4); }
+
+    .menu-btn-emoji { font-size:1.6rem; flex-shrink:0; }
+    .menu-btn-texts { display:flex; flex-direction:column; gap:3px; flex:1; }
+    .menu-btn-label { font-size:.78rem; letter-spacing:.12em; }
+    .menu-btn.local  .menu-btn-label { color:var(--x); }
+    .menu-btn.bot    .menu-btn-label { color:#a78bfa; }
+    .menu-btn.online .menu-btn-label { color:var(--o); }
+    .menu-btn-sub { font-family:'Share Tech Mono',monospace; font-size:.62rem; opacity:.45; font-weight:400; letter-spacing:.06em; color:#fff; }
+
+    .menu-btn-arrow { font-size:.8rem; opacity:.3; margin-left:auto; flex-shrink:0; }
+    .menu-btn:hover .menu-btn-arrow { opacity:.8; transform:translateX(3px); }
+    .menu-btn-arrow { transition:all .2s; }
+
+    /* Bottom bar */
+    .menu-bottom-bar { display:flex; gap:8px; width:min(340px,88vw); padding:0 16px; margin-top:4px; }
+    .menu-bottom-btn { flex:1; font-family:'Orbitron',sans-serif; font-size:.58rem; font-weight:700; letter-spacing:.1em; padding:10px 8px; border-radius:10px; border:1px solid rgba(180,180,255,.15); background:rgba(255,255,255,.03); color:rgba(180,180,255,.55); cursor:pointer; transition:all .2s; text-align:center; }
+    .menu-bottom-btn:hover { border-color:rgba(180,180,255,.35); color:#fff; background:rgba(255,255,255,.07); }
+    .menu-stats-btn { font-family:'Orbitron',sans-serif; font-size:.58rem; font-weight:700; letter-spacing:.1em; padding:10px; border-radius:10px; border:1px solid rgba(74,222,128,.2); background:rgba(74,222,128,.04); color:rgba(74,222,128,.7); cursor:pointer; transition:all .2s; width:min(340px,88vw); margin:0 16px; text-align:center; }
+    .menu-stats-btn:hover { border-color:rgba(74,222,128,.4); background:rgba(74,222,128,.08); color:#4ade80; }
+
+    /* Mario menu theme overrides */
+    body.theme-mario .menu { background:#1e50c8; }
+    body.theme-mario .menu-btn-inner { background:rgba(255,255,255,.1); }
+    body.theme-mario .menu-btn.local .menu-btn-inner { border-color:#e8003d; }
+    body.theme-mario .menu-btn.bot .menu-btn-inner   { border-color:#f7c948; }
+    body.theme-mario .menu-btn.online .menu-btn-inner{ border-color:#00b050; }
+    body.theme-mario .menu-btn-sub { color:rgba(255,255,255,.7); }
+    body.theme-mario .menu-bottom-btn { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.2); color:#fff; }
+    /* Jungle menu */
+    body.theme-jungle .menu { background:#021a04; }
+    /* Princess menu */
+    body.theme-princess .menu { background:#1a0a2e; }
+    body.theme-princess .menu-btn-inner { border-radius:0 18px 18px 0; }
+    /* Candy menu */
+    body.theme-candy .menu { background:#fff0f7; }
+    body.theme-candy .menu-btn-inner { background:rgba(255,255,255,.8); }
+    body.theme-candy .menu-btn-sub { color:#555; }
+    body.theme-candy .menu-bottom-btn { background:rgba(255,255,255,.7); border-color:rgba(0,0,0,.1); color:#555; }
     .setup { background:rgba(5,5,15,.98); gap:24px; }
     .setup-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1rem; letter-spacing:.2em; color:#fff; text-align:center; }
     .setup-form { display:flex; flex-direction:column; gap:14px; width:min(300px,85vw); max-height:75vh; overflow-y:auto; padding-bottom:8px; }
@@ -783,7 +840,6 @@
 
   <div class="stats-mode-tabs" id="stats-tabs">
     <button class="stats-tab active" onclick="showStatsTab('global')">🌐 Global</button>
-    <button class="stats-tab" onclick="showStatsTab('local')">◈ Local</button>
     <button class="stats-tab" onclick="showStatsTab('bot-easy')">🟢 Facile</button>
     <button class="stats-tab" onclick="showStatsTab('bot-medium')">🟡 Moyen</button>
     <button class="stats-tab" onclick="showStatsTab('bot-hard')">🔴 Difficile</button>
@@ -897,17 +953,67 @@
 
 <!-- Menu -->
 <div class="overlay menu" id="menu">
-  <div class="menu-title">ULTIMATE <span>TTT</span></div>
-  <div id="rank-badge" class="rank-badge-menu" onclick="openScoreInfo()"></div>
+  <!-- Logo zone -->
+  <div class="menu-logo-zone">
+    <svg class="menu-logo-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2"  width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
+      <rect x="32" y="2" width="26" height="26" rx="4" stroke="var(--active)" stroke-width="2.5"/>
+      <rect x="62" y="2" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
+      <rect x="2" y="32" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
+      <rect x="32" y="32" width="26" height="26" rx="4" stroke="var(--o)" stroke-width="3"/>
+      <rect x="62" y="32" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
+      <rect x="2" y="62" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
+      <rect x="32" y="62" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
+      <rect x="62" y="62" width="26" height="26" rx="4" stroke="var(--active)" stroke-width="2.5"/>
+      <line x1="38" y1="38" x2="52" y2="52" stroke="var(--o)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="52" y1="38" x2="38" y2="52" stroke="var(--o)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="menu-title">ULTIMATE <span>TTT</span></div>
+    <div id="rank-badge" class="rank-badge-menu" onclick="openScoreInfo()"></div>
+  </div>
+
+  <!-- Main buttons -->
   <div class="menu-btns">
-    <button class="menu-btn local" onclick="showSetup('local')">◈ LOCAL — 2 joueurs<span class="menu-btn-sub">Même appareil, à tour de rôle</span></button>
-    <button class="menu-btn bot" onclick="showSetup('bot')">◆ CONTRE LE BOT<span class="menu-btn-sub">Facile, Moyen ou Difficile</span></button>
-    <button class="menu-btn online" onclick="showSetup('online')">◉ EN LIGNE — Réseau<span class="menu-btn-sub">Via WiFi ou internet</span></button>
-    <div style="display:flex;gap:10px;margin-top:4px;">
-      <button class="menu-btn" style="flex:1;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);font-size:.72rem;padding:12px 10px;" onclick="show('rules-overlay')">📋 RÈGLES</button>
-      <button class="menu-btn" style="flex:1;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);font-size:.72rem;padding:12px 10px;" onclick="openDesign()">🎨 DESIGN</button>
+    <button class="menu-btn local" onclick="showSetup('local')">
+      <div class="menu-btn-accent"></div>
+      <div class="menu-btn-inner">
+        <span class="menu-btn-emoji">👥</span>
+        <span class="menu-btn-texts">
+          <span class="menu-btn-label">LOCAL — 2 JOUEURS</span>
+          <span class="menu-btn-sub">Même appareil, à tour de rôle</span>
+        </span>
+        <span class="menu-btn-arrow">›</span>
+      </div>
+    </button>
+    <button class="menu-btn bot" onclick="showSetup('bot')">
+      <div class="menu-btn-accent"></div>
+      <div class="menu-btn-inner">
+        <span class="menu-btn-emoji">🤖</span>
+        <span class="menu-btn-texts">
+          <span class="menu-btn-label">CONTRE LE BOT</span>
+          <span class="menu-btn-sub">Facile, Moyen ou Difficile</span>
+        </span>
+        <span class="menu-btn-arrow">›</span>
+      </div>
+    </button>
+    <button class="menu-btn online" onclick="showSetup('online')">
+      <div class="menu-btn-accent"></div>
+      <div class="menu-btn-inner">
+        <span class="menu-btn-emoji">🌐</span>
+        <span class="menu-btn-texts">
+          <span class="menu-btn-label">EN LIGNE — RÉSEAU</span>
+          <span class="menu-btn-sub">Via WiFi ou internet</span>
+        </span>
+        <span class="menu-btn-arrow">›</span>
+      </div>
+    </button>
+    <!-- Rangée Règles / Design -->
+    <div style="display:flex;gap:10px;margin-top:2px;">
+      <button class="menu-bottom-btn" style="padding:12px 10px;" onclick="show('rules-overlay')">📋 RÈGLES</button>
+      <button class="menu-bottom-btn" style="flex:1.6;padding:12px 10px;border-color:rgba(var(--x-rgb,0,229,255),.35);color:var(--x);background:rgba(var(--x-rgb,0,229,255),.07);font-size:.62rem;" onclick="openDesign()">🎨 DESIGN <span style="opacity:.5;font-size:.5rem;letter-spacing:.08em;">— THÈMES</span></button>
     </div>
-    <button class="menu-btn" style="color:rgba(74,222,128,.8);border-color:rgba(74,222,128,.25);font-size:.72rem;padding:12px 10px;margin-top:0;text-align:center;" onclick="openStats()">📊 STATISTIQUES</button>
+    <!-- Statistiques -->
+    <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);padding:12px 10px;font-size:.62rem;" onclick="openStats()">📊 STATISTIQUES <span style="opacity:.5;font-size:.5rem;letter-spacing:.08em;">— RANG & SCORES</span></button>
   </div>
 </div>
 
@@ -2178,7 +2284,7 @@ function resetGame() {
 // ════════════════════════════════════════════════════════
 // STATISTIQUES
 // ════════════════════════════════════════════════════════
-const STAT_KEYS = ['global','local','bot-easy','bot-medium','bot-hard','online'];
+const STAT_KEYS = ['global','bot-easy','bot-medium','bot-hard','online'];
 
 function emptyStats() {
   return { win:0, loss:0, draw:0, streak:0, bestStreak:0, fastest:null, longest:0 };
@@ -2191,7 +2297,7 @@ function loadStats() {
 function saveStats(s) { localStorage.setItem('ttt-stats', JSON.stringify(s)); }
 
 function getStatKey() {
-  if (mode === 'local') return 'local';
+  if (mode === 'local') return null; // pas de stats en local
   if (mode === 'online') return 'online';
   if (mode === 'bot') return `bot-${difficulty}`;
   return null;
