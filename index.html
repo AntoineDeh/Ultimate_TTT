@@ -2422,6 +2422,7 @@ function renderMenuLogo() {
 }
 
 function openScoreInfo() {
+  const score = loadScore();
   const rank = getRank(score);
   const pct = score / 1000 * 100;
   const nextRank = RANKS.slice().reverse().find(r => r.min > score);
