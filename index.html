@@ -346,8 +346,36 @@
     .stats-tab { font-family:'Orbitron',sans-serif; font-size:.55rem; font-weight:700; letter-spacing:.08em; padding:8px 12px; border-radius:8px; border:1px solid rgba(200,160,40,.12); background:rgba(200,160,40,.03); color:rgba(200,160,40,.4); cursor:pointer; transition:all .2s; }
     .stats-tab:hover { border-color:rgba(200,160,40,.3); color:rgba(200,160,40,.7); }
     .stats-tab.active { border-color:#c8860a; color:#f5c842; background:rgba(200,134,10,.14); box-shadow:0 0 12px rgba(200,134,10,.25); }
-    .stats-reset { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.1em; color:rgba(200,80,80,.35); cursor:pointer; background:transparent; border:1px solid rgba(200,80,80,.12); border-radius:6px; padding:7px 16px; margin-top:8px; transition:all .2s; }
-    .stats-reset:hover { color:rgba(200,80,80,.7); border-color:rgba(200,80,80,.4); }
+    .stats-reset { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.62rem; letter-spacing:.12em; color:rgba(220,80,80,.7); cursor:pointer; background:rgba(200,60,60,.08); border:1px solid rgba(220,80,80,.35); border-radius:8px; padding:11px 20px; margin-top:8px; transition:all .2s; text-transform:uppercase; width:100%; max-width:420px; }
+    .stats-reset:hover { color:#f87171; border-color:#f87171; background:rgba(200,60,60,.15); box-shadow:0 0 12px rgba(248,113,113,.2); }
+    /* ── Rang TTT ── */
+    .rank-badge-menu { display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; padding:8px 16px; border-radius:12px; border:1px solid rgba(200,160,40,.2); background:rgba(200,134,10,.06); transition:all .2s; min-height:42px; }
+    .rank-badge-menu:hover { border-color:rgba(200,160,40,.4); background:rgba(200,134,10,.12); }
+    .rank-emoji { font-size:1.2rem; }
+    .rank-label { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.7rem; letter-spacing:.12em; color:#f5c842; }
+    .rank-score { font-family:'Orbitron',sans-serif; font-size:.75rem; font-weight:900; color:#fff; }
+    .rank-max { font-size:.55rem; opacity:.4; }
+    .stats-rank-card { width:100%; max-width:420px; background:linear-gradient(135deg,rgba(200,134,10,.08),rgba(200,160,40,.04)); border:1px solid rgba(200,160,40,.2); border-radius:14px; padding:16px 18px; display:flex; align-items:center; gap:14px; margin-bottom:14px; position:relative; overflow:hidden; }
+    .stats-rank-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,#c8860a,transparent); }
+    .stats-rank-big-emoji { font-size:2.2rem; flex-shrink:0; }
+    .stats-rank-info { display:flex; flex-direction:column; gap:4px; flex:1; min-width:0; }
+    .stats-rank-name { font-family:'Orbitron',sans-serif; font-weight:900; font-size:.85rem; letter-spacing:.12em; color:#f5c842; }
+    .stats-rank-pts { font-family:'Orbitron',sans-serif; font-size:.62rem; color:rgba(200,160,40,.5); letter-spacing:.08em; }
+    .stats-rank-bar-bg { height:5px; background:rgba(200,160,40,.1); border-radius:3px; overflow:hidden; margin-top:2px; }
+    .stats-rank-bar-fill { height:100%; background:linear-gradient(90deg,#c8860a,#f5c842); border-radius:3px; transition:width .6s ease; }
+    .stats-rank-next { font-size:.48rem; letter-spacing:.08em; color:rgba(200,160,40,.28); margin-top:2px; }
+    /* Score info overlay */
+    .si-rank-row { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; background:rgba(200,160,40,.04); border:1px solid rgba(200,160,40,.08); font-family:'Orbitron',sans-serif; font-size:.62rem; letter-spacing:.08em; color:rgba(200,160,40,.6); }
+    .si-rank-row span:first-child { font-size:1rem; }
+    .si-rank-row span:last-child { margin-left:auto; font-size:.55rem; opacity:.5; }
+    .si-pts-row { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; border-radius:8px; font-size:.65rem; letter-spacing:.05em; border:1px solid; }
+    .si-pts-row span { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.6rem; }
+    .si-pts-row.win  { color:#4ade80; border-color:rgba(74,222,128,.15); background:rgba(74,222,128,.04); }
+    .si-pts-row.loss { color:#f87171; border-color:rgba(248,113,113,.15); background:rgba(248,113,113,.04); }
+    .si-pts-row.draw { color:rgba(200,160,40,.6); border-color:rgba(200,160,40,.1); background:rgba(200,160,40,.03); }
+    .si-pts-row.bonus{ color:#f5c842; border-color:rgba(245,200,66,.15); background:rgba(245,200,66,.04); }
+    .stats-rank-card { cursor:pointer; }
+    .stats-rank-card:hover { border-color:rgba(200,160,40,.35); }
     /* Mini stats in gameover */
     .go-stats { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:4px; width:100%; }
     .go-stat { font-size:.6rem; letter-spacing:.08em; padding:3px 10px; border-radius:12px; border:1px solid; }
@@ -750,6 +778,8 @@
     <button class="stats-close" onclick="hide('stats-overlay')">✕ FERMER</button>
   </div>
   <div class="stats-subtitle">PERFORMANCES PAR MODE DE JEU</div>
+  <!-- Rank card -->
+  <div class="stats-rank-card" id="stats-rank-card"></div>
 
   <div class="stats-mode-tabs" id="stats-tabs">
     <button class="stats-tab active" onclick="showStatsTab('global')">🌐 Global</button>
@@ -789,8 +819,51 @@
       <div class="stat-card record-card"><div class="stat-val record" id="sv-longest">—</div><div class="stat-lbl">PARTIE LA + LONGUE 🏁</div></div>
     </div>
   </div>
-  <div class="stats-scroll-hint">↑ défiler pour voir plus</div>
   <button class="stats-reset" onclick="confirmResetStats()">🗑 Réinitialiser les statistiques</button>
+</div>
+
+<!-- Score info overlay -->
+<div class="overlay hidden" id="score-info" style="z-index:650;background:rgba(8,6,0,.98);overflow-y:auto;justify-content:flex-start;padding:24px 16px 32px;align-items:center;gap:16px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:380px;">
+    <div style="font-family:'Orbitron',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:.2em;background:linear-gradient(135deg,#c8860a,#f5c842,#c8860a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">⚡ SYSTÈME DE RANG</div>
+    <button onclick="hide('score-info')" style="font-family:'Orbitron',sans-serif;font-size:.62rem;font-weight:700;padding:7px 14px;background:rgba(200,134,10,.08);color:#c8860a;border:1px solid rgba(200,134,10,.25);border-radius:8px;cursor:pointer;">✕ FERMER</button>
+  </div>
+
+  <!-- Rang actuel -->
+  <div id="si-rank-card" style="width:100%;max-width:380px;"></div>
+
+  <!-- Tableau des paliers -->
+  <div style="width:100%;max-width:380px;">
+    <div style="font-family:'Orbitron',sans-serif;font-size:.55rem;letter-spacing:.2em;color:rgba(200,160,40,.4);margin-bottom:10px;">◆ PALIERS</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div class="si-rank-row" style="--rc:#ef4444"><span>🔥</span><span>Légende</span><span>950 – 1000</span></div>
+      <div class="si-rank-row" style="--rc:#f5c842"><span>👑</span><span>Grand Maître</span><span>800 – 949</span></div>
+      <div class="si-rank-row" style="--rc:#22d3ee"><span>💎</span><span>Maître</span><span>600 – 799</span></div>
+      <div class="si-rank-row" style="--rc:#fbbf24"><span>🥇</span><span>Expert</span><span>400 – 599</span></div>
+      <div class="si-rank-row" style="--rc:#94a3b8"><span>🥈</span><span>Challenger</span><span>200 – 399</span></div>
+      <div class="si-rank-row" style="--rc:#78350f"><span>🥉</span><span>Recrue</span><span>0 – 199</span></div>
+    </div>
+  </div>
+
+  <!-- Comment gagner des points -->
+  <div style="width:100%;max-width:380px;">
+    <div style="font-family:'Orbitron',sans-serif;font-size:.55rem;letter-spacing:.2em;color:rgba(200,160,40,.4);margin-bottom:10px;">◆ COMMENT GAGNER DES POINTS</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <div class="si-pts-row win">✓ Victoire en ligne<span>+75 pts</span></div>
+      <div class="si-pts-row win">✓ Victoire vs Bot Difficile<span>+60 pts</span></div>
+      <div class="si-pts-row win">✓ Victoire vs Bot Moyen<span>+35 pts</span></div>
+      <div class="si-pts-row win">✓ Victoire vs Bot Facile<span>+20 pts</span></div>
+      <div class="si-pts-row bonus">⚡ Victoire en moins de 20 coups<span>+20 pts</span></div>
+      <div class="si-pts-row bonus">🔥 Streak 3+ victoires<span>×1.2</span></div>
+      <div class="si-pts-row bonus">🔥 Streak 5+ victoires<span>×1.5</span></div>
+      <div class="si-pts-row bonus">🏆 Meilleur streak ≥ 3<span>+30 pts</span></div>
+      <div class="si-pts-row bonus">🏆 Meilleur streak ≥ 5<span>+80 pts</span></div>
+      <div class="si-pts-row bonus">🏆 Meilleur streak ≥ 10<span>+150 pts</span></div>
+      <div class="si-pts-row draw">— Égalité<span>+5 pts</span></div>
+      <div class="si-pts-row loss">✗ Défaite<span>-25 pts</span></div>
+    </div>
+  </div>
+  <div style="font-size:.55rem;letter-spacing:.1em;color:rgba(200,160,40,.2);text-align:center;max-width:380px;line-height:1.6;">Le score est calculé automatiquement depuis toutes tes statistiques.</div>
 </div>
 
 <!-- Stats confirm reset -->
@@ -825,7 +898,7 @@
 <!-- Menu -->
 <div class="overlay menu" id="menu">
   <div class="menu-title">ULTIMATE <span>TTT</span></div>
-  <div class="menu-sub">CHOISIR UN MODE</div>
+  <div id="rank-badge" class="rank-badge-menu" onclick="openScoreInfo()"></div>
   <div class="menu-btns">
     <button class="menu-btn local" onclick="showSetup('local')">◈ LOCAL — 2 joueurs<span class="menu-btn-sub">Même appareil, à tour de rôle</span></button>
     <button class="menu-btn bot" onclick="showSetup('bot')">◆ CONTRE LE BOT<span class="menu-btn-sub">Facile, Moyen ou Difficile</span></button>
@@ -1358,6 +1431,7 @@ function backToMenu() {
   document.getElementById('undo-btn').style.pointerEvents='';
   document.getElementById('board').innerHTML='';
   document.getElementById('turn-text').textContent='—';
+  renderRankBadge();
 }
 function setDiff(d) {
   difficulty = d;
@@ -1431,16 +1505,31 @@ function botMove() {
 }
 
 function botEasy(state) {
-  // Profondeur 1 : regarde seulement le coup suivant
   const moves = getValidMoves(state);
   if (!moves.length) return null;
   const start = Date.now();
-  // Gagne immédiatement si possible
+
+  // Toujours saisir une victoire immédiate
   for (const [b,c] of moves) {
     const ns = applyMove(state,b,c);
     if (ns.winner === 'O') return [b,c];
   }
-  // Sinon minimax profondeur 1
+
+  // 30% de chance de faire une gaffe : jouer un coup parmi les pires
+  if (Math.random() < 0.30) {
+    // Trier les coups du pire au meilleur, prendre parmi les 40% les pires
+    const scored = moves.map(([b,c]) => {
+      const ns = applyMove(state,b,c);
+      const sc = minimax(ns, 1, false, -Infinity, Infinity, start, 2000);
+      return { move:[b,c], sc };
+    });
+    scored.sort((a,b) => a.sc - b.sc); // pire en premier
+    const worstCount = Math.max(1, Math.floor(scored.length * 0.4));
+    const worst = scored.slice(0, worstCount);
+    return worst[Math.floor(Math.random() * worst.length)].move;
+  }
+
+  // 70% : joue le meilleur coup minimax d=1
   let best = null, bestScore = -Infinity;
   for (const [b,c] of moves) {
     const ns = applyMove(state,b,c);
@@ -2035,18 +2124,23 @@ function showGameOver(abandon=false) {
   const title_el=document.getElementById('go-title');
   const msg_el=document.getElementById('go-msg');
 
-  // Record stats
-  if (!abandon) {
+  // Record stats + score (pas en local — 2 joueurs, impossible de savoir qui joue)
+  let scoreResult = null;
+  if (!abandon && mode !== 'local') {
+    let result = null;
     if (w === 'draw') {
-      recordResult('draw');
+      result = 'draw';
     } else if (mode === 'bot') {
-      recordResult(w === humanSide ? 'win' : 'loss');
+      result = w === humanSide ? 'win' : 'loss';
     } else if (mode === 'online') {
-      if (myRole === w) recordResult('win');
-      else if (myRole) recordResult('loss');
-    } else {
-      // local : on enregistre pour les deux joueurs, on compte juste win global
-      recordResult('win');
+      if (myRole === w) result = 'win';
+      else if (myRole) result = 'loss';
+    }
+    if (result) {
+      const scoreBefore = calcScoreFromStats();
+      recordResult(result);
+      const scoreAfter = calcScoreFromStats();
+      scoreResult = { old: scoreBefore, newScore: scoreAfter, delta: scoreAfter - scoreBefore };
     }
   }
 
@@ -2059,7 +2153,8 @@ function showGameOver(abandon=false) {
     msg_el.textContent=abandon?`${names[w==='X'?'O':'X']} a abandonné. Point pour ${wname} !`:`${wname} remporte la manche !`;
     if (mode!=='online'||myRole===w) spawnParticles(w);
   }
-  updateGoStats();
+  updateGoStats(scoreResult);
+  renderRankBadge();
   show('gameover');
   const replayBtn = document.getElementById('go-replay-btn');
   if (mode === 'bot') replayBtn.style.display = '';
@@ -2127,9 +2222,144 @@ function recordResult(result) {
 
 let currentStatsTab = 'global';
 
+// ════════════════════════════════════════════════════════
+// SYSTÈME DE SCORE (Rang TTT — calculé depuis les stats)
+// ════════════════════════════════════════════════════════
+const RANKS = [
+  { min:950, label:'Légende',      emoji:'🔥' },
+  { min:800, label:'Grand Maître', emoji:'👑' },
+  { min:600, label:'Maître',       emoji:'💎' },
+  { min:400, label:'Expert',       emoji:'🥇' },
+  { min:200, label:'Challenger',   emoji:'🥈' },
+  { min:0,   label:'Recrue',       emoji:'🥉' },
+];
+
+function calcScoreFromStats() {
+  const all = loadStats();
+  let score = 0;
+
+  const botEasy   = all['bot-easy']   || {};
+  const botMed    = all['bot-medium'] || {};
+  const botHard   = all['bot-hard']   || {};
+  const online    = all['online']     || {};
+  const global    = all['global']     || {};
+
+  // Points par victoire (local exclu)
+  score += (botEasy.win  || 0) * 20;
+  score += (botMed.win   || 0) * 35;
+  score += (botHard.win  || 0) * 60;
+  score += (online.win   || 0) * 75;
+
+  // Malus défaites — protégé sous 100 pts
+  const rawWins = (botEasy.win||0)*20 + (botMed.win||0)*35 + (botHard.win||0)*60 + (online.win||0)*75;
+  const losses = global.loss || 0;
+  let lossTotal = 0;
+  let tempScore = rawWins;
+  for (let i = 0; i < losses; i++) {
+    if (tempScore >= 100) { lossTotal += 25; tempScore -= 25; }
+  }
+  score -= lossTotal;
+
+  // Bonus égalités
+  score += (global.draw  || 0) * 5;
+
+  // Bonus meilleur streak
+  const best = global.bestStreak || 0;
+  if (best >= 10) score += 150;
+  else if (best >= 5) score += 80;
+  else if (best >= 3) score += 30;
+
+  // Bonus victoire rapide (fastest win global)
+  if (global.fastest !== null && global.fastest !== undefined && global.fastest < 20) score += 50;
+
+  return Math.max(0, Math.min(1000, score));
+}
+
+function loadScore() { return calcScoreFromStats(); }
+function saveScore() { /* score is derived from stats, nothing to save */ }
+
+function getRank(score) {
+  return RANKS.find(r => score >= r.min) || RANKS[RANKS.length-1];
+}
+
+function calcScoreDelta(result, moves) {
+  let delta = 0;
+  const all = loadStats();
+  const globalStreak = (all['global'] || {}).streak || 0;
+
+  if (result === 'win') {
+    if (mode === 'online')                              delta = 75;
+    else if (mode === 'bot' && difficulty === 'hard')   delta = 60;
+    else if (mode === 'bot' && difficulty === 'medium') delta = 35;
+    else if (mode === 'bot' && difficulty === 'easy')   delta = 20;
+    if (moves < 20) delta += 20;
+    const streak = globalStreak + 1;
+    if (streak >= 5)      delta = Math.round(delta * 1.5);
+    else if (streak >= 3) delta = Math.round(delta * 1.2);
+  } else if (result === 'loss') {
+    delta = -25;
+  } else {
+    delta = 5;
+  }
+  return delta;
+}
+
+function updateScore(result) {
+  const moves = gameLog.length;
+  const old = calcScoreFromStats();
+  const delta = calcScoreDelta(result, moves);
+  // Score will be recalculated from stats after recordResult
+  return { old, delta };
+}
+
+function openScoreInfo() {
+  const score = loadScore();
+  const rank = getRank(score);
+  const pct = score / 1000 * 100;
+  const nextRank = RANKS.slice().reverse().find(r => r.min > score);
+  const nextInfo = nextRank ? `Prochain : ${nextRank.emoji} ${nextRank.label} à ${nextRank.min} pts` : '🔥 Rang maximum !';
+  const card = document.getElementById('si-rank-card');
+  if (card) card.innerHTML = `
+    <div class="stats-rank-card" style="cursor:default;margin-bottom:0">
+      <div class="stats-rank-big-emoji">${rank.emoji}</div>
+      <div class="stats-rank-info">
+        <div class="stats-rank-name">${rank.label}</div>
+        <div class="stats-rank-pts">${score} / 1000 points</div>
+        <div class="stats-rank-bar-bg"><div class="stats-rank-bar-fill" style="width:${pct}%"></div></div>
+        <div class="stats-rank-next">${nextInfo}</div>
+      </div>
+    </div>`;
+  show('score-info');
+}
+
+function renderRankBadge() {
+  const score = loadScore();
+  const rank = getRank(score);
+  // Menu badge
+  const el = document.getElementById('rank-badge');
+  if (el) el.innerHTML = `<span class="rank-emoji">${rank.emoji}</span><span class="rank-label">${rank.label}</span><span class="rank-score">${score}<span class="rank-max">/1000</span></span>`;
+  // Stats rank card
+  const card = document.getElementById('stats-rank-card');
+  if (card) {
+    const nextRank = RANKS.slice().reverse().find(r => r.min > score);
+    const pct = score / 1000 * 100;
+    const nextInfo = nextRank ? `Prochain palier : ${nextRank.emoji} ${nextRank.label} à ${nextRank.min} pts` : '🔥 Rang maximum atteint !';
+    card.innerHTML = `
+      <div class="stats-rank-big-emoji">${rank.emoji}</div>
+      <div class="stats-rank-info">
+        <div class="stats-rank-name">${rank.label}</div>
+        <div class="stats-rank-pts">${score} / 1000 points</div>
+        <div class="stats-rank-bar-bg"><div class="stats-rank-bar-fill" style="width:${pct}%"></div></div>
+        <div class="stats-rank-next">${nextInfo}</div>
+      </div>`;
+    card.onclick = openScoreInfo;
+  }
+}
+
 function openStats() {
   currentStatsTab = 'global';
   renderStats('global');
+  renderRankBadge();
   show('stats-overlay');
 }
 
@@ -2162,22 +2392,30 @@ function confirmResetStats() {
 }
 function doResetStats() {
   localStorage.removeItem('ttt-stats');
+  localStorage.removeItem('ttt-score');
   document.getElementById('stats-confirm').classList.remove('open');
   renderStats(currentStatsTab);
+  renderRankBadge();
 }
 
-function updateGoStats() {
+function updateGoStats(scoreResult) {
   const key = getStatKey();
   if (!key) { document.getElementById('go-stats-row').innerHTML = ''; return; }
   const all = loadStats();
   const s = all[key] || emptyStats();
   const total = s.win + s.loss + s.draw;
   const rate = total > 0 ? Math.round(s.win / total * 100) : 0;
+  const rank = getRank(loadScore());
+  const deltaStr = scoreResult
+    ? `<span class="go-stat ${scoreResult.delta >= 0 ? 'win' : 'loss'}">${scoreResult.delta >= 0 ? '+' : ''}${scoreResult.delta} pts</span>`
+    : '';
   document.getElementById('go-stats-row').innerHTML =
     `<span class="go-stat win">✓ ${s.win}V</span>` +
     `<span class="go-stat loss">✗ ${s.loss}D</span>` +
     (s.streak > 1 ? `<span class="go-stat streak">🔥 ${s.streak} streak</span>` : '') +
-    `<span class="go-stat win" style="color:var(--x);border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.06)">${rate}% win</span>`;
+    `<span class="go-stat win" style="color:var(--x);border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.06)">${rate}% win</span>` +
+    deltaStr +
+    `<span class="go-stat streak">${rank.emoji} ${loadScore()}/1000</span>`;
 }
 // ════════════════════════════════════════════════════════
 const THEME_MARKS = {
@@ -2291,6 +2529,7 @@ function showSetup(m) {
 (function(){
   const t = localStorage.getItem('ttt-theme') || 'cyberpunk';
   setTheme(t);
+  renderRankBadge();
 })();
 // FIRST RUN
 // ════════════════════════════════════════════════════════
