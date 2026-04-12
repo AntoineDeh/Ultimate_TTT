@@ -65,22 +65,23 @@
     @keyframes fadein { from{opacity:0} to{opacity:1} }
 
     /* ── Menu redesign ── */
-    .menu { background:var(--bg); gap:0; justify-content:space-between; padding:0 0 24px; overflow:hidden; }
+    .menu { background:var(--bg); gap:0; justify-content:space-between; padding:0 0 20px; overflow:hidden; }
 
     /* Logo zone */
-    .menu-logo-zone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:32px 20px 20px; position:relative; flex:1; }
+    .menu-logo-zone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px 20px 16px; position:relative; }
     .menu-logo-zone::after { content:''; position:absolute; bottom:0; left:10%; right:10%; height:1px; background:linear-gradient(to right,transparent,var(--x),var(--o),transparent); opacity:.3; }
 
-    /* Animated SVG logo */
-    .menu-logo-svg { width:clamp(60px,20vw,90px); height:clamp(60px,20vw,90px); filter:drop-shadow(0 0 12px var(--x)); animation:logoFloat 3s ease-in-out infinite; }
-    @keyframes logoFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-6px) rotate(3deg)} }
-    .menu-logo-svg rect { stroke-dasharray:40; stroke-dashoffset:40; animation:drawLine 1.2s ease forwards; }
-    .menu-logo-svg rect:nth-child(1){animation-delay:.0s} .menu-logo-svg rect:nth-child(2){animation-delay:.1s}
-    .menu-logo-svg rect:nth-child(3){animation-delay:.2s} .menu-logo-svg rect:nth-child(4){animation-delay:.3s}
-    .menu-logo-svg rect:nth-child(5){animation-delay:.4s} .menu-logo-svg rect:nth-child(6){animation-delay:.5s}
-    .menu-logo-svg rect:nth-child(7){animation-delay:.6s} .menu-logo-svg rect:nth-child(8){animation-delay:.7s}
-    .menu-logo-svg rect:nth-child(9){animation-delay:.8s}
-    @keyframes drawLine { to{stroke-dashoffset:0} }
+    /* Animated logo */
+    .menu-logo-svg { width:clamp(56px,16vw,76px); height:clamp(56px,16vw,76px); display:grid; grid-template-columns:repeat(3,1fr); gap:3px; animation:logoFloat 3s ease-in-out infinite; }
+    @keyframes logoFloat { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-5px) rotate(2deg)} }
+    .logo-cell { display:flex; align-items:center; justify-content:center; border-radius:5px; border:1.5px solid; font-size:clamp(14px,4.5vw,22px); animation:logoCellIn .4s ease both; }
+    .logo-cell.lx { border-color:var(--x); background:rgba(0,229,255,.08); }
+    .logo-cell.lo { border-color:var(--o); background:rgba(255,31,122,.08); }
+    .logo-cell.la { border-color:var(--active); background:rgba(255,193,7,.08); }
+    .logo-cell:nth-child(1){animation-delay:.05s} .logo-cell:nth-child(2){animation-delay:.1s} .logo-cell:nth-child(3){animation-delay:.15s}
+    .logo-cell:nth-child(4){animation-delay:.2s}  .logo-cell:nth-child(5){animation-delay:.25s} .logo-cell:nth-child(6){animation-delay:.3s}
+    .logo-cell:nth-child(7){animation-delay:.35s} .logo-cell:nth-child(8){animation-delay:.4s}  .logo-cell:nth-child(9){animation-delay:.45s}
+    @keyframes logoCellIn { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
 
     .menu-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:clamp(1.6rem,6vw,2.4rem); letter-spacing:.15em; color:#fff; text-align:center; animation:titleReveal .8s ease .3s both; }
     .menu-title span { color:var(--x); text-shadow:0 0 20px var(--x); }
@@ -91,8 +92,8 @@
     .rank-badge-menu:hover { border-color:rgba(200,160,40,.5); background:rgba(200,134,10,.15); transform:scale(1.03); }
 
     /* Buttons */
-    .menu-btns { display:flex; flex-direction:column; gap:10px; width:min(340px,88vw); padding:0 16px; }
-    .menu-btn { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.8rem; letter-spacing:.12em; padding:0; background:transparent; border-radius:14px; cursor:pointer; text-transform:uppercase; transition:all .25s; display:flex; align-items:stretch; text-align:left; border:none; overflow:hidden; opacity:0; animation:btnSlideIn .4s ease forwards; }
+    .menu-btns { display:flex; flex-direction:column; gap:8px; width:min(340px,88vw); padding:0 16px; }
+    .menu-btn { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.8rem; letter-spacing:.12em; padding:0; background:transparent; border-radius:12px; cursor:pointer; text-transform:uppercase; transition:all .25s; display:flex; align-items:stretch; text-align:left; border:none; overflow:hidden; opacity:0; animation:btnSlideIn .4s ease forwards; }
     .menu-btn:nth-child(1){animation-delay:.1s} .menu-btn:nth-child(2){animation-delay:.2s} .menu-btn:nth-child(3){animation-delay:.3s}
     @keyframes btnSlideIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
     .menu-btn:hover { transform:translateX(4px) scale(1.01); }
@@ -103,7 +104,7 @@
     .menu-btn.bot    .menu-btn-accent { background:#a78bfa; box-shadow:0 0 12px #a78bfa; }
     .menu-btn.online .menu-btn-accent { background:var(--o); box-shadow:0 0 12px var(--o); }
 
-    .menu-btn-inner { flex:1; display:flex; align-items:center; gap:14px; padding:16px 18px; background:var(--surface); border:1px solid; border-left:none; border-radius:0 14px 14px 0; transition:background .2s,border-color .2s; }
+    .menu-btn-inner { flex:1; display:flex; align-items:center; gap:12px; padding:13px 16px; background:var(--surface); border:1px solid; border-left:none; border-radius:0 12px 12px 0; transition:background .2s,border-color .2s; }
     .menu-btn.local  .menu-btn-inner { border-color:rgba(0,229,255,.2); }
     .menu-btn.bot    .menu-btn-inner { border-color:rgba(167,139,250,.2); }
     .menu-btn.online .menu-btn-inner { border-color:rgba(255,31,122,.2); }
@@ -112,23 +113,19 @@
     .menu-btn.online:hover .menu-btn-inner { background:rgba(255,31,122,.06); border-color:rgba(255,31,122,.4); }
 
     .menu-btn-emoji { font-size:1.6rem; flex-shrink:0; }
-    .menu-btn-texts { display:flex; flex-direction:column; gap:3px; flex:1; }
+    .menu-btn-texts { display:flex; flex-direction:column; gap:4px; flex:1; }
     .menu-btn-label { font-size:.78rem; letter-spacing:.12em; }
     .menu-btn.local  .menu-btn-label { color:var(--x); }
     .menu-btn.bot    .menu-btn-label { color:#a78bfa; }
     .menu-btn.online .menu-btn-label { color:var(--o); }
-    .menu-btn-sub { font-family:'Share Tech Mono',monospace; font-size:.62rem; opacity:.45; font-weight:400; letter-spacing:.06em; color:#fff; }
-
-    .menu-btn-arrow { font-size:.8rem; opacity:.3; margin-left:auto; flex-shrink:0; }
+    .menu-btn-sub { font-family:'Share Tech Mono',monospace; font-size:.64rem; opacity:.45; font-weight:400; letter-spacing:.06em; color:#fff; }
+    .menu-btn-arrow { font-size:.9rem; opacity:.3; margin-left:auto; flex-shrink:0; transition:all .2s; }
     .menu-btn:hover .menu-btn-arrow { opacity:.8; transform:translateX(3px); }
-    .menu-btn-arrow { transition:all .2s; }
 
-    /* Bottom bar */
-    .menu-bottom-bar { display:flex; gap:8px; width:min(340px,88vw); padding:0 16px; margin-top:4px; }
-    .menu-bottom-btn { flex:1; font-family:'Orbitron',sans-serif; font-size:.58rem; font-weight:700; letter-spacing:.1em; padding:10px 8px; border-radius:10px; border:1px solid rgba(180,180,255,.15); background:rgba(255,255,255,.03); color:rgba(180,180,255,.55); cursor:pointer; transition:all .2s; text-align:center; }
+    /* Bottom buttons */
+    .menu-bottom-bar { display:flex; gap:10px; width:min(340px,88vw); padding:0 16px; margin-top:6px; }
+    .menu-bottom-btn { flex:1; font-family:'Orbitron',sans-serif; font-size:.58rem; font-weight:700; letter-spacing:.1em; padding:13px 8px; border-radius:10px; border:1px solid rgba(180,180,255,.15); background:rgba(255,255,255,.03); color:rgba(180,180,255,.55); cursor:pointer; transition:all .2s; text-align:center; }
     .menu-bottom-btn:hover { border-color:rgba(180,180,255,.35); color:#fff; background:rgba(255,255,255,.07); }
-    .menu-stats-btn { font-family:'Orbitron',sans-serif; font-size:.58rem; font-weight:700; letter-spacing:.1em; padding:10px; border-radius:10px; border:1px solid rgba(74,222,128,.2); background:rgba(74,222,128,.04); color:rgba(74,222,128,.7); cursor:pointer; transition:all .2s; width:min(340px,88vw); margin:0 16px; text-align:center; }
-    .menu-stats-btn:hover { border-color:rgba(74,222,128,.4); background:rgba(74,222,128,.08); color:#4ade80; }
 
     /* Mario menu theme overrides */
     body.theme-mario .menu { background:#1e50c8; }
@@ -955,19 +952,7 @@
 <div class="overlay menu" id="menu">
   <!-- Logo zone -->
   <div class="menu-logo-zone">
-    <svg class="menu-logo-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2"  width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
-      <rect x="32" y="2" width="26" height="26" rx="4" stroke="var(--active)" stroke-width="2.5"/>
-      <rect x="62" y="2" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
-      <rect x="2" y="32" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
-      <rect x="32" y="32" width="26" height="26" rx="4" stroke="var(--o)" stroke-width="3"/>
-      <rect x="62" y="32" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
-      <rect x="2" y="62" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
-      <rect x="32" y="62" width="26" height="26" rx="4" stroke="var(--x)" stroke-width="2.5"/>
-      <rect x="62" y="62" width="26" height="26" rx="4" stroke="var(--active)" stroke-width="2.5"/>
-      <line x1="38" y1="38" x2="52" y2="52" stroke="var(--o)" stroke-width="3" stroke-linecap="round"/>
-      <line x1="52" y1="38" x2="38" y2="52" stroke="var(--o)" stroke-width="3" stroke-linecap="round"/>
-    </svg>
+    <div id="menu-logo" class="menu-logo-svg"></div>
     <div class="menu-title">ULTIMATE <span>TTT</span></div>
     <div id="rank-badge" class="rank-badge-menu" onclick="openScoreInfo()"></div>
   </div>
@@ -1007,13 +992,15 @@
         <span class="menu-btn-arrow">›</span>
       </div>
     </button>
-    <!-- Rangée Règles / Design -->
-    <div style="display:flex;gap:10px;margin-top:2px;">
-      <button class="menu-bottom-btn" style="padding:12px 10px;" onclick="show('rules-overlay')">📋 RÈGLES</button>
-      <button class="menu-bottom-btn" style="flex:1.6;padding:12px 10px;border-color:rgba(var(--x-rgb,0,229,255),.35);color:var(--x);background:rgba(var(--x-rgb,0,229,255),.07);font-size:.62rem;" onclick="openDesign()">🎨 DESIGN <span style="opacity:.5;font-size:.5rem;letter-spacing:.08em;">— THÈMES</span></button>
+  </div><!-- fin menu-btns -->
+
+  <!-- Boutons secondaires -->
+  <div style="display:flex;flex-direction:column;gap:8px;width:min(340px,88vw);padding:0 16px;margin-top:6px;">
+    <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);padding:11px;" onclick="openStats()">📊 STATISTIQUES</button>
+    <div style="display:flex;gap:8px;">
+      <button class="menu-bottom-btn" style="border-color:rgba(180,180,255,.25);color:rgba(180,180,255,.7);padding:11px;" onclick="show('rules-overlay')">📋 RÈGLES</button>
+      <button class="menu-bottom-btn" style="flex:1.6;border-color:rgba(0,229,255,.3);color:var(--x);background:rgba(0,229,255,.06);padding:11px;" onclick="openDesign()">🎨 DESIGN</button>
     </div>
-    <!-- Statistiques -->
-    <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);padding:12px 10px;font-size:.62rem;" onclick="openStats()">📊 STATISTIQUES <span style="opacity:.5;font-size:.5rem;letter-spacing:.08em;">— RANG & SCORES</span></button>
   </div>
 </div>
 
@@ -2418,8 +2405,23 @@ function updateScore(result) {
   return { old, delta };
 }
 
+function renderMenuLogo() {
+  const el = document.getElementById('menu-logo');
+  if (!el) return;
+  const mx = getThemeMark('X');
+  const mo = getThemeMark('O');
+  // Grille 3×3 : X, vide, O, O, X, vide, vide, O, X
+  const cells = [
+    {m:mx, cls:'lx'}, {m:'',  cls:'la'}, {m:mo, cls:'lo'},
+    {m:mo, cls:'lo'}, {m:mx, cls:'lx'}, {m:'',  cls:'la'},
+    {m:'',  cls:'la'}, {m:mo, cls:'lo'}, {m:mx, cls:'lx'},
+  ];
+  el.innerHTML = cells.map(c =>
+    `<div class="logo-cell ${c.cls}">${c.m}</div>`
+  ).join('');
+}
+
 function openScoreInfo() {
-  const score = loadScore();
   const rank = getRank(score);
   const pct = score / 1000 * 100;
   const nextRank = RANKS.slice().reverse().find(r => r.min > score);
@@ -2444,6 +2446,7 @@ function renderRankBadge() {
   // Menu badge
   const el = document.getElementById('rank-badge');
   if (el) el.innerHTML = `<span class="rank-emoji">${rank.emoji}</span><span class="rank-label">${rank.label}</span><span class="rank-score">${score}<span class="rank-max">/1000</span></span>`;
+  renderMenuLogo();
   // Stats rank card
   const card = document.getElementById('stats-rank-card');
   if (card) {
@@ -2599,6 +2602,7 @@ function setTheme(t) {
   document.body.classList.add(`theme-${t}`);
   document.getElementById(`tc-${t}`)?.classList.add('active');
   localStorage.setItem('ttt-theme', t);
+  renderMenuLogo();
 }
 function openDesign() {
   const panel = document.getElementById('design-panel');
