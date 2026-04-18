@@ -80,14 +80,15 @@ Réseau → http://192.168.x.x:3000   ← partager à ton ami (même WiFi)
 pkg install cloudflared
 ```
 
+
+
+# Lancer le tunnel
+
 dans un autre terminal :
 une seule fois :
 ```bash
 source ~/.bashrc
-```
-
-# Lancer le tunnel
-```bash
+&&
 ttt-tunnel
 ```
 
