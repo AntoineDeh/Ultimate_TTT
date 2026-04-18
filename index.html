@@ -2258,7 +2258,7 @@ function resetGame() {
   hide('gameover');
   if (mode==='online') { ws.send(JSON.stringify({type:'reset'})); return; }
   const nextStarter = G && G._firstPlayer === 'X' ? 'O' : 'X';
-  if (mode === 'bot') humanSide = nextStarter; // le joueur humain commence la manche suivante
+  if (mode === 'bot') humanSide = nextStarter;
   G=newState(); G._firstPlayer = nextStarter; G.player = nextStarter;
   botThinking=false; history=[]; undoUsed=false; hintCell=null;
   hints=3; updateHintBtn();
@@ -2266,6 +2266,7 @@ function resetGame() {
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   if (mode !== 'bot') hide('undo-btn');
+  runAutoAndRender();
 }
 
 // ════════════════════════════════════════════════════════
