@@ -24,22 +24,40 @@ Ouvre `index.html` directement dans un navigateur. Aucune installation requise.
 
 #### Prérequis (une seule fois)
 
+Pour jouer sur téléphone en ligne : installation de Termux depuis le play store
+
+Dans la racine de Termux :
+
 ```bash
+git clone https://github.com/AntoineDeh/Ultimate_TTT.git
+&&
 pkg install nodejs
+&&
 npm install ws
 ```
-Pour jouer sur téléphone en ligne : installation de Termux depuis le play store
 
 #### Alias Termux recommandés (~/.bashrc)
 
 ```bash
+nano ~/.bashrc
+```
+
+Copier cela 
+
+```bash
+
 alias ttt-server='cd ~/Ultimate_TTT_fix && node server.js'
 alias ttt-tunnel='cloudflared tunnel --url http://localhost:3000'
 alias ttt-update='mv ~/storage/downloads/index.html ~/Ultimate_TTT_fix/index.html && echo "Fichier déplacé!"'
 alias ttt-update-server='mv ~/storage/downloads/server.js ~/Ultimate_TTT_fix/server.js && echo "Server mis à jour!"'
 ```
+CTRL + X
+yes
+entrer
 
-Recharge après modification :
+Puis : 
+Recharge après modification dans le terminal :
+
 ```bash
 source ~/.bashrc
 ```
@@ -61,8 +79,16 @@ Réseau → http://192.168.x.x:3000   ← partager à ton ami (même WiFi)
 ```bash
 # Installer cloudflared (une seule fois)
 pkg install cloudflared
+```
+
+dans un autre terminal :
+une seule fois :
+```bash
+source ~/.bashrc
+```
 
 # Lancer le tunnel
+```bash
 ttt-tunnel
 ```
 
