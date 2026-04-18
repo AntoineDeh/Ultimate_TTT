@@ -1047,11 +1047,39 @@
   <div class="setup-title">◉ EN LIGNE</div>
   <div class="setup-form">
     <div><label class="setup-label">VOTRE PSEUDO</label><input class="setup-input" id="name-online" placeholder="Joueur" maxlength="16"></div>
+
+    <!-- Choix du mode en ligne -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:.6rem;letter-spacing:.15em;opacity:.45;text-transform:uppercase;">Mode de jeu</div>
+
+      <!-- Matchmaking -->
+      <button class="setup-go" style="background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--x);" onclick="startMatchmaking()">
+        🌐 RECHERCHER UNE PARTIE
+        <span style="font-family:'Share Tech Mono';font-size:.6rem;opacity:.55;display:block;margin-top:2px;font-weight:400;">Apparairement automatique</span>
+      </button>
+
+      <!-- Créer room privée -->
+      <button class="setup-go" style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);color:#a78bfa;" onclick="startCreateRoom()">
+        🔒 CRÉER UNE ROOM PRIVÉE
+        <span style="font-family:'Share Tech Mono';font-size:.6rem;opacity:.55;display:block;margin-top:2px;font-weight:400;">Générer un code à partager</span>
+      </button>
+
+      <!-- Rejoindre room privée -->
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <input class="setup-input" id="room-code-input" placeholder="CODE (ex: KXBT)" maxlength="4"
+          style="text-transform:uppercase;letter-spacing:.3em;font-size:1.1rem;text-align:center;"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter')startJoinRoom()">
+        <button class="setup-go" style="background:rgba(255,31,122,.1);border:1px solid rgba(255,31,122,.3);color:var(--o);" onclick="startJoinRoom()">
+          🔑 REJOINDRE AVEC UN CODE
+        </button>
+      </div>
+    </div>
+
     <div class="settings-row" style="background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:8px;padding:10px 12px;">
       <span class="settings-lbl" style="opacity:1;color:var(--active)">⚡ Auto-complétion</span>
       <label class="toggle"><input type="checkbox" id="auto-online" onchange="autoMode=this.checked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
     </div>
-    <button class="setup-go" onclick="startOnline()">▶ REJOINDRE</button>
     <button class="setup-back" onclick="backToMenu()">← RETOUR</button>
   </div>
 </div>
@@ -1245,7 +1273,13 @@
 <div class="overlay waiting-screen hidden" id="waiting-screen">
   <div class="wait-icon">◎</div>
   <div class="wait-title" id="wait-title">EN ATTENTE D'UN JOUEUR</div>
-  <div class="wait-sub">Partagez l'adresse réseau à votre ami<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div></div>
+  <div class="wait-sub" id="wait-sub">Partagez le code ou l'adresse à votre ami<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div></div>
+  <!-- Code room affiché si room privée -->
+  <div id="room-code-display" style="display:none;flex-direction:column;align-items:center;gap:6px;margin-top:4px;">
+    <div style="font-size:.55rem;letter-spacing:.2em;opacity:.45;">CODE DE LA ROOM</div>
+    <div id="room-code-value" style="font-family:'Orbitron',sans-serif;font-weight:900;font-size:2.2rem;letter-spacing:.4em;color:var(--active);text-shadow:0 0 20px var(--active);"></div>
+    <button onclick="copyRoomCode()" style="font-family:'Orbitron',sans-serif;font-size:.6rem;padding:7px 16px;background:rgba(255,193,7,.1);color:var(--active);border:1px solid rgba(255,193,7,.3);border-radius:8px;cursor:pointer;letter-spacing:.1em;">📋 COPIER LE CODE</button>
+  </div>
   <button onclick="backToMenu()" style="font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.15em;padding:12px 28px;background:rgba(255,31,122,.1);color:var(--o);border:1px solid rgba(255,31,122,.35);border-radius:8px;cursor:pointer;margin-top:8px;">⌂ RETOUR AU MENU</button>
 </div>
 
@@ -1518,7 +1552,8 @@ function backToMenu() {
   show('menu');
   ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn','reset-btn'].forEach(hide);
   hide('role-badge');
-  if (ws) { ws.onclose=null; ws.close(); ws=null; }
+  if (ws) { ws.send(JSON.stringify({type:'cancel_matchmake'})); ws.onclose=null; ws.close(); ws=null; }
+  currentRoomId = null;
   scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false; hintCell=null; hints=3; gameLog=[]; analysisCache={}; analysisReady=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
@@ -2070,34 +2105,121 @@ function undoMove() {
 // ════════════════════════════════════════════════════════
 let myRole=null, ws=null, myName='Joueur';
 
-function startOnline() {
-  const n = document.getElementById('name-online').value.trim() || 'Joueur';
-  myName = n;
-  mode='online'; names={X:'?', O:'?'};
-  autoMode = document.getElementById('auto-online').checked;
-  hide('setup-online'); showGameIcons();
-  hints = 3; updateHintBtn();
-  connect();
+let currentRoomId = null;
+
+function getOnlineName() {
+  return document.getElementById('name-online').value.trim() || 'Joueur';
 }
 
-function connect() {
-  const proto=location.protocol==='https:'?'wss':'ws';
-  ws=new WebSocket(`${proto}://${location.host}`);
-  ws.onopen=()=>{
-    ws.send(JSON.stringify({type:'name', name:myName}));
+function initOnlineMode(name) {
+  myName = name;
+  mode = 'online';
+  names = {X:'?', O:'?'};
+  autoMode = document.getElementById('auto-online').checked;
+  hide('setup-online');
+  showGameIcons();
+  hints = 3; updateHintBtn();
+  currentRoomId = null;
+  document.getElementById('room-code-display').style.display = 'none';
+}
+
+// Mode matchmaking automatique
+function startMatchmaking() {
+  const name = getOnlineName();
+  initOnlineMode(name);
+  connect(() => {
+    ws.send(JSON.stringify({type:'matchmake', name, autoMode}));
+    document.getElementById('wait-title').textContent = '🔍 RECHERCHE EN COURS';
+    document.getElementById('wait-sub').innerHTML = 'Recherche d\'un adversaire<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
+    show('waiting-screen');
+  });
+}
+
+// Créer une room privée
+function startCreateRoom() {
+  const name = getOnlineName();
+  initOnlineMode(name);
+  connect(() => {
+    ws.send(JSON.stringify({type:'create_room', name}));
+    document.getElementById('wait-title').textContent = 'EN ATTENTE D\'UN JOUEUR';
+    document.getElementById('wait-sub').innerHTML = 'Partagez le code ci-dessous<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
+    show('waiting-screen');
+  });
+}
+
+// Rejoindre une room privée par code
+function startJoinRoom() {
+  const name = getOnlineName();
+  const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+  if (!code || code.length !== 4) {
+    document.getElementById('room-code-input').style.borderColor = '#ef4444';
+    setTimeout(() => document.getElementById('room-code-input').style.borderColor = '', 800);
+    return;
+  }
+  initOnlineMode(name);
+  connect(() => {
+    ws.send(JSON.stringify({type:'join_room', roomId: code, name}));
+  });
+}
+
+function copyRoomCode() {
+  if (!currentRoomId) return;
+  navigator.clipboard.writeText(currentRoomId).then(() => {
+    const btn = document.querySelector('#room-code-display button');
+    if (btn) { btn.textContent = '✅ COPIÉ !'; setTimeout(() => btn.textContent = '📋 COPIER LE CODE', 2000); }
+  }).catch(() => {
+    // Fallback
+    const el = document.getElementById('room-code-value');
+    if (el) { const prev = el.textContent; el.textContent = '✅'; setTimeout(() => el.textContent = prev, 1000); }
+  });
+}
+
+// Connexion WebSocket
+function connect(onOpen) {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}`);
+
+  ws.onopen = () => {
+    if (onOpen) onOpen();
     ws.send(JSON.stringify({type:'automode', autoMode}));
   };
-  ws.onmessage=({data})=>{
-    const msg=JSON.parse(data);
-    if (msg.type==='role') { myRole=msg.player; updateRoleBadge(); }
-    if (msg.type==='names') { names=msg.names; updateHUD(); }
-    if (msg.type==='automode') { autoMode=msg.autoMode; }
-    if (msg.type==='state') {
+
+  ws.onmessage = ({data}) => {
+    const msg = JSON.parse(data);
+
+    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); }
+    if (msg.type === 'names') { names = msg.names; updateHUD(); }
+    if (msg.type === 'automode') { autoMode = msg.autoMode; }
+
+    // Room créée → afficher le code
+    if (msg.type === 'room_created' || msg.type === 'roomId') {
+      currentRoomId = msg.roomId;
+      const display = document.getElementById('room-code-display');
+      const val = document.getElementById('room-code-value');
+      if (display && val) { display.style.display = 'flex'; val.textContent = msg.roomId; }
+    }
+
+    // Matchmaking : position dans la file
+    if (msg.type === 'matchmaking') {
+      document.getElementById('wait-title').textContent = `🔍 EN ATTENTE (#${msg.position})`;
+    }
+
+    // Matchmaking : adversaire trouvé
+    if (msg.type === 'matched') {
+      currentRoomId = msg.roomId;
+      document.getElementById('wait-title').textContent = '✅ ADVERSAIRE TROUVÉ !';
+    }
+
+    // Erreur (code room invalide, room pleine...)
+    if (msg.type === 'error') {
+      alert(msg.message);
+      backToMenu();
+    }
+
+    if (msg.type === 'state') {
       const prev = G;
-      G=msg.state; scores=G.scores;
-      // Record move for analysis if a move was played
+      G = msg.state; scores = G.scores;
       if (prev && G && prev.player !== G.player) {
-        // find which cell changed
         for (let b=0;b<9;b++) for (let c=0;c<9;c++) {
           if (!prev.boards[b][c] && G.boards[b][c]) {
             gameLog.push({state: JSON.parse(JSON.stringify(prev)), move:[b,c], player: prev.player});
@@ -2107,10 +2229,30 @@ function connect() {
       render();
       if (G.winner) setTimeout(showGameOver, 600);
     }
-    if (msg.type==='waiting') { show('waiting-screen'); document.getElementById('wait-title').textContent="EN ATTENTE D'UN JOUEUR"; }
-    if (msg.type==='ready') { hide('waiting-screen'); hide('gameover'); }
+
+    if (msg.type === 'waiting') {
+      show('waiting-screen');
+      document.getElementById('wait-title').textContent = "EN ATTENTE D'UN JOUEUR";
+      if (currentRoomId) {
+        const display = document.getElementById('room-code-display');
+        const val = document.getElementById('room-code-value');
+        if (display && val) { display.style.display = 'flex'; val.textContent = currentRoomId; }
+      }
+    }
+    if (msg.type === 'ready') { hide('waiting-screen'); hide('gameover'); }
   };
-  ws.onclose=()=>{ if(mode!=='online') return; show('waiting-screen'); document.getElementById('wait-title').textContent='CONNEXION PERDUE…'; setTimeout(connect,2000); };
+
+  ws.onclose = () => {
+    if (mode !== 'online') return;
+    show('waiting-screen');
+    document.getElementById('wait-title').textContent = 'CONNEXION PERDUE…';
+    document.getElementById('wait-sub').innerHTML = 'Reconnexion<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
+    setTimeout(() => {
+      if (mode === 'online' && currentRoomId) {
+        connect(() => ws.send(JSON.stringify({type:'join_room', roomId: currentRoomId, name: myName})));
+      }
+    }, 2000);
+  };
 }
 
 function updateRoleBadge() {
