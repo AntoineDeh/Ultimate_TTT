@@ -28,6 +28,7 @@ Ouvre `index.html` directement dans un navigateur. Aucune installation requise.
 pkg install nodejs
 npm install ws
 ```
+Pour jouer sur téléphone en ligne : installation de Termux depuis le play store
 
 #### Alias Termux recommandés (~/.bashrc)
 
