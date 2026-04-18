@@ -55,8 +55,7 @@ CTRL + X
 yes
 entrer
 
-Puis : 
-Recharge après modification dans le terminal :
+Puis recharge après modification dans le terminal :
 
 ```bash
 source ~/.bashrc
