@@ -116,26 +116,29 @@ function joinRoom(room, ws, name, role) {
 }
 
 // ── Matchmaking ───────────────────────────────────────────────────────────────
-function tryMatchmake() {
+function tryMatchmake(autoMode) {
   // Nettoyer les WS déconnectés
   matchmakingQueue = matchmakingQueue.filter(p => p.ws.readyState === 1);
 
-  if (matchmakingQueue.length >= 2) {
-    const p1 = matchmakingQueue.shift();
-    const p2 = matchmakingQueue.shift();
+  // Cherche deux joueurs avec le même autoMode
+  const compatible = matchmakingQueue.filter(p => p.autoMode === autoMode);
+  if (compatible.length >= 2) {
+    const p1 = compatible[0];
+    const p2 = compatible[1];
+    matchmakingQueue = matchmakingQueue.filter(p => p !== p1 && p !== p2);
 
     const roomId = makeRoomId();
     const room = createRoom(roomId);
     room.private = false;
+    room.autoMode = autoMode;
 
-    // Informer les joueurs qu'ils ont un adversaire
     send(p1.ws, { type: 'matched', roomId });
     send(p2.ws, { type: 'matched', roomId });
 
     joinRoom(room, p1.ws, p1.name, 'X');
     joinRoom(room, p2.ws, p2.name, 'O');
 
-    console.log(`[Matchmaking] Room ${roomId} créée: ${p1.name} vs ${p2.name}`);
+    console.log(`[Matchmaking] Room ${roomId}: ${p1.name} vs ${p2.name} (auto=${autoMode})`);
   }
 }
 
@@ -198,17 +201,18 @@ wss.on('connection', ws => {
       // ── Matchmaking ───────────────────────────────────────────────────────
       if (msg.type === 'matchmake') {
         const name = (msg.name || 'Joueur').slice(0, 16);
+        const auto = !!msg.autoMode;
         ws.playerName = name;
         ws.inMatchmaking = true;
 
-        // Déjà en file ?
         if (!matchmakingQueue.find(p => p.ws === ws)) {
-          matchmakingQueue.push({ ws, name, autoMode: !!msg.autoMode });
-          send(ws, { type: 'matchmaking', position: matchmakingQueue.length });
-          console.log(`[Matchmaking] ${name} en file (${matchmakingQueue.length} en attente)`);
+          matchmakingQueue.push({ ws, name, autoMode: auto });
+          const sameMode = matchmakingQueue.filter(p => p.autoMode === auto).length;
+          send(ws, { type: 'matchmaking', position: sameMode });
+          console.log(`[Matchmaking] ${name} en file auto=${auto} (${sameMode} avec même mode)`);
         }
 
-        tryMatchmake();
+        tryMatchmake(auto);
       }
 
       // ── Annuler matchmaking ────────────────────────────────────────────────
