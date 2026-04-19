@@ -2151,6 +2151,10 @@ function initOnlineMode(name) {
   hints = 3;
   currentRoomId = null;
   document.getElementById('room-code-display').style.display = 'none';
+  // Affiche l'écran d'attente immédiatement pour éviter l'écran vide
+  document.getElementById('wait-title').textContent = 'CONNEXION…';
+  document.getElementById('wait-sub').innerHTML = '<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
+  show('waiting-screen');
 }
 
 // Mode matchmaking automatique
