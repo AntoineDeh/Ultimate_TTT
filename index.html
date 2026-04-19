@@ -2242,7 +2242,7 @@ function connect(onOpen) {
   ws.onmessage = ({data}) => {
     const msg = JSON.parse(data);
 
-    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); }
+    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); showGameIcons(); updateHintBtn(); }
     if (msg.type === 'names') { names = msg.names; updateHUD(); }
     if (msg.type === 'automode') { autoMode = msg.autoMode; }
 
