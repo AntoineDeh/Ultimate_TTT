@@ -833,15 +833,30 @@
     .chat-panel.hidden { display:none; }
     .chat-panel-title { font-family:'Orbitron',sans-serif; font-size:.55rem; letter-spacing:.2em; opacity:.4; text-align:center; }
     .chat-msgs-wrap { max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
-    .chat-msg { font-size:.72rem; padding:5px 10px; border-radius:8px; max-width:80%; line-height:1.4; }
-    .chat-msg.mine { background:rgba(0,229,255,.12); border:1px solid rgba(0,229,255,.2); align-self:flex-end; color:var(--x); }
-    .chat-msg.theirs { background:rgba(255,31,122,.1); border:1px solid rgba(255,31,122,.2); align-self:flex-start; color:var(--o); }
-    .chat-presets { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-    .chat-preset-btn { font-size:.68rem; padding:7px 6px; border-radius:8px; border:1px solid rgba(180,180,255,.2); background:rgba(180,180,255,.05); color:rgba(200,200,255,.75); cursor:pointer; transition:all .2s; text-align:center; }
-    .chat-preset-btn:hover { border-color:rgba(180,180,255,.5); background:rgba(180,180,255,.12); color:#fff; }
+    .chat-msg { font-size:.75rem; padding:6px 11px; border-radius:12px; max-width:78%; line-height:1.5; word-break:break-word; }
+    .chat-msg.mine   { background:rgba(0,229,255,.13); border:1px solid rgba(0,229,255,.25); align-self:flex-end; color:var(--x); border-bottom-right-radius:3px; }
+    .chat-msg.theirs { background:rgba(255,31,122,.1);  border:1px solid rgba(255,31,122,.2);  align-self:flex-start; color:var(--o); border-bottom-left-radius:3px; }
+    .chat-msg .chat-sender { font-size:.55rem; letter-spacing:.08em; opacity:.5; margin-bottom:2px; }
+    /* Chat drawer — slide up from bottom */
+    .chat-drawer { position:fixed; bottom:0; left:0; right:0; z-index:900; background:var(--surface); border-top:1px solid var(--border-out); border-radius:18px 18px 0 0; display:flex; flex-direction:column; max-height:55vh; transform:translateY(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); box-shadow:0 -8px 40px rgba(0,0,0,.6); }
+    .chat-drawer.open { transform:translateY(0); }
+    .chat-drawer-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px 8px; border-bottom:1px solid rgba(180,180,255,.08); flex-shrink:0; }
+    .chat-drawer-title { font-family:'Orbitron',sans-serif; font-size:.62rem; letter-spacing:.18em; color:rgba(180,180,255,.6); }
+    .chat-drawer-close { font-family:'Orbitron',sans-serif; font-size:.58rem; font-weight:700; padding:5px 12px; border-radius:8px; border:1px solid rgba(180,180,255,.2); background:transparent; color:rgba(180,180,255,.5); cursor:pointer; }
+    .chat-drawer-close:hover { border-color:rgba(255,31,122,.4); color:var(--o); }
+    .chat-msgs-wrap { flex:1; overflow-y:auto; padding:10px 14px; display:flex; flex-direction:column; gap:6px; scroll-behavior:smooth; }
+    .chat-presets { display:flex; gap:6px; padding:6px 14px; overflow-x:auto; flex-shrink:0; scrollbar-width:none; }
+    .chat-presets::-webkit-scrollbar { display:none; }
+    .chat-preset-btn { white-space:nowrap; font-size:.65rem; padding:5px 10px; border-radius:20px; border:1px solid rgba(180,180,255,.2); background:rgba(180,180,255,.05); color:rgba(200,200,255,.7); cursor:pointer; transition:all .2s; flex-shrink:0; }
+    .chat-preset-btn:hover { border-color:rgba(0,229,255,.4); color:var(--x); background:rgba(0,229,255,.07); }
+    .chat-input-row { display:flex; gap:8px; padding:8px 14px 14px; flex-shrink:0; align-items:flex-end; }
+    .chat-input { flex:1; background:rgba(180,180,255,.07); border:1px solid rgba(180,180,255,.2); border-radius:20px; padding:9px 14px; color:#fff; font-family:'Share Tech Mono',monospace; font-size:.82rem; outline:none; resize:none; max-height:80px; line-height:1.4; transition:border .2s; }
+    .chat-input:focus { border-color:rgba(0,229,255,.4); }
+    .chat-send-btn { width:38px; height:38px; border-radius:50%; background:rgba(0,229,255,.15); border:1.5px solid rgba(0,229,255,.4); color:var(--x); font-size:1rem; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+    .chat-send-btn:hover { background:rgba(0,229,255,.3); }
     /* Chat bubble flottante */
-    .chat-bubble { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); z-index:850; background:var(--surface); border:1px solid var(--border-out); border-radius:20px; padding:8px 18px; font-size:.78rem; animation:bubbleIn .3s ease, bubbleOut .3s ease 2.5s forwards; pointer-events:none; white-space:nowrap; max-width:75vw; overflow:hidden; text-overflow:ellipsis; }
-    @keyframes bubbleIn  { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+    .chat-bubble { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); z-index:850; background:var(--surface); border:1px solid var(--border-out); border-radius:20px; padding:7px 16px; font-size:.76rem; animation:bubbleIn .3s ease, bubbleOut .3s ease 2.8s forwards; pointer-events:none; max-width:75vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    @keyframes bubbleIn  { from{opacity:0;transform:translateX(-50%) translateY(8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
     @keyframes bubbleOut { from{opacity:1} to{opacity:0} }
 
     /* ── Tournament mode ── */
@@ -865,17 +880,27 @@
 <!-- Sound toggle (always visible) -->
 <button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Son">🔊</button>
 
-<!-- Chat panel (online only) -->
-<div class="chat-panel hidden" id="chat-panel">
-  <div class="chat-panel-title">💬 MESSAGE RAPIDE</div>
+<!-- Chat drawer (online only) -->
+<div class="chat-drawer" id="chat-drawer">
+  <div class="chat-drawer-header">
+    <div class="chat-drawer-title">💬 CONVERSATION</div>
+    <button class="chat-drawer-close" onclick="toggleChat()">✕ FERMER</button>
+  </div>
   <div class="chat-msgs-wrap" id="chat-msgs"></div>
-  <div class="chat-presets">
+  <div class="chat-presets" id="chat-presets">
     <button class="chat-preset-btn" onclick="sendChat('GG ! 👏')">GG ! 👏</button>
-    <button class="chat-preset-btn" onclick="sendChat('Bien joué ! 🎯')">Bien joué ! 🎯</button>
-    <button class="chat-preset-btn" onclick="sendChat('Hmm... 🤔')">Hmm... 🤔</button>
-    <button class="chat-preset-btn" onclick="sendChat('Nooon ! 😤')">Nooon ! 😤</button>
-    <button class="chat-preset-btn" onclick="sendChat('Revanche ! ⚔️')">Revanche ! ⚔️</button>
+    <button class="chat-preset-btn" onclick="sendChat('Bien joué ! 🎯')">Bien joué 🎯</button>
+    <button class="chat-preset-btn" onclick="sendChat('Hmm... 🤔')">Hmm 🤔</button>
+    <button class="chat-preset-btn" onclick="sendChat('Nooon ! 😤')">Nooon 😤</button>
+    <button class="chat-preset-btn" onclick="sendChat('Revanche ! ⚔️')">Revanche ⚔️</button>
     <button class="chat-preset-btn" onclick="sendChat('😂')">😂</button>
+    <button class="chat-preset-btn" onclick="sendChat('😈')">😈</button>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" placeholder="Message…" maxlength="120" rows="1"
+      oninput="autoResizeChatInput(this)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitChatInput();}"></textarea>
+    <button class="chat-send-btn" onclick="submitChatInput()">➤</button>
   </div>
 </div>
 
@@ -1082,6 +1107,10 @@
       <span class="settings-lbl" style="opacity:1;color:#a78bfa">🏆 Mode Tournoi (3 manches)</span>
       <label class="toggle"><input type="checkbox" id="tournament-local"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
     </div>
+    <div class="settings-row" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:#f87171">⏱ Horloge par tour (30s)</span>
+      <label class="toggle"><input type="checkbox" id="timer-local"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
     <button class="setup-go" onclick="startLocal()">▶ JOUER</button>
     <button class="setup-back" onclick="backToMenu()">← RETOUR</button>
   </div>
@@ -1107,6 +1136,10 @@
     <div class="settings-row" style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px 12px;">
       <span class="settings-lbl" style="opacity:1;color:#a78bfa">🏆 Mode Tournoi (3 manches)</span>
       <label class="toggle"><input type="checkbox" id="tournament-bot"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
+    <div class="settings-row" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:#f87171">⏱ Horloge par tour (30s)</span>
+      <label class="toggle"><input type="checkbox" id="timer-bot"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
     </div>
     <div><label class="setup-label">RÈGLES DU BOT</label><div style="font-size:.7rem;opacity:.45;line-height:1.5">Facile : coups aléatoires<br>Moyen : voit 3 coups<br>Difficile : minimax profondeur 8</div></div>
     <button class="setup-go" onclick="startBot()">▶ JOUER</button>
@@ -1169,6 +1202,10 @@
     <div class="settings-row" style="background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:8px;padding:10px 12px;">
       <span class="settings-lbl" style="opacity:1;color:var(--active)">⚡ Auto-complétion</span>
       <label class="toggle"><input type="checkbox" id="auto-online" onchange="autoMode=this.checked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
+    <div class="settings-row" style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:#a78bfa">🏆 Mode Tournoi (3 manches)</span>
+      <label class="toggle"><input type="checkbox" id="tournament-online"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
     </div>
     <button class="setup-back" onclick="backToMenu()">← RETOUR</button>
   </div>
@@ -1649,17 +1686,18 @@ function checkTournamentWinner(roundWinner) {
 }
 
 // ════════════════════════════════════════════════════════
-// ONLINE TIMER
+// TURN TIMER (local / bot / online)
 // ════════════════════════════════════════════════════════
 const TURN_SECONDS = 30;
 let timerInterval = null;
 let timerLeft = TURN_SECONDS;
+let timerEnabled = false; // set by startLocal/startBot/initOnlineMode
 
 function startTimer() {
+  if (!timerEnabled) return;
   stopTimer();
   timerLeft = TURN_SECONDS;
   const wrap  = document.getElementById('timer-wrap');
-  const bar   = document.getElementById('timer-bar');
   const label = document.getElementById('timer-label');
   wrap.classList.remove('hidden');
   label.classList.remove('hidden');
@@ -1676,8 +1714,8 @@ function stopTimer() {
   clearInterval(timerInterval); timerInterval = null;
   const wrap  = document.getElementById('timer-wrap');
   const label = document.getElementById('timer-label');
-  wrap.classList.add('hidden');
-  label.classList.add('hidden');
+  if (wrap)  wrap.classList.add('hidden');
+  if (label) label.classList.add('hidden');
 }
 
 function updateTimerUI() {
@@ -1692,42 +1730,62 @@ function updateTimerUI() {
 }
 
 function onTimerExpired() {
-  if (!G || G.winner || mode !== 'online') return;
-  if (myRole !== G.player) return; // pas notre tour
-  // Jouer un coup aléatoire parmi les valides
+  if (!G || G.winner) return;
   const moves = getValidMoves(G);
   if (!moves.length) return;
-  const [b, c] = moves[Math.floor(Math.random() * moves.length)];
-  ws.send(JSON.stringify({type:'move', board:b, cell:c}));
+  if (mode === 'online') {
+    if (myRole !== G.player) return;
+    const [b, c] = moves[Math.floor(Math.random() * moves.length)];
+    ws.send(JSON.stringify({type:'move', board:b, cell:c}));
+  } else {
+    // local / bot : joue un coup aléatoire pour le joueur actif
+    const [b, c] = moves[Math.floor(Math.random() * moves.length)];
+    localClick(b, c);
+  }
 }
 
 // ════════════════════════════════════════════════════════
-// ONLINE CHAT
+// ONLINE CHAT (conversation drawer)
 // ════════════════════════════════════════════════════════
 let chatOpen = false;
 let chatBubbleTimeout = null;
 
 function toggleChat() {
   chatOpen = !chatOpen;
-  document.getElementById('chat-panel').classList.toggle('hidden', !chatOpen);
+  const drawer = document.getElementById('chat-drawer');
+  drawer.classList.toggle('open', chatOpen);
   if (chatOpen) {
     document.getElementById('chat-badge').style.display = 'none';
     scrollChatToBottom();
+    setTimeout(() => document.getElementById('chat-input')?.focus(), 300);
   }
+}
+
+function autoResizeChatInput(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+}
+
+function submitChatInput() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  sendChat(text);
+  input.value = '';
+  input.style.height = 'auto';
 }
 
 function sendChat(msg) {
   if (!ws || ws.readyState !== 1) return;
-  ws.send(JSON.stringify({type:'chat', msg: msg.slice(0,40)}));
+  msg = msg.slice(0, 120);
+  ws.send(JSON.stringify({type:'chat', msg}));
   addChatMsg(msg, true);
-  SFX.chat();
-  haptic(20);
+  SFX.chat(); haptic(20);
 }
 
 function receivedChat(msg) {
   addChatMsg(msg, false);
-  SFX.chat();
-  haptic([20,10,20]);
+  SFX.chat(); haptic([20,10,20]);
   if (!chatOpen) {
     document.getElementById('chat-badge').style.display = 'block';
     showChatBubble(msg);
@@ -1738,14 +1796,19 @@ function addChatMsg(msg, mine) {
   const wrap = document.getElementById('chat-msgs');
   const el = document.createElement('div');
   el.className = 'chat-msg ' + (mine ? 'mine' : 'theirs');
-  el.textContent = msg;
+  // Sender label
+  const sender = document.createElement('div');
+  sender.className = 'chat-sender';
+  sender.textContent = mine ? (myName || 'Vous') : (names[myRole === 'X' ? 'O' : 'X'] || 'Adversaire');
+  el.appendChild(sender);
+  el.appendChild(document.createTextNode(msg));
   wrap.appendChild(el);
   scrollChatToBottom();
 }
 
 function scrollChatToBottom() {
   const w = document.getElementById('chat-msgs');
-  w.scrollTop = w.scrollHeight;
+  if (w) w.scrollTop = w.scrollHeight;
 }
 
 function showChatBubble(msg) {
@@ -1757,7 +1820,7 @@ function showChatBubble(msg) {
   b.className = 'chat-bubble';
   b.textContent = msg;
   document.body.appendChild(b);
-  chatBubbleTimeout = setTimeout(() => { if (b.parentNode) b.remove(); }, 3000);
+  chatBubbleTimeout = setTimeout(() => { if (b.parentNode) b.remove(); }, 3200);
 }
 
 // ════════════════════════════════════════════════════════
@@ -1889,8 +1952,11 @@ function backToMenu() {
   ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn','reset-btn','chat-btn'].forEach(hide);
   hide('role-badge');
   stopTimer();
+  timerEnabled = false;
   hide('tournament-banner');
-  document.getElementById('chat-panel').classList.add('hidden');
+  // Fermer le drawer chat
+  const drawer = document.getElementById('chat-drawer');
+  if (drawer) drawer.classList.remove('open');
   document.getElementById('chat-msgs').innerHTML = '';
   chatOpen = false;
   tournamentMode = false; tournamentWins = {X:0,O:0}; tournamentOver = false;
@@ -1919,6 +1985,7 @@ function startLocal() {
   scores = {X:0,O:0};
   mode='local';
   autoMode = document.getElementById('auto-local').checked;
+  timerEnabled = document.getElementById('timer-local').checked;
   initTournament(document.getElementById('tournament-local').checked);
   hide('setup-local'); showGameIcons();
   G = newState(); G._firstPlayer = 'X';
@@ -1954,6 +2021,7 @@ function startBot() {
   scores = {X:0,O:0};
   mode='bot';
   autoMode = document.getElementById('auto-bot').checked;
+  timerEnabled = document.getElementById('timer-bot').checked;
   initTournament(document.getElementById('tournament-bot').checked);
   hide('setup-bot'); showGameIcons();
   G = newState(); G._firstPlayer = 'X';
@@ -2420,6 +2488,8 @@ function runAutoAndRender() {
     }
   }
   render();
+  if (!G.winner && (mode==='local' || mode==='bot')) startTimer();
+  if (G.winner) stopTimer();
   if (mode==='bot'&&!G.winner&&G.player!==humanSide) setTimeout(botMove,400);
 }
 
@@ -2469,12 +2539,13 @@ function initOnlineMode(name) {
   mode = 'online';
   names = {X:'?', O:'?'};
   autoMode = document.getElementById('auto-online').checked;
+  timerEnabled = true; // toujours actif en ligne
+  initTournament(document.getElementById('tournament-online').checked);
   hints = 3;
   currentRoomId = null;
   document.getElementById('room-code-display').style.display = 'none';
   document.getElementById('wait-title').textContent = 'CONNEXION…';
   document.getElementById('wait-sub').innerHTML = '<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
-  // Switch direct sans flash : cache setup ET affiche attente dans le même frame
   const setupEl = document.getElementById('setup-online');
   const waitEl  = document.getElementById('waiting-screen');
   setupEl.classList.add('hidden');

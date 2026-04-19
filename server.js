@@ -279,9 +279,8 @@ wss.on('connection', ws => {
       }
 
       if (msg.type === 'chat') {
-        const text = (msg.msg || '').slice(0, 40);
+        const text = (msg.msg || '').slice(0, 120);
         if (text && ws.role !== 'spectator') {
-          // Envoyer seulement à l'adversaire (pas à l'expéditeur)
           const opponent = ws.role === 'X' ? room.players.O : room.players.X;
           send(opponent, { type: 'chat', msg: text });
         }
