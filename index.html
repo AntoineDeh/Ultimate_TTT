@@ -34,17 +34,6 @@
 
     .wrap { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px 8px 24px; height:100dvh; justify-content:space-between; overflow:hidden; }
 
-    /* ── Settings panel ── */
-    .settings-panel {
-      background:var(--surface); border:1px solid var(--border-out);
-      border-radius:12px; padding:16px 20px;
-      display:flex; flex-direction:column; gap:12px;
-      box-shadow:0 8px 32px rgba(0,0,0,.5);
-      width:min(280px,85vw);
-      animation:fadein .15s ease;
-    }
-    .settings-panel.hidden { display:none; }
-    .settings-title { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.7rem; letter-spacing:.2em; opacity:.5; text-transform:uppercase; }
     .settings-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .settings-lbl { font-size:.78rem; letter-spacing:.06em; opacity:.75; }
     .toggle { position:relative; width:42px; height:24px; flex-shrink:0; }
@@ -180,6 +169,21 @@
     .icon-btn.settings:hover { color:#fff; border-color:rgba(180,180,255,.6); box-shadow:0 0 14px rgba(120,120,255,.3); }
     .icon-btn.settings.active { color:var(--active); border-color:rgba(255,193,7,.5); background:rgba(255,193,7,.08); box-shadow:0 0 12px rgba(255,193,7,.2); }
     .icon-btn.hidden { display:none; }
+
+    /* ── More menu (⋯) ── */
+    .more-btn { width:36px; height:36px; border-radius:10px; border:1.5px solid rgba(180,180,255,.25); background:rgba(180,180,255,.06); color:rgba(180,180,255,.6); font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; letter-spacing:.05em; flex-shrink:0; }
+    .more-btn:hover, .more-btn.open { color:#fff; border-color:rgba(180,180,255,.55); background:rgba(180,180,255,.14); }
+    .more-btn.hidden { display:none; }
+    .more-dropdown { position:absolute; top:calc(100% + 6px); right:0; z-index:600; background:var(--surface); border:1px solid var(--border-out); border-radius:12px; padding:6px; display:flex; flex-direction:column; gap:2px; min-width:150px; box-shadow:0 8px 32px rgba(0,0,0,.6); animation:fadein .15s ease; }
+    .more-dropdown.hidden { display:none; }
+    .more-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; border:none; background:transparent; color:rgba(200,200,255,.75); font-family:'Share Tech Mono',monospace; font-size:.75rem; letter-spacing:.05em; cursor:pointer; transition:all .15s; text-align:left; width:100%; }
+    .more-item:hover { background:rgba(180,180,255,.1); color:#fff; }
+    .more-item .more-item-icon { font-size:1rem; width:20px; text-align:center; flex-shrink:0; }
+    .more-item.sound-off .more-item-icon { opacity:.4; }
+    .more-item-label { flex:1; }
+    .more-item-badge { font-size:.6rem; padding:2px 6px; border-radius:6px; background:rgba(255,31,122,.2); color:var(--o); border:1px solid rgba(255,31,122,.3); }
+    /* wrapper pour position:relative sur side-icons */
+    .side-icons { position:relative; display:flex; flex-direction:column; gap:6px; align-items:center; }
     /* ── Score row ── */
     .score-row { display:flex; align-items:center; width:100%; }
     .score-left { flex:1; display:flex; justify-content:center; align-items:center; }
@@ -811,10 +815,7 @@
     .dot-played { width:10px; height:10px; border-radius:2px; background:rgba(180,180,255,.4); border:1px solid rgba(180,180,255,.6); display:inline-block; }
     .dot-best { width:10px; height:10px; border-radius:2px; background:rgba(74,222,128,.4); border:1px solid #4ade80; display:inline-block; }
 
-    /* ── Sound toggle btn ── */
-    .sound-btn { position:fixed; bottom:14px; right:14px; z-index:800; width:36px; height:36px; border-radius:50%; border:1.5px solid rgba(180,180,255,.25); background:rgba(13,13,32,.85); color:rgba(180,180,255,.5); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; backdrop-filter:blur(4px); }
-    .sound-btn:hover { border-color:rgba(180,180,255,.5); color:#fff; }
-    .sound-btn.muted { border-color:rgba(255,31,122,.25); color:rgba(255,31,122,.4); }
+    /* ── Sound toggle btn (dans more-menu) ── */
 
     /* ── Timer bar (online) ── */
     .timer-bar-wrap { width:100%; max-width:340px; height:4px; background:rgba(180,180,255,.08); border-radius:2px; overflow:hidden; margin:0 auto; }
@@ -824,40 +825,40 @@
     .timer-label { font-family:'Orbitron',sans-serif; font-size:.55rem; letter-spacing:.15em; text-align:center; margin-top:3px; height:12px; color:rgba(180,180,255,.4); transition:color .3s; }
     .timer-label.urgent { color:#ef4444; }
 
-    /* ── Chat overlay (online) ── */
-    .chat-btn { width:44px; height:44px; border-radius:10px; background:rgba(74,222,128,.08); border:1.5px solid rgba(74,222,128,.3); color:#4ade80; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; position:relative; }
-    .chat-btn:hover { background:rgba(74,222,128,.18); }
-    .chat-btn.hidden { display:none; }
-    .chat-badge { position:absolute; top:-4px; right:-4px; width:10px; height:10px; border-radius:50%; background:#ef4444; display:none; }
-    .chat-panel { position:fixed; bottom:60px; right:14px; z-index:900; background:var(--surface); border:1px solid var(--border-out); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; width:min(260px,80vw); box-shadow:0 8px 32px rgba(0,0,0,.6); animation:fadein .15s ease; }
-    .chat-panel.hidden { display:none; }
-    .chat-panel-title { font-family:'Orbitron',sans-serif; font-size:.55rem; letter-spacing:.2em; opacity:.4; text-align:center; }
-    .chat-msgs-wrap { max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
-    .chat-msg { font-size:.75rem; padding:6px 11px; border-radius:12px; max-width:78%; line-height:1.5; word-break:break-word; }
-    .chat-msg.mine   { background:rgba(0,229,255,.13); border:1px solid rgba(0,229,255,.25); align-self:flex-end; color:var(--x); border-bottom-right-radius:3px; }
-    .chat-msg.theirs { background:rgba(255,31,122,.1);  border:1px solid rgba(255,31,122,.2);  align-self:flex-start; color:var(--o); border-bottom-left-radius:3px; }
-    .chat-msg .chat-sender { font-size:.55rem; letter-spacing:.08em; opacity:.5; margin-bottom:2px; }
-    /* Chat drawer — slide up from bottom */
-    .chat-drawer { position:fixed; bottom:0; left:0; right:0; z-index:900; background:var(--surface); border-top:1px solid var(--border-out); border-radius:18px 18px 0 0; display:flex; flex-direction:column; max-height:55vh; transform:translateY(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); box-shadow:0 -8px 40px rgba(0,0,0,.6); }
+
+    /* ── Chat (online) ── */
+    /* Barre persistante en bas — style Plato */
+    .chat-bar { position:fixed; bottom:0; left:0; right:0; z-index:890; height:46px; background:rgba(10,10,24,.96); border-top:1px solid rgba(180,180,255,.12); display:none; align-items:center; gap:10px; padding:0 16px; cursor:pointer; backdrop-filter:blur(10px); transition:background .2s; }
+    .chat-bar.visible { display:flex; }
+    .chat-bar:active { background:rgba(20,20,40,.99); }
+    .chat-bar-icon { font-size:1.05rem; flex-shrink:0; position:relative; }
+    .chat-bar-notif { position:absolute; top:-5px; right:-5px; min-width:16px; height:16px; border-radius:8px; background:#ef4444; font-family:'Orbitron',sans-serif; font-size:.5rem; font-weight:900; display:none; align-items:center; justify-content:center; color:#fff; padding:0 3px; box-shadow:0 0 8px rgba(239,68,68,.6); animation:badgePop .3s ease; }
+    .chat-bar-notif.show { display:flex; }
+    @keyframes badgePop { from{transform:scale(0)} to{transform:scale(1)} }
+    .chat-bar-preview { flex:1; font-size:.73rem; color:rgba(180,180,255,.45); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'Share Tech Mono',monospace; transition:color .3s; }
+    .chat-bar-preview.new-msg { color:rgba(220,220,255,.9); }
+    .chat-bar-open-hint { font-size:.6rem; letter-spacing:.1em; color:rgba(180,180,255,.25); flex-shrink:0; font-family:'Orbitron',sans-serif; }
+    /* Drawer plein écran bas */
+    .chat-drawer { position:fixed; bottom:0; left:0; right:0; z-index:900; background:var(--surface); border-top:1px solid var(--border-out); border-radius:18px 18px 0 0; display:flex; flex-direction:column; max-height:62vh; transform:translateY(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); box-shadow:0 -8px 40px rgba(0,0,0,.75); }
     .chat-drawer.open { transform:translateY(0); }
     .chat-drawer-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px 8px; border-bottom:1px solid rgba(180,180,255,.08); flex-shrink:0; }
     .chat-drawer-title { font-family:'Orbitron',sans-serif; font-size:.62rem; letter-spacing:.18em; color:rgba(180,180,255,.6); }
     .chat-drawer-close { font-family:'Orbitron',sans-serif; font-size:.58rem; font-weight:700; padding:5px 12px; border-radius:8px; border:1px solid rgba(180,180,255,.2); background:transparent; color:rgba(180,180,255,.5); cursor:pointer; }
     .chat-drawer-close:hover { border-color:rgba(255,31,122,.4); color:var(--o); }
     .chat-msgs-wrap { flex:1; overflow-y:auto; padding:10px 14px; display:flex; flex-direction:column; gap:6px; scroll-behavior:smooth; }
+    .chat-msg { font-size:.75rem; padding:6px 11px; border-radius:12px; max-width:78%; line-height:1.5; word-break:break-word; }
+    .chat-msg.mine   { background:rgba(0,229,255,.13); border:1px solid rgba(0,229,255,.25); align-self:flex-end; color:var(--x); border-bottom-right-radius:3px; }
+    .chat-msg.theirs { background:rgba(255,31,122,.1);  border:1px solid rgba(255,31,122,.2);  align-self:flex-start; color:var(--o); border-bottom-left-radius:3px; }
+    .chat-msg .chat-sender { font-size:.55rem; letter-spacing:.08em; opacity:.5; margin-bottom:2px; }
     .chat-presets { display:flex; gap:6px; padding:6px 14px; overflow-x:auto; flex-shrink:0; scrollbar-width:none; }
     .chat-presets::-webkit-scrollbar { display:none; }
     .chat-preset-btn { white-space:nowrap; font-size:.65rem; padding:5px 10px; border-radius:20px; border:1px solid rgba(180,180,255,.2); background:rgba(180,180,255,.05); color:rgba(200,200,255,.7); cursor:pointer; transition:all .2s; flex-shrink:0; }
     .chat-preset-btn:hover { border-color:rgba(0,229,255,.4); color:var(--x); background:rgba(0,229,255,.07); }
-    .chat-input-row { display:flex; gap:8px; padding:8px 14px 14px; flex-shrink:0; align-items:flex-end; }
+    .chat-input-row { display:flex; gap:8px; padding:8px 14px 18px; flex-shrink:0; align-items:flex-end; }
     .chat-input { flex:1; background:rgba(180,180,255,.07); border:1px solid rgba(180,180,255,.2); border-radius:20px; padding:9px 14px; color:#fff; font-family:'Share Tech Mono',monospace; font-size:.82rem; outline:none; resize:none; max-height:80px; line-height:1.4; transition:border .2s; }
     .chat-input:focus { border-color:rgba(0,229,255,.4); }
     .chat-send-btn { width:38px; height:38px; border-radius:50%; background:rgba(0,229,255,.15); border:1.5px solid rgba(0,229,255,.4); color:var(--x); font-size:1rem; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s; }
     .chat-send-btn:hover { background:rgba(0,229,255,.3); }
-    /* Chat bubble flottante */
-    .chat-bubble { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); z-index:850; background:var(--surface); border:1px solid var(--border-out); border-radius:20px; padding:7px 16px; font-size:.76rem; animation:bubbleIn .3s ease, bubbleOut .3s ease 2.8s forwards; pointer-events:none; max-width:75vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    @keyframes bubbleIn  { from{opacity:0;transform:translateX(-50%) translateY(8px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-    @keyframes bubbleOut { from{opacity:1} to{opacity:0} }
 
     /* ── Tournament mode ── */
     .tournament-banner { background:linear-gradient(135deg,rgba(255,193,7,.12),rgba(255,140,0,.08)); border:1px solid rgba(255,193,7,.3); border-radius:10px; padding:8px 14px; text-align:center; font-family:'Orbitron',sans-serif; font-size:.65rem; letter-spacing:.12em; color:var(--active); margin:0 auto; width:min(300px,88vw); }
@@ -877,8 +878,12 @@
 <body>
 <div class="particles" id="pts"></div>
 
-<!-- Sound toggle (always visible) -->
-<button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Son">🔊</button>
+<!-- Chat bar (Plato-style, online only) -->
+<div class="chat-bar" id="chat-bar" onclick="toggleChat()">
+  <div class="chat-bar-icon">💬<span class="chat-bar-notif" id="chat-bar-notif"></span></div>
+  <div class="chat-bar-preview" id="chat-bar-preview">Appuie pour écrire…</div>
+  <div class="chat-bar-open-hint">OUVRIR ›</div>
+</div>
 
 <!-- Chat drawer (online only) -->
 <div class="chat-drawer" id="chat-drawer">
@@ -1462,11 +1467,6 @@
     </svg>ULTIMATE <span>TTT</span>
   </div>
 
-  <!-- Settings panel (thèmes uniquement) -->
-  <div class="settings-panel hidden" id="settings-panel">
-    <div class="settings-title">⚙ Paramètres</div>
-  </div>
-
   <div class="role-badge hidden" id="role-badge"></div>
 
   <div class="score-row">
@@ -1495,10 +1495,18 @@
     </div>
     <div class="score-right">
       <div class="side-icons">
-        <button class="icon-btn info hidden" id="rules-btn" onclick="toggleRules()">i</button>
-        <button class="icon-btn settings hidden" id="settings-btn" onclick="toggleSettings()" title="Paramètres">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
+        <button class="more-btn hidden" id="more-btn" onclick="toggleMoreMenu()">⋯</button>
+        <div class="more-dropdown hidden" id="more-dropdown">
+          <button class="more-item" onclick="toggleRules();closeMoreMenu()">
+            <span class="more-item-icon">📋</span><span class="more-item-label">Règles</span>
+          </button>
+          <button class="more-item" id="more-sound-item" onclick="toggleSound()">
+            <span class="more-item-icon" id="more-sound-icon">🔊</span><span class="more-item-label" id="more-sound-label">Son activé</span>
+          </button>
+          <button class="more-item" onclick="openDesign();closeMoreMenu()">
+            <span class="more-item-icon">🎨</span><span class="more-item-label">Thème</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1520,7 +1528,6 @@
   <div class="action-row">
     <button class="btn reset hidden" id="reset-btn" onclick="resetGame()">↺ REJOUER</button>
     <button class="btn abandon hidden" id="abandon-btn" onclick="showAbandon()">⚑ ABANDON</button>
-    <button class="chat-btn hidden" id="chat-btn" onclick="toggleChat()">💬<span class="chat-badge" id="chat-badge"></span></button>
     <button class="btn undo hidden" id="undo-btn" onclick="undoMove()">↩</button>
   </div>
 </div>
@@ -1619,15 +1626,46 @@ const SFX = {
 function toggleSound() {
   soundEnabled = !soundEnabled;
   localStorage.setItem('ttt-sound', soundEnabled ? 'on' : 'off');
-  const btn = document.getElementById('sound-btn');
-  btn.textContent = soundEnabled ? '🔊' : '🔇';
-  btn.classList.toggle('muted', !soundEnabled);
+  updateMoreSoundItem();
 }
 
-// Init sound button state
-(function(){ 
-  const btn = document.getElementById('sound-btn');
-  if (!soundEnabled) { btn.textContent = '🔇'; btn.classList.add('muted'); }
+function updateMoreSoundItem() {
+  const icon  = document.getElementById('more-sound-icon');
+  const label = document.getElementById('more-sound-label');
+  const item  = document.getElementById('more-sound-item');
+  if (!icon) return;
+  icon.textContent  = soundEnabled ? '🔊' : '🔇';
+  label.textContent = soundEnabled ? 'Son activé' : 'Son désactivé';
+  item.classList.toggle('sound-off', !soundEnabled);
+}
+
+function toggleMoreMenu() {
+  const btn  = document.getElementById('more-btn');
+  const drop = document.getElementById('more-dropdown');
+  const isOpen = !drop.classList.contains('hidden');
+  if (isOpen) { closeMoreMenu(); return; }
+  drop.classList.remove('hidden');
+  btn.classList.add('open');
+  updateMoreSoundItem();
+  // Fermer si clic en dehors
+  setTimeout(() => document.addEventListener('click', outsideMoreClick, {once:true}), 0);
+}
+
+function closeMoreMenu() {
+  document.getElementById('more-dropdown')?.classList.add('hidden');
+  document.getElementById('more-btn')?.classList.remove('open');
+}
+
+function outsideMoreClick(e) {
+  if (!document.getElementById('more-dropdown')?.contains(e.target) &&
+      e.target.id !== 'more-btn') {
+    closeMoreMenu();
+  }
+}
+
+// Init sound state on load
+(function(){
+  updateMoreSoundItem();
 })();
 
 // ════════════════════════════════════════════════════════
@@ -1745,20 +1783,53 @@ function onTimerExpired() {
 }
 
 // ════════════════════════════════════════════════════════
-// ONLINE CHAT (conversation drawer)
+// ONLINE CHAT (barre Plato + drawer)
 // ════════════════════════════════════════════════════════
 let chatOpen = false;
-let chatBubbleTimeout = null;
+let unreadCount = 0;
+
+function showChatBar() {
+  document.getElementById('chat-bar').classList.add('visible');
+  document.getElementById('chat-bar-preview').textContent = 'Appuie pour écrire…';
+}
+function hideChatBar() {
+  hideChatDrawer();
+  document.getElementById('chat-bar').classList.remove('visible');
+}
+function hideChatDrawer() {
+  document.getElementById('chat-drawer').classList.remove('open');
+  chatOpen = false;
+}
 
 function toggleChat() {
   chatOpen = !chatOpen;
-  const drawer = document.getElementById('chat-drawer');
-  drawer.classList.toggle('open', chatOpen);
+  document.getElementById('chat-drawer').classList.toggle('open', chatOpen);
   if (chatOpen) {
-    document.getElementById('chat-badge').style.display = 'none';
+    unreadCount = 0;
+    updateChatBarNotif();
     scrollChatToBottom();
     setTimeout(() => document.getElementById('chat-input')?.focus(), 300);
   }
+}
+
+function updateChatBarNotif() {
+  const notif = document.getElementById('chat-bar-notif');
+  if (unreadCount > 0) {
+    notif.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    notif.classList.add('show');
+  } else {
+    notif.classList.remove('show');
+    notif.textContent = '';
+  }
+}
+
+function updateChatBarPreview(msg, mine) {
+  const preview = document.getElementById('chat-bar-preview');
+  const sender = mine ? 'Vous' : (names[myRole === 'X' ? 'O' : 'X'] || 'Adversaire');
+  preview.textContent = `${sender} : ${msg}`;
+  preview.classList.remove('new-msg');
+  void preview.offsetWidth;
+  preview.classList.add('new-msg');
 }
 
 function autoResizeChatInput(el) {
@@ -1780,15 +1851,17 @@ function sendChat(msg) {
   msg = msg.slice(0, 120);
   ws.send(JSON.stringify({type:'chat', msg}));
   addChatMsg(msg, true);
+  updateChatBarPreview(msg, true);
   SFX.chat(); haptic(20);
 }
 
 function receivedChat(msg) {
   addChatMsg(msg, false);
+  updateChatBarPreview(msg, false);
   SFX.chat(); haptic([20,10,20]);
   if (!chatOpen) {
-    document.getElementById('chat-badge').style.display = 'block';
-    showChatBubble(msg);
+    unreadCount++;
+    updateChatBarNotif();
   }
 }
 
@@ -1796,7 +1869,6 @@ function addChatMsg(msg, mine) {
   const wrap = document.getElementById('chat-msgs');
   const el = document.createElement('div');
   el.className = 'chat-msg ' + (mine ? 'mine' : 'theirs');
-  // Sender label
   const sender = document.createElement('div');
   sender.className = 'chat-sender';
   sender.textContent = mine ? (myName || 'Vous') : (names[myRole === 'X' ? 'O' : 'X'] || 'Adversaire');
@@ -1811,17 +1883,6 @@ function scrollChatToBottom() {
   if (w) w.scrollTop = w.scrollHeight;
 }
 
-function showChatBubble(msg) {
-  clearTimeout(chatBubbleTimeout);
-  const old = document.getElementById('chat-bubble-float');
-  if (old) old.remove();
-  const b = document.createElement('div');
-  b.id = 'chat-bubble-float';
-  b.className = 'chat-bubble';
-  b.textContent = msg;
-  document.body.appendChild(b);
-  chatBubbleTimeout = setTimeout(() => { if (b.parentNode) b.remove(); }, 3200);
-}
 
 // ════════════════════════════════════════════════════════
 // CONSTANTS & STATE
@@ -1939,25 +2000,26 @@ function autoComplete(state) {
 // MENU / SETUP
 // ════════════════════════════════════════════════════════
 function showGameIcons() {
-  show('home-btn'); show('rules-btn'); show('abandon-btn');
-  show('hint-btn');
+  show('home-btn'); show('abandon-btn');
+  show('hint-btn'); show('more-btn');
   if (mode === 'bot') { show('undo-btn'); show('reset-btn'); }
-  if (mode === 'online') show('chat-btn');
+  if (mode === 'online') showChatBar();
   updateHintBtn();
+  updateMoreSoundItem();
 }
 function backToMenu() {
-  ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm','settings-panel'].forEach(hide);
+  ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm'].forEach(hide);
   closeDesign();
   show('menu');
-  ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn','reset-btn','chat-btn'].forEach(hide);
+  ['home-btn','abandon-btn','undo-btn','hint-btn','reset-btn','more-btn'].forEach(hide);
   hide('role-badge');
+  closeMoreMenu();
   stopTimer();
   timerEnabled = false;
   hide('tournament-banner');
-  // Fermer le drawer chat
-  const drawer = document.getElementById('chat-drawer');
-  if (drawer) drawer.classList.remove('open');
+  hideChatBar();
   document.getElementById('chat-msgs').innerHTML = '';
+  unreadCount = 0;
   chatOpen = false;
   tournamentMode = false; tournamentWins = {X:0,O:0}; tournamentOver = false;
   if (ws) { ws.send(JSON.stringify({type:'cancel_matchmake'})); ws.onclose=null; ws.close(); ws=null; }
@@ -2336,12 +2398,6 @@ function renderAnalysisBoard(state, playedMove, bestMove) {
     }
     boardEl.appendChild(sb);
   }
-}
-function toggleSettings() {
-  const panel = document.getElementById('settings-panel');
-  const btn = document.getElementById('settings-btn');
-  panel.classList.toggle('hidden');
-  btn.classList.toggle('active', !panel.classList.contains('hidden'));
 }
 
 // ════════════════════════════════════════════════════════
