@@ -2294,7 +2294,7 @@ function connect(onOpen) {
         if (display && val) { display.style.display = 'flex'; val.textContent = currentRoomId; }
       }
     }
-    if (msg.type === 'ready') { hide('waiting-screen'); hide('gameover'); }
+    if (msg.type === 'ready') { hide('waiting-screen'); hide('gameover'); showGameIcons(); updateHintBtn(); }
   };
 
   ws.onclose = () => {
