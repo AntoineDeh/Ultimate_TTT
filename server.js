@@ -1,29 +1,93 @@
 // ─── Ultimate TTT — Serveur Cloud (Railway) ──────────────────────────────────
-// Supporte : rooms privées (code 4 lettres) + matchmaking automatique
-// Prérequis : npm install ws
-// Lancement  : node server.js
+// Auth : inscription / connexion JWT + bcryptjs
+// Jeu  : rooms privées, matchmaking, timer, chat
 // ─────────────────────────────────────────────────────────────────────────────
 
-const http = require('http');
-const fs   = require('fs');
-const path = require('path');
-const os   = require('os');
+const http    = require('http');
+const fs      = require('fs');
+const path    = require('path');
+const os      = require('os');
+const crypto  = require('crypto');
+const bcrypt  = require('bcryptjs');
+const jwt     = require('jsonwebtoken');
 const { WebSocketServer } = require('ws');
 
-const PORT = process.env.PORT || 3000;
+const PORT       = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'ttt_secret_change_me_in_prod';
+const USERS_FILE = path.join(__dirname, 'users.json');
+
+// ── Persistance utilisateurs ──────────────────────────────────────────────────
+let users = {};
+
+function loadUsers() {
+  try {
+    if (fs.existsSync(USERS_FILE)) {
+      users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+      console.log(`[Auth] ${Object.keys(users).length} utilisateur(s) chargé(s)`);
+    }
+  } catch(e) { console.error('[Auth] Erreur chargement users.json:', e.message); }
+}
+
+function saveUsers() {
+  try { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); }
+  catch(e) { console.error('[Auth] Erreur sauvegarde users.json:', e.message); }
+}
+
+loadUsers();
+setInterval(saveUsers, 2 * 60 * 1000);
+
+function findUserByEmail(email) {
+  return Object.values(users).find(u => u.email === email.toLowerCase());
+}
+
+function emptyStats() {
+  return { win:0, loss:0, draw:0, streak:0, bestStreak:0, fastest:null, longest:0 };
+}
+
+function makeToken(userId) {
+  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '30d' });
+}
+
+function verifyToken(token) {
+  try { return jwt.verify(token, JWT_SECRET); }
+  catch(e) { return null; }
+}
+
+function publicProfile(user) {
+  return { id: user.id, pseudo: user.pseudo, avatar: user.avatar, stats: user.stats };
+}
+
+function readBody(req) {
+  return new Promise((resolve) => {
+    let body = '';
+    req.on('data', chunk => { body += chunk; if (body.length > 1e6) req.destroy(); });
+    req.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { resolve({}); } });
+    req.on('error', () => resolve({}));
+  });
+}
+
+function sendJSON(res, status, obj) {
+  res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+  res.end(JSON.stringify(obj));
+}
+
+function authMiddleware(req) {
+  const auth = req.headers['authorization'] || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token) return null;
+  const payload = verifyToken(token);
+  if (!payload) return null;
+  return users[payload.id] || null;
+}
 
 // ── Logique de jeu ────────────────────────────────────────────────────────────
 const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
 function newState() {
   return {
-    boards : Array.from({length:9}, () => Array(9).fill(null)),
-    bw     : Array(9).fill(null),
-    active : null,
-    player : 'X',
-    winner : null,
-    scores : {X:0, O:0},
-    _firstPlayer: 'X'
+    boards: Array.from({length:9}, () => Array(9).fill(null)),
+    bw: Array(9).fill(null), active: null, player: 'X',
+    winner: null, scores: {X:0, O:0}, _firstPlayer: 'X'
   };
 }
 
@@ -50,8 +114,8 @@ function processMove(G, b, c) {
 }
 
 // ── Rooms ─────────────────────────────────────────────────────────────────────
-const rooms = new Map(); // roomId → Room
-let matchmakingQueue = []; // [{ws, name, autoMode}]
+const rooms = new Map();
+let matchmakingQueue = [];
 
 function makeRoomId() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -62,18 +126,12 @@ function makeRoomId() {
 }
 
 function createRoom(id) {
-  const room = {
-    id,
-    G: newState(),
-    players: { X: null, O: null },
-    names: { X: 'Joueur X', O: 'Joueur O' },
-    spectators: [],
-    autoMode: false,
-    private: false,
-    turnTimer: null,
-  };
-  rooms.set(id, room);
-  return room;
+  return rooms.set(id, {
+    id, G: newState(),
+    players: {X:null,O:null}, names: {X:'Joueur X',O:'Joueur O'},
+    avatars: {X:'🎮',O:'🎮'}, userIds: {X:null,O:null},
+    spectators: [], autoMode: false, private: false, turnTimer: null,
+  }).get(id);
 }
 
 function clearTurnTimer(room) {
@@ -85,8 +143,7 @@ function startTurnTimer(room) {
   if (room.G.winner || connectedCount(room) < 2) return;
   room.turnTimer = setTimeout(() => {
     if (room.G.winner || connectedCount(room) < 2) return;
-    // Forcer un coup aléatoire pour le joueur actif
-    const { boards, bw, active, player } = room.G;
+    const { boards, bw, active } = room.G;
     const moves = [];
     for (let b=0;b<9;b++) {
       if (bw[b]) continue;
@@ -100,14 +157,13 @@ function startTurnTimer(room) {
         if (!room.G.winner) startTurnTimer(room);
       }
     }
-  }, 35000); // 35s côté serveur (client affiche 30s)
+  }, 35000);
 }
 
 function deleteRoom(id) {
   const room = rooms.get(id);
   if (room) clearTurnTimer(room);
   rooms.delete(id);
-  console.log(`[Room ${id}] Supprimée. Rooms actives: ${rooms.size}`);
 }
 
 function send(ws, obj) {
@@ -122,64 +178,132 @@ function connectedCount(room) {
   return [room.players.X, room.players.O].filter(Boolean).length;
 }
 
-function joinRoom(room, ws, name, role) {
-  ws.roomId = room.id;
-  ws.role = role;
-  ws.playerName = name;
-
-  if (role === 'X') { room.players.X = ws; room.names.X = name; }
-  else if (role === 'O') { room.players.O = ws; room.names.O = name; }
+function joinRoom(room, ws, name, role, avatar) {
+  ws.roomId = room.id; ws.role = role; ws.playerName = name;
+  if (role === 'X') { room.players.X = ws; room.names.X = name; room.avatars.X = avatar||'🎮'; room.userIds.X = ws.userId||null; }
+  else if (role === 'O') { room.players.O = ws; room.names.O = name; room.avatars.O = avatar||'🎮'; room.userIds.O = ws.userId||null; }
   else { room.spectators.push(ws); }
-
   send(ws, { type: 'role', player: role });
   send(ws, { type: 'state', state: room.G });
-  send(ws, { type: 'names', names: room.names });
+  send(ws, { type: 'names', names: room.names, avatars: room.avatars });
   send(ws, { type: 'roomId', roomId: room.id });
-
   if (connectedCount(room) === 2) {
-    // Mettre à jour les noms pour les deux avant ready
-    broadcastRoom(room, { type: 'names', names: room.names });
+    broadcastRoom(room, { type: 'names', names: room.names, avatars: room.avatars });
     broadcastRoom(room, { type: 'ready' });
     startTurnTimer(room);
-    console.log(`[Room ${room.id}] Partie démarrée: ${room.names.X} vs ${room.names.O}`);
   } else if (role !== 'spectator') {
     send(ws, { type: 'waiting' });
   }
 }
 
-// ── Matchmaking ───────────────────────────────────────────────────────────────
 function tryMatchmake(autoMode) {
-  // Nettoyer les WS déconnectés
   matchmakingQueue = matchmakingQueue.filter(p => p.ws.readyState === 1);
-
-  // Cherche deux joueurs avec le même autoMode
-  const compatible = matchmakingQueue.filter(p => p.autoMode === autoMode);
-  if (compatible.length >= 2) {
-    const p1 = compatible[0];
-    const p2 = compatible[1];
+  const compat = matchmakingQueue.filter(p => p.autoMode === autoMode);
+  if (compat.length >= 2) {
+    const p1 = compat[0], p2 = compat[1];
     matchmakingQueue = matchmakingQueue.filter(p => p !== p1 && p !== p2);
-
     const roomId = makeRoomId();
     const room = createRoom(roomId);
-    room.private = false;
-    room.autoMode = autoMode;
-
+    room.private = false; room.autoMode = autoMode;
     send(p1.ws, { type: 'matched', roomId });
     send(p2.ws, { type: 'matched', roomId });
-
-    joinRoom(room, p1.ws, p1.name, 'X');
-    joinRoom(room, p2.ws, p2.name, 'O');
-
-    console.log(`[Matchmaking] Room ${roomId}: ${p1.name} vs ${p2.name} (auto=${autoMode})`);
+    joinRoom(room, p1.ws, p1.name, 'X', p1.avatar);
+    joinRoom(room, p2.ws, p2.name, 'O', p2.avatar);
   }
 }
 
+function recordResultForUser(userId, statKey, result, moves) {
+  if (!userId || !users[userId]) return;
+  const user = users[userId];
+  if (!user.stats) user.stats = {};
+  ['global', statKey].forEach(k => {
+    if (!user.stats[k]) user.stats[k] = emptyStats();
+    const s = user.stats[k];
+    s[result]++;
+    if (result === 'win') {
+      s.streak++; if (s.streak > s.bestStreak) s.bestStreak = s.streak;
+      if (s.fastest === null || moves < s.fastest) s.fastest = moves;
+    } else { s.streak = 0; }
+    if (moves > s.longest) s.longest = moves;
+  });
+  saveUsers();
+}
+
 // ── HTTP ──────────────────────────────────────────────────────────────────────
-const server = http.createServer((req, res) => {
-  const file = path.join(__dirname, 'index.html');
-  fs.readFile(file, (err, data) => {
-    if (err) { res.writeHead(404); res.end('index.html introuvable'); return; }
-    res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+const server = http.createServer(async (req, res) => {
+  const url = req.url.split('?')[0];
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, { 'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type,Authorization','Access-Control-Allow-Methods':'GET,POST,PUT' });
+    return res.end();
+  }
+
+  if (req.method === 'POST' && url === '/auth/register') {
+    const { pseudo, email, password, avatar } = await readBody(req);
+    if (!pseudo || !email || !password) return sendJSON(res, 400, { error: 'Champs manquants.' });
+    if (pseudo.length < 2 || pseudo.length > 20) return sendJSON(res, 400, { error: 'Pseudo : 2 à 20 caractères.' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return sendJSON(res, 400, { error: 'Email invalide.' });
+    if (password.length < 6) return sendJSON(res, 400, { error: 'Mot de passe : 6 caractères minimum.' });
+    if (findUserByEmail(email)) return sendJSON(res, 409, { error: 'Cet email est déjà utilisé.' });
+    const id = crypto.randomUUID();
+    users[id] = { id, pseudo: pseudo.trim(), email: email.toLowerCase(), passwordHash: await bcrypt.hash(password, 10), avatar: avatar||'🎮', stats: {}, createdAt: new Date().toISOString() };
+    saveUsers();
+    console.log(`[Auth] Inscription: ${pseudo}`);
+    return sendJSON(res, 201, { token: makeToken(id), user: publicProfile(users[id]) });
+  }
+
+  if (req.method === 'POST' && url === '/auth/login') {
+    const { email, password } = await readBody(req);
+    if (!email || !password) return sendJSON(res, 400, { error: 'Champs manquants.' });
+    const user = findUserByEmail(email);
+    if (!user || !(await bcrypt.compare(password, user.passwordHash)))
+      return sendJSON(res, 401, { error: 'Email ou mot de passe incorrect.' });
+    console.log(`[Auth] Connexion: ${user.pseudo}`);
+    return sendJSON(res, 200, { token: makeToken(user.id), user: publicProfile(user) });
+  }
+
+  if (req.method === 'GET' && url === '/auth/me') {
+    const user = authMiddleware(req);
+    if (!user) return sendJSON(res, 401, { error: 'Non authentifié.' });
+    return sendJSON(res, 200, { user: publicProfile(user) });
+  }
+
+  if (req.method === 'PUT' && url === '/auth/profile') {
+    const user = authMiddleware(req);
+    if (!user) return sendJSON(res, 401, { error: 'Non authentifié.' });
+    const body = await readBody(req);
+    if (body.pseudo && body.pseudo.length >= 2 && body.pseudo.length <= 20) user.pseudo = body.pseudo.trim();
+    if (body.avatar) user.avatar = body.avatar;
+    saveUsers();
+    return sendJSON(res, 200, { user: publicProfile(user) });
+  }
+
+  if (req.method === 'PUT' && url === '/auth/stats') {
+    const user = authMiddleware(req);
+    if (!user) return sendJSON(res, 401, { error: 'Non authentifié.' });
+    const body = await readBody(req);
+    if (body.stats && typeof body.stats === 'object') {
+      if (!user.stats) user.stats = {};
+      Object.keys(body.stats).forEach(k => {
+        const inc = body.stats[k];
+        if (!user.stats[k]) { user.stats[k] = inc; return; }
+        const s = user.stats[k];
+        s.win = Math.max(s.win||0, inc.win||0);
+        s.loss = Math.max(s.loss||0, inc.loss||0);
+        s.draw = Math.max(s.draw||0, inc.draw||0);
+        s.bestStreak = Math.max(s.bestStreak||0, inc.bestStreak||0);
+        s.longest = Math.max(s.longest||0, inc.longest||0);
+        if (inc.fastest != null) s.fastest = s.fastest == null ? inc.fastest : Math.min(s.fastest, inc.fastest);
+      });
+      saveUsers();
+    }
+    return sendJSON(res, 200, { user: publicProfile(user) });
+  }
+
+  // Servir index.html
+  fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
+    if (err) { res.writeHead(404); res.end('Not found'); return; }
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(data);
   });
 });
@@ -188,81 +312,63 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
-  ws.roomId = null;
-  ws.role = null;
-  ws.playerName = 'Joueur';
-  ws.inMatchmaking = false;
+  ws.roomId = null; ws.role = null; ws.playerName = 'Joueur';
+  ws.playerAvatar = '🎮'; ws.userId = null; ws.inMatchmaking = false;
 
   ws.on('message', raw => {
     try {
       const msg = JSON.parse(raw);
 
-      // ── Créer une room privée ──────────────────────────────────────────────
+      if (msg.type === 'auth') {
+        const payload = verifyToken(msg.token || '');
+        if (payload && users[payload.id]) {
+          ws.userId = payload.id;
+          ws.playerName = users[payload.id].pseudo;
+          ws.playerAvatar = users[payload.id].avatar;
+          send(ws, { type: 'auth_ok', user: publicProfile(users[payload.id]) });
+        } else {
+          send(ws, { type: 'auth_error' });
+        }
+        return;
+      }
+
       if (msg.type === 'create_room') {
-        const name = (msg.name || 'Joueur').slice(0, 16);
+        const name = (ws.playerName||'Joueur').slice(0,20);
+        const avatar = ws.playerAvatar||'🎮';
         const roomId = makeRoomId();
         const room = createRoom(roomId);
         room.private = true;
-        ws.playerName = name;
-        joinRoom(room, ws, name, 'X');
+        joinRoom(room, ws, name, 'X', avatar);
         send(ws, { type: 'room_created', roomId });
-        console.log(`[Room ${roomId}] Créée par ${name} (privée)`);
       }
 
-      // ── Rejoindre une room privée par code ────────────────────────────────
       if (msg.type === 'join_room') {
-        const code = (msg.roomId || '').toUpperCase().trim();
-        const name = (msg.name || 'Joueur').slice(0, 16);
+        const code = (msg.roomId||'').toUpperCase().trim();
         const room = rooms.get(code);
-
-        if (!room) {
-          send(ws, { type: 'error', message: 'Room introuvable. Vérifie le code.' });
-          return;
-        }
-        if (room.players.X && room.players.O) {
-          send(ws, { type: 'error', message: 'Cette room est déjà pleine.' });
-          return;
-        }
-
-        ws.playerName = name;
-        const role = !room.players.X ? 'X' : !room.players.O ? 'O' : 'spectator';
-        joinRoom(room, ws, name, role);
-        console.log(`[Room ${code}] ${name} a rejoint (${role})`);
+        if (!room) { send(ws, { type:'error', message:'Room introuvable.' }); return; }
+        if (room.players.X && room.players.O) { send(ws, { type:'error', message:'Room pleine.' }); return; }
+        joinRoom(room, ws, ws.playerName||'Joueur', !room.players.X?'X':'O', ws.playerAvatar||'🎮');
       }
 
-      // ── Matchmaking ───────────────────────────────────────────────────────
       if (msg.type === 'matchmake') {
-        const name = (msg.name || 'Joueur').slice(0, 16);
-        const auto = !!msg.autoMode;
-        ws.playerName = name;
         ws.inMatchmaking = true;
-
+        const auto = !!msg.autoMode;
         if (!matchmakingQueue.find(p => p.ws === ws)) {
-          matchmakingQueue.push({ ws, name, autoMode: auto });
-          const sameMode = matchmakingQueue.filter(p => p.autoMode === auto).length;
-          send(ws, { type: 'matchmaking', position: sameMode });
-          console.log(`[Matchmaking] ${name} en file auto=${auto} (${sameMode} avec même mode)`);
+          matchmakingQueue.push({ ws, name: ws.playerName, avatar: ws.playerAvatar, autoMode: auto });
+          const pos = matchmakingQueue.filter(p => p.autoMode === auto).length;
+          send(ws, { type: 'matchmaking', position: pos });
         }
-
         tryMatchmake(auto);
       }
 
-      // ── Annuler matchmaking ────────────────────────────────────────────────
       if (msg.type === 'cancel_matchmake') {
         matchmakingQueue = matchmakingQueue.filter(p => p.ws !== ws);
         ws.inMatchmaking = false;
         send(ws, { type: 'matchmaking_cancelled' });
       }
 
-      // ── Actions en jeu ────────────────────────────────────────────────────
       const room = ws.roomId ? rooms.get(ws.roomId) : null;
       if (!room) return;
-
-      if (msg.type === 'name' && ws.role !== 'spectator') {
-        const n = (msg.name || '').slice(0, 16) || `Joueur ${ws.role}`;
-        room.names[ws.role] = n;
-        broadcastRoom(room, { type: 'names', names: room.names });
-      }
 
       if (msg.type === 'automode' && ws.role === 'X') {
         room.autoMode = !!msg.autoMode;
@@ -273,87 +379,64 @@ wss.on('connection', ws => {
         if (ws.role === 'spectator' || ws.role !== room.G.player) return;
         if (processMove(room.G, msg.board, msg.cell)) {
           broadcastRoom(room, { type: 'state', state: room.G });
-          if (!room.G.winner) startTurnTimer(room);
-          else clearTurnTimer(room);
+          if (!room.G.winner) { startTurnTimer(room); }
+          else {
+            clearTurnTimer(room);
+            const moves = room.G.boards.flat().filter(Boolean).length;
+            if (room.userIds.X) recordResultForUser(room.userIds.X, 'online', room.G.winner==='X'?'win':room.G.winner==='draw'?'draw':'loss', moves);
+            if (room.userIds.O) recordResultForUser(room.userIds.O, 'online', room.G.winner==='O'?'win':room.G.winner==='draw'?'draw':'loss', moves);
+          }
         }
       }
 
       if (msg.type === 'chat') {
-        const text = (msg.msg || '').slice(0, 120);
+        const text = (msg.msg||'').slice(0,120);
         if (text && ws.role !== 'spectator') {
-          const opponent = ws.role === 'X' ? room.players.O : room.players.X;
-          send(opponent, { type: 'chat', msg: text });
+          send(ws.role==='X'?room.players.O:room.players.X, { type:'chat', msg:text });
         }
       }
 
       if (msg.type === 'reset' && ws.role !== 'spectator') {
         const scores = room.G.scores;
-        const nextStarter = room.G._firstPlayer === 'X' ? 'O' : 'X';
+        const next = room.G._firstPlayer==='X'?'O':'X';
         room.G = newState();
-        room.G.scores = scores;
-        room.G._firstPlayer = nextStarter;
-        room.G.player = nextStarter;
-        broadcastRoom(room, { type: 'state', state: room.G });
-        broadcastRoom(room, { type: 'names', names: room.names });
-        if (connectedCount(room) === 2) {
-          broadcastRoom(room, { type: 'ready' });
-          startTurnTimer(room);
-        }
+        room.G.scores = scores; room.G._firstPlayer = next; room.G.player = next;
+        broadcastRoom(room, { type:'state', state:room.G });
+        broadcastRoom(room, { type:'names', names:room.names, avatars:room.avatars });
+        if (connectedCount(room) === 2) { broadcastRoom(room, { type:'ready' }); startTurnTimer(room); }
       }
 
-    } catch(e) { console.error('Message error:', e.message); }
+    } catch(e) { console.error('WS error:', e.message); }
   });
 
   ws.on('close', () => {
-    // Retirer du matchmaking
     matchmakingQueue = matchmakingQueue.filter(p => p.ws !== ws);
-
     const room = ws.roomId ? rooms.get(ws.roomId) : null;
     if (!room) return;
-
     clearTurnTimer(room);
-
-    if (room.players.X === ws) {
-      room.players.X = null;
-      room.names.X = 'Joueur X';
-      broadcastRoom(room, { type: 'waiting' });
-    } else if (room.players.O === ws) {
-      room.players.O = null;
-      room.names.O = 'Joueur O';
-      broadcastRoom(room, { type: 'waiting' });
-    } else {
-      room.spectators = room.spectators.filter(s => s !== ws);
-    }
-
-    // Supprimer la room si vide
-    if (!room.players.X && !room.players.O && room.spectators.length === 0) {
-      deleteRoom(room.id);
-    }
+    if (room.players.X === ws) { room.players.X = null; room.names.X = 'Joueur X'; broadcastRoom(room, { type:'waiting' }); }
+    else if (room.players.O === ws) { room.players.O = null; room.names.O = 'Joueur O'; broadcastRoom(room, { type:'waiting' }); }
+    else { room.spectators = room.spectators.filter(s => s !== ws); }
+    if (!room.players.X && !room.players.O && room.spectators.length === 0) deleteRoom(room.id);
   });
 });
 
-// ── Stats serveur (toutes les 5min) ──────────────────────────────────────────
 setInterval(() => {
-  const active = [...rooms.values()].filter(r => connectedCount(r) === 2).length;
-  const waiting = [...rooms.values()].filter(r => connectedCount(r) === 1).length;
-  console.log(`[Stats] Rooms: ${rooms.size} (${active} en jeu, ${waiting} en attente) | Matchmaking: ${matchmakingQueue.length}`);
-}, 5 * 60 * 1000);
+  const active = [...rooms.values()].filter(r=>connectedCount(r)===2).length;
+  console.log(`[Stats] Rooms:${rooms.size} (${active} en jeu) | Queue:${matchmakingQueue.length} | Users:${Object.keys(users).length}`);
+}, 5*60*1000);
 
-// ── Démarrage ─────────────────────────────────────────────────────────────────
 function getLocalIP() {
   for (const ifaces of Object.values(os.networkInterfaces()))
     for (const i of ifaces)
-      if (i.family === 'IPv4' && !i.internal) return i.address;
+      if (i.family==='IPv4' && !i.internal) return i.address;
   return 'localhost';
 }
 
 server.listen(PORT, '0.0.0.0', () => {
-  const ip = getLocalIP();
-  console.log('\n🎮  Ultimate TTT — Serveur Cloud');
+  console.log('\n🎮  Ultimate TTT — Serveur Auth + Jeu');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`  Local  →  http://localhost:${PORT}`);
-  if (ip !== 'localhost') console.log(`  Réseau →  http://${ip}:${PORT}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('  Modes: Room privée | Matchmaking auto');
-  console.log(`  Rooms actives: 0\n`);
+  console.log(`  http://localhost:${PORT}`);
+  console.log('  POST /auth/register | POST /auth/login | GET /auth/me');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 });

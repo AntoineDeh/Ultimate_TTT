@@ -1,7 +1,11 @@
 {
   "name": "ultimate-ttt",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "server.js",
   "scripts": { "start": "node server.js" },
-  "dependencies": { "ws": "^8.20.0" }
+  "dependencies": {
+    "ws": "^8.20.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  }
 }

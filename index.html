@@ -963,9 +963,155 @@
     .tournament-champion { font-family:'Orbitron',sans-serif; font-size:1.1rem; font-weight:900; letter-spacing:.15em; animation:titleReveal .6s ease both; }
     .tournament-champion.x { color:var(--x); text-shadow:0 0 20px var(--x); }
     .tournament-champion.o { color:var(--o); text-shadow:0 0 20px var(--o); }
+
+    /* ══ AUTH SCREEN ═══════════════════════════════════════════════════════════ */
+    .auth-screen { position:fixed; inset:0; background:var(--bg); z-index:1000;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:0; padding:20px 16px; overflow-y:auto; }
+    .auth-screen.hidden { display:none; }
+
+    /* Logo + titre */
+    .auth-logo { font-family:'Orbitron',sans-serif; font-weight:900;
+      font-size:clamp(1.4rem,5vw,2rem); letter-spacing:.15em; color:#fff;
+      text-align:center; margin-bottom:4px; }
+    .auth-logo span { color:var(--x); text-shadow:0 0 16px var(--x); }
+    .auth-subtitle { font-size:.65rem; letter-spacing:.2em; opacity:.35; text-align:center;
+      margin-bottom:24px; }
+
+    /* Carte centrale */
+    .auth-card { background:rgba(10,10,28,.9); border:1px solid rgba(180,180,255,.12);
+      border-radius:20px; padding:24px 20px; width:min(340px,92vw);
+      box-shadow:0 24px 60px rgba(0,0,0,.7); display:flex; flex-direction:column; gap:0; }
+
+    /* Onglets connexion / inscription */
+    .auth-tabs { display:flex; border-radius:10px; overflow:hidden;
+      border:1px solid rgba(180,180,255,.12); margin-bottom:20px; }
+    .auth-tab { flex:1; font-family:'Orbitron',sans-serif; font-weight:700; font-size:.65rem;
+      letter-spacing:.1em; padding:11px; border:none; cursor:pointer; transition:all .2s;
+      background:rgba(180,180,255,.04); color:rgba(180,180,255,.4); }
+    .auth-tab.active { background:rgba(0,229,255,.12); color:var(--x); }
+
+    /* Champs */
+    .auth-field { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
+    .auth-label { font-size:.58rem; letter-spacing:.18em; color:rgba(180,180,255,.45);
+      text-transform:uppercase; }
+    .auth-input { background:rgba(180,180,255,.06); border:1px solid rgba(180,180,255,.18);
+      border-radius:10px; padding:12px 14px; color:#fff; font-family:'Share Tech Mono',monospace;
+      font-size:.9rem; outline:none; transition:border .2s; width:100%; }
+    .auth-input:focus { border-color:rgba(0,229,255,.45); box-shadow:0 0 0 3px rgba(0,229,255,.06); }
+    .auth-input.error { border-color:rgba(255,68,68,.5); }
+
+    /* Sélecteur d'avatar */
+    .auth-avatar-label { font-size:.58rem; letter-spacing:.18em; color:rgba(180,180,255,.45);
+      text-transform:uppercase; margin-bottom:6px; }
+    .auth-avatar-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:12px; }
+    .auth-avatar-btn { font-size:1.4rem; padding:6px; border-radius:8px; border:2px solid transparent;
+      background:rgba(180,180,255,.05); cursor:pointer; transition:all .15s; aspect-ratio:1;
+      display:flex; align-items:center; justify-content:center; }
+    .auth-avatar-btn:hover { background:rgba(180,180,255,.12); }
+    .auth-avatar-btn.selected { border-color:var(--x); background:rgba(0,229,255,.12);
+      box-shadow:0 0 8px rgba(0,229,255,.3); }
+
+    /* Bouton submit */
+    .auth-submit { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.78rem;
+      letter-spacing:.15em; padding:14px; border-radius:12px; border:none; cursor:pointer;
+      background:linear-gradient(135deg,rgba(0,229,255,.2),rgba(0,229,255,.1));
+      color:var(--x); border:1px solid rgba(0,229,255,.4); width:100%; margin-top:4px;
+      transition:all .2s; text-transform:uppercase; }
+    .auth-submit:hover { background:linear-gradient(135deg,rgba(0,229,255,.3),rgba(0,229,255,.18));
+      box-shadow:0 0 20px rgba(0,229,255,.2); }
+    .auth-submit:disabled { opacity:.4; cursor:default; }
+
+    /* Message d'erreur/succès */
+    .auth-msg { font-size:.7rem; letter-spacing:.06em; text-align:center; padding:8px 12px;
+      border-radius:8px; margin-top:8px; min-height:32px; transition:all .2s; }
+    .auth-msg.error { color:#ff6b6b; background:rgba(255,68,68,.08); border:1px solid rgba(255,68,68,.2); }
+    .auth-msg.success { color:#4ade80; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.2); }
+    .auth-msg.hidden { visibility:hidden; }
+
+    /* Avatar affiché en jeu + menu */
+    .player-avatar-badge { font-size:1.6rem; cursor:default; }
+    .menu-user-bar { display:flex; align-items:center; gap:10px; padding:8px 16px 0;
+      width:min(340px,88vw); }
+    .menu-user-avatar { font-size:1.8rem; }
+    .menu-user-info { display:flex; flex-direction:column; gap:2px; flex:1; }
+    .menu-user-pseudo { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.78rem;
+      color:#fff; }
+    .menu-user-sub { font-size:.58rem; letter-spacing:.1em; opacity:.35; }
+    .menu-user-logout { font-family:'Orbitron',sans-serif; font-size:.52rem; font-weight:700;
+      padding:5px 10px; border-radius:8px; border:1px solid rgba(180,180,255,.2);
+      background:transparent; color:rgba(180,180,255,.4); cursor:pointer; transition:all .2s; }
+    .menu-user-logout:hover { border-color:rgba(255,68,68,.4); color:#ff6b6b; }
   </style>
 </head>
 <body>
+
+<!-- ══ AUTH SCREEN ══════════════════════════════════════════════════════════ -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-logo">ULTIMATE <span>TTT</span></div>
+  <div class="auth-subtitle">IDENTIFIEZ-VOUS POUR JOUER</div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">CONNEXION</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">INSCRIPTION</button>
+    </div>
+
+    <!-- Champ pseudo (inscription seulement) -->
+    <div class="auth-field" id="field-pseudo" style="display:none">
+      <div class="auth-label">Pseudo</div>
+      <input class="auth-input" id="auth-pseudo" type="text" placeholder="Ton pseudo (2–20 car.)" maxlength="20" autocomplete="username">
+    </div>
+
+    <!-- Email -->
+    <div class="auth-field">
+      <div class="auth-label">Email</div>
+      <input class="auth-input" id="auth-email" type="email" placeholder="ton@email.com" autocomplete="email">
+    </div>
+
+    <!-- Mot de passe -->
+    <div class="auth-field">
+      <div class="auth-label">Mot de passe</div>
+      <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')submitAuth()">
+    </div>
+
+    <!-- Avatar (inscription seulement) -->
+    <div id="field-avatar" style="display:none">
+      <div class="auth-avatar-label">Ton avatar</div>
+      <div class="auth-avatar-grid">
+        <button class="auth-avatar-btn selected" onclick="selectAvatar('🎮')" data-av="🎮">🎮</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🦊')" data-av="🦊">🦊</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🐺')" data-av="🐺">🐺</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🦁')" data-av="🦁">🦁</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🐻')" data-av="🐻">🐻</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🐸')" data-av="🐸">🐸</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🦅')" data-av="🦅">🦅</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🐙')" data-av="🐙">🐙</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🦈')" data-av="🦈">🦈</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('👾')" data-av="👾">👾</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🤖')" data-av="🤖">🤖</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('💎')" data-av="💎">💎</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🔥')" data-av="🔥">🔥</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('⚡')" data-av="⚡">⚡</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🌸')" data-av="🌸">🌸</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🍄')" data-av="🍄">🍄</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('⭐')" data-av="⭐">⭐</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🏆')" data-av="🏆">🏆</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🎸')" data-av="🎸">🎸</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🎃')" data-av="🎃">🎃</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('👑')" data-av="👑">👑</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🧊')" data-av="🧊">🧊</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('🌊')" data-av="🌊">🌊</button>
+        <button class="auth-avatar-btn" onclick="selectAvatar('☕')" data-av="☕">☕</button>
+      </div>
+    </div>
+
+    <button class="auth-submit" id="auth-submit-btn" onclick="submitAuth()">SE CONNECTER</button>
+    <div class="auth-msg hidden" id="auth-msg"></div>
+  </div>
+</div>
+
 <div class="particles" id="pts"></div>
 
 <!-- Chat bar (Plato-style, online only) -->
@@ -1142,6 +1288,16 @@
   </div>
 
   <!-- Main buttons -->
+
+  <!-- Barre utilisateur connecté -->
+  <div class="menu-user-bar" id="menu-user-bar">
+    <div class="menu-user-avatar" id="menu-user-avatar">🎮</div>
+    <div class="menu-user-info">
+      <div class="menu-user-pseudo" id="menu-user-pseudo">Joueur</div>
+      <div class="menu-user-sub">PROFIL CONNECTÉ</div>
+    </div>
+    <button class="menu-user-logout" onclick="logout()">DÉCO</button>
+  </div>
   <div class="menu-btns">
     <button class="menu-btn local" onclick="showSetup('local')">
       <div class="menu-btn-accent"></div>
@@ -2011,6 +2167,154 @@ function scrollChatToBottom() {
 }
 
 
+
+// ════════════════════════════════════════════════════════
+// AUTH — Connexion / Inscription
+// ════════════════════════════════════════════════════════
+let currentUser  = null; // profil utilisateur connecté
+let authToken    = null; // JWT
+let selectedAvatar = '🎮';
+
+const API = ''; // même origine que le jeu
+
+async function authFetch(method, endpoint, body, token) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (body)  opts.body = JSON.stringify(body);
+  const res = await fetch(API + endpoint, opts);
+  return { status: res.status, data: await res.json() };
+}
+
+// ── Auto-login au démarrage ─────────────────────────────
+(async function initAuth() {
+  const saved = localStorage.getItem('ttt-token');
+  if (saved) {
+    try {
+      const { status, data } = await authFetch('GET', '/auth/me', null, saved);
+      if (status === 200) {
+        authToken   = saved;
+        currentUser = data.user;
+        onLoggedIn(false); // false = pas de migration de stats
+        return;
+      }
+    } catch(e) {}
+    localStorage.removeItem('ttt-token');
+  }
+  // Pas de token valide → afficher l'écran auth
+  document.getElementById('auth-screen').classList.remove('hidden');
+})();
+
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-register').classList.toggle('active', !isLogin);
+  document.getElementById('field-pseudo').style.display  = isLogin ? 'none' : '';
+  document.getElementById('field-avatar').style.display  = isLogin ? 'none' : '';
+  document.getElementById('auth-submit-btn').textContent = isLogin ? 'SE CONNECTER' : "S'INSCRIRE";
+  document.getElementById('auth-password').autocomplete  = isLogin ? 'current-password' : 'new-password';
+  setAuthMsg('', '');
+}
+
+function selectAvatar(av) {
+  selectedAvatar = av;
+  document.querySelectorAll('.auth-avatar-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.av === av);
+  });
+}
+
+function setAuthMsg(text, type) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className   = 'auth-msg' + (text ? ' ' + type : ' hidden');
+}
+
+async function submitAuth() {
+  const isLogin = document.getElementById('tab-login').classList.contains('active');
+  const email   = document.getElementById('auth-email').value.trim();
+  const password= document.getElementById('auth-password').value;
+  const pseudo  = document.getElementById('auth-pseudo').value.trim();
+  const btn     = document.getElementById('auth-submit-btn');
+
+  if (!email || !password) return setAuthMsg('Remplis tous les champs.', 'error');
+  if (!isLogin && !pseudo)  return setAuthMsg('Entre un pseudo.', 'error');
+
+  btn.disabled = true;
+  setAuthMsg('Chargement…', '');
+
+  try {
+    const endpoint = isLogin ? '/auth/login' : '/auth/register';
+    const body     = isLogin
+      ? { email, password }
+      : { email, password, pseudo, avatar: selectedAvatar };
+
+    const { status, data } = await authFetch('POST', endpoint, body);
+
+    if (status === 200 || status === 201) {
+      authToken   = data.token;
+      currentUser = data.user;
+      localStorage.setItem('ttt-token', authToken);
+      onLoggedIn(!isLogin); // migration stats uniquement à l'inscription
+    } else {
+      setAuthMsg(data.error || 'Erreur serveur.', 'error');
+    }
+  } catch(e) {
+    setAuthMsg('Connexion impossible. Vérifie ta connexion.', 'error');
+  }
+  btn.disabled = false;
+}
+
+async function onLoggedIn(migrate) {
+  // Migration stats localStorage → serveur (une seule fois à l'inscription)
+  if (migrate) {
+    const local = localStorage.getItem('ttt-stats');
+    if (local) {
+      try {
+        await authFetch('PUT', '/auth/stats', { stats: JSON.parse(local) }, authToken);
+        localStorage.removeItem('ttt-stats');
+      } catch(e) {}
+    }
+  }
+  // Charger les stats depuis le serveur
+  if (currentUser && currentUser.stats) {
+    // Les stats sont dans currentUser.stats — on les utilise directement
+  }
+  // Masquer l'écran auth, afficher le menu
+  document.getElementById('auth-screen').classList.add('hidden');
+  updateMenuUserBar();
+  renderRankBadge();
+  // Pré-remplir le pseudo dans les setups
+  prefillUserName();
+}
+
+function updateMenuUserBar() {
+  if (!currentUser) return;
+  document.getElementById('menu-user-avatar').textContent = currentUser.avatar || '🎮';
+  document.getElementById('menu-user-pseudo').textContent = currentUser.pseudo || 'Joueur';
+}
+
+function prefillUserName() {
+  if (!currentUser) return;
+  const pseudo = currentUser.pseudo;
+  ['name-human','name-online'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.value) el.value = pseudo;
+  });
+}
+
+function logout() {
+  if (!confirm('Se déconnecter ?')) return;
+  localStorage.removeItem('ttt-token');
+  authToken   = null;
+  currentUser = null;
+  backToMenu();
+  document.getElementById('auth-screen').classList.remove('hidden');
+  // Remettre le menu en hidden
+  document.getElementById('menu').classList.add('hidden');
+}
+
+// ── Surcharge loadStats / saveStats pour utiliser le serveur ─────────────────
+// Les stats locales restent en fallback si pas connecté
+
 // ════════════════════════════════════════════════════════
 // CONSTANTS & STATE
 // ════════════════════════════════════════════════════════
@@ -2813,6 +3117,8 @@ function connect(onOpen) {
   ws = new WebSocket(`${proto}://${location.host}`);
 
   ws.onopen = () => {
+    // Authentifier le socket avec le JWT
+    if (authToken) ws.send(JSON.stringify({ type: 'auth', token: authToken }));
     if (onOpen) onOpen();
     ws.send(JSON.stringify({type:'automode', autoMode}));
   };
@@ -3131,10 +3437,21 @@ function emptyStats() {
 }
 
 function loadStats() {
+  // Si connecté, utilise les stats serveur (via currentUser)
+  if (currentUser && currentUser.stats) return currentUser.stats;
   try { return JSON.parse(localStorage.getItem('ttt-stats')) || {}; } catch(e) { return {}; }
 }
 
-function saveStats(s) { localStorage.setItem('ttt-stats', JSON.stringify(s)); }
+async function saveStats(s) {
+  if (currentUser) {
+    currentUser.stats = s;
+    // Sync asynchrone avec le serveur
+    try { await authFetch('PUT', '/auth/stats', { stats: s }, authToken); }
+    catch(e) {}
+  } else {
+    localStorage.setItem('ttt-stats', JSON.stringify(s));
+  }
+}
 
 function getStatKey() {
   if (mode === 'local') return null; // pas de stats en local
@@ -3499,7 +3816,7 @@ function showSetup(m) {
 // ════════════════════════════════════════════════════════
 function showFirstRunRules() { hide('first-run'); sessionStorage.setItem('ttt-seen','1'); show('rules-overlay'); }
 function dismissFirstRun() { hide('first-run'); sessionStorage.setItem('ttt-seen','1'); }
-if (!sessionStorage.getItem('ttt-seen')) { show('first-run'); }
+// First-run remplacé par l'écran auth
 
 // ════════════════════════════════════════════════════════
 // RULES
