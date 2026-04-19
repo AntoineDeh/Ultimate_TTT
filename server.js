@@ -70,12 +70,42 @@ function createRoom(id) {
     spectators: [],
     autoMode: false,
     private: false,
+    turnTimer: null,
   };
   rooms.set(id, room);
   return room;
 }
 
+function clearTurnTimer(room) {
+  if (room.turnTimer) { clearTimeout(room.turnTimer); room.turnTimer = null; }
+}
+
+function startTurnTimer(room) {
+  clearTurnTimer(room);
+  if (room.G.winner || connectedCount(room) < 2) return;
+  room.turnTimer = setTimeout(() => {
+    if (room.G.winner || connectedCount(room) < 2) return;
+    // Forcer un coup aléatoire pour le joueur actif
+    const { boards, bw, active, player } = room.G;
+    const moves = [];
+    for (let b=0;b<9;b++) {
+      if (bw[b]) continue;
+      if (active !== null && active !== b) continue;
+      for (let c=0;c<9;c++) if (!boards[b][c]) moves.push([b,c]);
+    }
+    if (moves.length) {
+      const [b,c] = moves[Math.floor(Math.random()*moves.length)];
+      if (processMove(room.G, b, c)) {
+        broadcastRoom(room, { type: 'state', state: room.G });
+        if (!room.G.winner) startTurnTimer(room);
+      }
+    }
+  }, 35000); // 35s côté serveur (client affiche 30s)
+}
+
 function deleteRoom(id) {
+  const room = rooms.get(id);
+  if (room) clearTurnTimer(room);
   rooms.delete(id);
   console.log(`[Room ${id}] Supprimée. Rooms actives: ${rooms.size}`);
 }
@@ -110,6 +140,7 @@ function joinRoom(room, ws, name, role) {
     // Mettre à jour les noms pour les deux avant ready
     broadcastRoom(room, { type: 'names', names: room.names });
     broadcastRoom(room, { type: 'ready' });
+    startTurnTimer(room);
     console.log(`[Room ${room.id}] Partie démarrée: ${room.names.X} vs ${room.names.O}`);
   } else if (role !== 'spectator') {
     send(ws, { type: 'waiting' });
@@ -240,8 +271,20 @@ wss.on('connection', ws => {
 
       if (msg.type === 'move') {
         if (ws.role === 'spectator' || ws.role !== room.G.player) return;
-        if (processMove(room.G, msg.board, msg.cell))
+        if (processMove(room.G, msg.board, msg.cell)) {
           broadcastRoom(room, { type: 'state', state: room.G });
+          if (!room.G.winner) startTurnTimer(room);
+          else clearTurnTimer(room);
+        }
+      }
+
+      if (msg.type === 'chat') {
+        const text = (msg.msg || '').slice(0, 40);
+        if (text && ws.role !== 'spectator') {
+          // Envoyer seulement à l'adversaire (pas à l'expéditeur)
+          const opponent = ws.role === 'X' ? room.players.O : room.players.X;
+          send(opponent, { type: 'chat', msg: text });
+        }
       }
 
       if (msg.type === 'reset' && ws.role !== 'spectator') {
@@ -253,7 +296,10 @@ wss.on('connection', ws => {
         room.G.player = nextStarter;
         broadcastRoom(room, { type: 'state', state: room.G });
         broadcastRoom(room, { type: 'names', names: room.names });
-        if (connectedCount(room) === 2) broadcastRoom(room, { type: 'ready' });
+        if (connectedCount(room) === 2) {
+          broadcastRoom(room, { type: 'ready' });
+          startTurnTimer(room);
+        }
       }
 
     } catch(e) { console.error('Message error:', e.message); }
@@ -265,6 +311,8 @@ wss.on('connection', ws => {
 
     const room = ws.roomId ? rooms.get(ws.roomId) : null;
     if (!room) return;
+
+    clearTurnTimer(room);
 
     if (room.players.X === ws) {
       room.players.X = null;

@@ -810,10 +810,74 @@
     .analysis-hint-legend span { display:flex; align-items:center; gap:4px; }
     .dot-played { width:10px; height:10px; border-radius:2px; background:rgba(180,180,255,.4); border:1px solid rgba(180,180,255,.6); display:inline-block; }
     .dot-best { width:10px; height:10px; border-radius:2px; background:rgba(74,222,128,.4); border:1px solid #4ade80; display:inline-block; }
+
+    /* ── Sound toggle btn ── */
+    .sound-btn { position:fixed; bottom:14px; right:14px; z-index:800; width:36px; height:36px; border-radius:50%; border:1.5px solid rgba(180,180,255,.25); background:rgba(13,13,32,.85); color:rgba(180,180,255,.5); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; backdrop-filter:blur(4px); }
+    .sound-btn:hover { border-color:rgba(180,180,255,.5); color:#fff; }
+    .sound-btn.muted { border-color:rgba(255,31,122,.25); color:rgba(255,31,122,.4); }
+
+    /* ── Timer bar (online) ── */
+    .timer-bar-wrap { width:100%; max-width:340px; height:4px; background:rgba(180,180,255,.08); border-radius:2px; overflow:hidden; margin:0 auto; }
+    .timer-bar { height:100%; border-radius:2px; transition:width .9s linear, background .5s; background:var(--x); }
+    .timer-bar.urgent { background:#ef4444; animation:timerPulse .5s ease-in-out infinite alternate; }
+    @keyframes timerPulse { from{opacity:.7} to{opacity:1} }
+    .timer-label { font-family:'Orbitron',sans-serif; font-size:.55rem; letter-spacing:.15em; text-align:center; margin-top:3px; height:12px; color:rgba(180,180,255,.4); transition:color .3s; }
+    .timer-label.urgent { color:#ef4444; }
+
+    /* ── Chat overlay (online) ── */
+    .chat-btn { width:44px; height:44px; border-radius:10px; background:rgba(74,222,128,.08); border:1.5px solid rgba(74,222,128,.3); color:#4ade80; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; position:relative; }
+    .chat-btn:hover { background:rgba(74,222,128,.18); }
+    .chat-btn.hidden { display:none; }
+    .chat-badge { position:absolute; top:-4px; right:-4px; width:10px; height:10px; border-radius:50%; background:#ef4444; display:none; }
+    .chat-panel { position:fixed; bottom:60px; right:14px; z-index:900; background:var(--surface); border:1px solid var(--border-out); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; width:min(260px,80vw); box-shadow:0 8px 32px rgba(0,0,0,.6); animation:fadein .15s ease; }
+    .chat-panel.hidden { display:none; }
+    .chat-panel-title { font-family:'Orbitron',sans-serif; font-size:.55rem; letter-spacing:.2em; opacity:.4; text-align:center; }
+    .chat-msgs-wrap { max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
+    .chat-msg { font-size:.72rem; padding:5px 10px; border-radius:8px; max-width:80%; line-height:1.4; }
+    .chat-msg.mine { background:rgba(0,229,255,.12); border:1px solid rgba(0,229,255,.2); align-self:flex-end; color:var(--x); }
+    .chat-msg.theirs { background:rgba(255,31,122,.1); border:1px solid rgba(255,31,122,.2); align-self:flex-start; color:var(--o); }
+    .chat-presets { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .chat-preset-btn { font-size:.68rem; padding:7px 6px; border-radius:8px; border:1px solid rgba(180,180,255,.2); background:rgba(180,180,255,.05); color:rgba(200,200,255,.75); cursor:pointer; transition:all .2s; text-align:center; }
+    .chat-preset-btn:hover { border-color:rgba(180,180,255,.5); background:rgba(180,180,255,.12); color:#fff; }
+    /* Chat bubble flottante */
+    .chat-bubble { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); z-index:850; background:var(--surface); border:1px solid var(--border-out); border-radius:20px; padding:8px 18px; font-size:.78rem; animation:bubbleIn .3s ease, bubbleOut .3s ease 2.5s forwards; pointer-events:none; white-space:nowrap; max-width:75vw; overflow:hidden; text-overflow:ellipsis; }
+    @keyframes bubbleIn  { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+    @keyframes bubbleOut { from{opacity:1} to{opacity:0} }
+
+    /* ── Tournament mode ── */
+    .tournament-banner { background:linear-gradient(135deg,rgba(255,193,7,.12),rgba(255,140,0,.08)); border:1px solid rgba(255,193,7,.3); border-radius:10px; padding:8px 14px; text-align:center; font-family:'Orbitron',sans-serif; font-size:.65rem; letter-spacing:.12em; color:var(--active); margin:0 auto; width:min(300px,88vw); }
+    .tournament-banner.hidden { display:none; }
+    .tournament-pip-row { display:flex; gap:5px; justify-content:center; margin-top:5px; }
+    .t-pip { width:10px; height:10px; border-radius:50%; border:1.5px solid rgba(255,193,7,.4); background:transparent; transition:all .3s; }
+    .t-pip.won-x { background:var(--x); border-color:var(--x); box-shadow:0 0 6px var(--x); }
+    .t-pip.won-o { background:var(--o); border-color:var(--o); box-shadow:0 0 6px var(--o); }
+    .t-pip.current { border-color:var(--active); animation:pipPulse 1s ease-in-out infinite alternate; }
+    @keyframes pipPulse { from{border-color:rgba(255,193,7,.3)} to{border-color:rgba(255,193,7,.9)} }
+    .gameover-tournament { display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:6px; }
+    .tournament-champion { font-family:'Orbitron',sans-serif; font-size:1.1rem; font-weight:900; letter-spacing:.15em; animation:titleReveal .6s ease both; }
+    .tournament-champion.x { color:var(--x); text-shadow:0 0 20px var(--x); }
+    .tournament-champion.o { color:var(--o); text-shadow:0 0 20px var(--o); }
   </style>
 </head>
 <body>
 <div class="particles" id="pts"></div>
+
+<!-- Sound toggle (always visible) -->
+<button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Son">🔊</button>
+
+<!-- Chat panel (online only) -->
+<div class="chat-panel hidden" id="chat-panel">
+  <div class="chat-panel-title">💬 MESSAGE RAPIDE</div>
+  <div class="chat-msgs-wrap" id="chat-msgs"></div>
+  <div class="chat-presets">
+    <button class="chat-preset-btn" onclick="sendChat('GG ! 👏')">GG ! 👏</button>
+    <button class="chat-preset-btn" onclick="sendChat('Bien joué ! 🎯')">Bien joué ! 🎯</button>
+    <button class="chat-preset-btn" onclick="sendChat('Hmm... 🤔')">Hmm... 🤔</button>
+    <button class="chat-preset-btn" onclick="sendChat('Nooon ! 😤')">Nooon ! 😤</button>
+    <button class="chat-preset-btn" onclick="sendChat('Revanche ! ⚔️')">Revanche ! ⚔️</button>
+    <button class="chat-preset-btn" onclick="sendChat('😂')">😂</button>
+  </div>
+</div>
 
 <!-- First-run rules popup -->
 <div class="overlay first-run hidden" id="first-run">
@@ -1014,6 +1078,10 @@
       <span class="settings-lbl" style="opacity:1;color:var(--active)">⚡ Auto-complétion</span>
       <label class="toggle"><input type="checkbox" id="auto-local" onchange="autoMode=this.checked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
     </div>
+    <div class="settings-row" style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:#a78bfa">🏆 Mode Tournoi (3 manches)</span>
+      <label class="toggle"><input type="checkbox" id="tournament-local"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
     <button class="setup-go" onclick="startLocal()">▶ JOUER</button>
     <button class="setup-back" onclick="backToMenu()">← RETOUR</button>
   </div>
@@ -1035,6 +1103,10 @@
     <div class="settings-row" style="background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:8px;padding:10px 12px;">
       <span class="settings-lbl" style="opacity:1;color:var(--active)">⚡ Auto-complétion</span>
       <label class="toggle"><input type="checkbox" id="auto-bot" onchange="autoMode=this.checked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+    </div>
+    <div class="settings-row" style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:10px 12px;">
+      <span class="settings-lbl" style="opacity:1;color:#a78bfa">🏆 Mode Tournoi (3 manches)</span>
+      <label class="toggle"><input type="checkbox" id="tournament-bot"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
     </div>
     <div><label class="setup-label">RÈGLES DU BOT</label><div style="font-size:.7rem;opacity:.45;line-height:1.5">Facile : coups aléatoires<br>Moyen : voit 3 coups<br>Difficile : minimax profondeur 8</div></div>
     <button class="setup-go" onclick="startBot()">▶ JOUER</button>
@@ -1397,10 +1469,21 @@
     <div class="turn-dot x" id="turn-dot"></div>
     <div class="turn-text x" id="turn-text">—</div>
   </div>
+  <!-- Timer bar (online mode) -->
+  <div class="timer-bar-wrap hidden" id="timer-wrap">
+    <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+  </div>
+  <div class="timer-label hidden" id="timer-label"></div>
+  <!-- Tournament banner -->
+  <div class="tournament-banner hidden" id="tournament-banner">
+    <span id="t-banner-text">TOURNOI — 3 MANCHES</span>
+    <div class="tournament-pip-row" id="t-pips"></div>
+  </div>
   <div class="board" id="board"></div>
   <div class="action-row">
     <button class="btn reset hidden" id="reset-btn" onclick="resetGame()">↺ REJOUER</button>
     <button class="btn abandon hidden" id="abandon-btn" onclick="showAbandon()">⚑ ABANDON</button>
+    <button class="chat-btn hidden" id="chat-btn" onclick="toggleChat()">💬<span class="chat-badge" id="chat-badge"></span></button>
     <button class="btn undo hidden" id="undo-btn" onclick="undoMove()">↩</button>
   </div>
 </div>
@@ -1456,6 +1539,227 @@ function evalStateNN(state) {
 
 // Charge le modèle au démarrage (non bloquant)
 loadNNModel();
+// ════════════════════════════════════════════════════════
+// SOUND ENGINE (Web Audio API — synthétisé, pas de fichiers)
+// ════════════════════════════════════════════════════════
+let audioCtx = null;
+let soundEnabled = localStorage.getItem('ttt-sound') !== 'off';
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, vol=0.18, attack=0.005, decay=0.08) {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    const t = ctx.currentTime;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(vol, t + attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.start(t); osc.stop(t + duration + 0.02);
+  } catch(e) {}
+}
+
+const SFX = {
+  move()    { playTone(520, 'sine',   0.12, 0.14); },
+  subwin()  { playTone(660, 'sine', 0.08); setTimeout(()=>playTone(880,'sine',0.1), 80); setTimeout(()=>playTone(1100,'sine',0.14),160); },
+  win()     { [0,100,200,320,500].forEach((d,i)=>setTimeout(()=>playTone([523,659,784,1047,1319][i],'triangle',0.25,0.22),d)); },
+  lose()    { playTone(330,'sawtooth',0.08,0.12); setTimeout(()=>playTone(220,'sawtooth',0.12,0.1),120); setTimeout(()=>playTone(165,'sawtooth',0.18,0.08),280); },
+  draw()    { playTone(440,'sine',0.2,0.12); setTimeout(()=>playTone(440,'sine',0.2,0.12),250); },
+  hint()    { playTone(880,'sine',0.06,0.1); setTimeout(()=>playTone(1100,'sine',0.06,0.08),80); },
+  chat()    { playTone(800,'sine',0.04,0.08); },
+  timer_urgent() { playTone(440,'square',0.05,0.06); },
+  tourwin() { [0,80,160,300,480,700].forEach((d,i)=>setTimeout(()=>playTone([523,659,784,1047,1319,1568][i],'triangle',0.3,0.25),d)); },
+};
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('ttt-sound', soundEnabled ? 'on' : 'off');
+  const btn = document.getElementById('sound-btn');
+  btn.textContent = soundEnabled ? '🔊' : '🔇';
+  btn.classList.toggle('muted', !soundEnabled);
+}
+
+// Init sound button state
+(function(){ 
+  const btn = document.getElementById('sound-btn');
+  if (!soundEnabled) { btn.textContent = '🔇'; btn.classList.add('muted'); }
+})();
+
+// ════════════════════════════════════════════════════════
+// HAPTIC FEEDBACK
+// ════════════════════════════════════════════════════════
+function haptic(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// ════════════════════════════════════════════════════════
+// TOURNAMENT MODE
+// ════════════════════════════════════════════════════════
+let tournamentMode = false;   // true = best-of-5 (first to 3 wins)
+const TOURNAMENT_TARGET = 3;
+let tournamentWins = {X:0, O:0};
+let tournamentOver = false;
+
+function initTournament(enabled) {
+  tournamentMode = enabled;
+  tournamentWins = {X:0, O:0};
+  tournamentOver = false;
+  renderTournamentBanner();
+}
+
+function renderTournamentBanner() {
+  const banner = document.getElementById('tournament-banner');
+  const pips   = document.getElementById('t-pips');
+  const txt    = document.getElementById('t-banner-text');
+  if (!tournamentMode) { banner.classList.add('hidden'); return; }
+  banner.classList.remove('hidden');
+  const wx = tournamentWins.X, wo = tournamentWins.O;
+  txt.textContent = `🏆 TOURNOI — ${wx} - ${wo}`;
+  pips.innerHTML = '';
+  for (let i=0;i<TOURNAMENT_TARGET;i++) {
+    const p = document.createElement('div');
+    p.className = 't-pip' + (i<wx?' won-x':'') + (i===wx&&!tournamentOver?' current':'');
+    pips.appendChild(p);
+  }
+  const sep = document.createElement('div'); sep.style.cssText='width:12px;height:4px;background:rgba(180,180,255,.2);border-radius:2px;align-self:center;'; pips.appendChild(sep);
+  for (let i=0;i<TOURNAMENT_TARGET;i++) {
+    const p = document.createElement('div');
+    p.className = 't-pip' + (i<wo?' won-o':'') + (i===wo&&!tournamentOver?' current':'');
+    pips.appendChild(p);
+  }
+}
+
+function checkTournamentWinner(roundWinner) {
+  if (!tournamentMode || !roundWinner || roundWinner === 'draw') return false;
+  tournamentWins[roundWinner]++;
+  renderTournamentBanner();
+  if (tournamentWins[roundWinner] >= TOURNAMENT_TARGET) {
+    tournamentOver = true;
+    return true;
+  }
+  return false;
+}
+
+// ════════════════════════════════════════════════════════
+// ONLINE TIMER
+// ════════════════════════════════════════════════════════
+const TURN_SECONDS = 30;
+let timerInterval = null;
+let timerLeft = TURN_SECONDS;
+
+function startTimer() {
+  stopTimer();
+  timerLeft = TURN_SECONDS;
+  const wrap  = document.getElementById('timer-wrap');
+  const bar   = document.getElementById('timer-bar');
+  const label = document.getElementById('timer-label');
+  wrap.classList.remove('hidden');
+  label.classList.remove('hidden');
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timerLeft--;
+    updateTimerUI();
+    if (timerLeft <= 5) { SFX.timer_urgent(); haptic(30); }
+    if (timerLeft <= 0) { stopTimer(); onTimerExpired(); }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval); timerInterval = null;
+  const wrap  = document.getElementById('timer-wrap');
+  const label = document.getElementById('timer-label');
+  wrap.classList.add('hidden');
+  label.classList.add('hidden');
+}
+
+function updateTimerUI() {
+  const bar   = document.getElementById('timer-bar');
+  const label = document.getElementById('timer-label');
+  const pct   = (timerLeft / TURN_SECONDS) * 100;
+  bar.style.width = pct + '%';
+  const urgent = timerLeft <= 8;
+  bar.classList.toggle('urgent', urgent);
+  label.classList.toggle('urgent', urgent);
+  label.textContent = `⏱ ${timerLeft}s`;
+}
+
+function onTimerExpired() {
+  if (!G || G.winner || mode !== 'online') return;
+  if (myRole !== G.player) return; // pas notre tour
+  // Jouer un coup aléatoire parmi les valides
+  const moves = getValidMoves(G);
+  if (!moves.length) return;
+  const [b, c] = moves[Math.floor(Math.random() * moves.length)];
+  ws.send(JSON.stringify({type:'move', board:b, cell:c}));
+}
+
+// ════════════════════════════════════════════════════════
+// ONLINE CHAT
+// ════════════════════════════════════════════════════════
+let chatOpen = false;
+let chatBubbleTimeout = null;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-panel').classList.toggle('hidden', !chatOpen);
+  if (chatOpen) {
+    document.getElementById('chat-badge').style.display = 'none';
+    scrollChatToBottom();
+  }
+}
+
+function sendChat(msg) {
+  if (!ws || ws.readyState !== 1) return;
+  ws.send(JSON.stringify({type:'chat', msg: msg.slice(0,40)}));
+  addChatMsg(msg, true);
+  SFX.chat();
+  haptic(20);
+}
+
+function receivedChat(msg) {
+  addChatMsg(msg, false);
+  SFX.chat();
+  haptic([20,10,20]);
+  if (!chatOpen) {
+    document.getElementById('chat-badge').style.display = 'block';
+    showChatBubble(msg);
+  }
+}
+
+function addChatMsg(msg, mine) {
+  const wrap = document.getElementById('chat-msgs');
+  const el = document.createElement('div');
+  el.className = 'chat-msg ' + (mine ? 'mine' : 'theirs');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  scrollChatToBottom();
+}
+
+function scrollChatToBottom() {
+  const w = document.getElementById('chat-msgs');
+  w.scrollTop = w.scrollHeight;
+}
+
+function showChatBubble(msg) {
+  clearTimeout(chatBubbleTimeout);
+  const old = document.getElementById('chat-bubble-float');
+  if (old) old.remove();
+  const b = document.createElement('div');
+  b.id = 'chat-bubble-float';
+  b.className = 'chat-bubble';
+  b.textContent = msg;
+  document.body.appendChild(b);
+  chatBubbleTimeout = setTimeout(() => { if (b.parentNode) b.remove(); }, 3000);
+}
+
 // ════════════════════════════════════════════════════════
 // CONSTANTS & STATE
 // ════════════════════════════════════════════════════════
@@ -1575,14 +1879,21 @@ function showGameIcons() {
   show('home-btn'); show('rules-btn'); show('abandon-btn');
   show('hint-btn');
   if (mode === 'bot') { show('undo-btn'); show('reset-btn'); }
+  if (mode === 'online') show('chat-btn');
   updateHintBtn();
 }
 function backToMenu() {
   ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm','settings-panel'].forEach(hide);
   closeDesign();
   show('menu');
-  ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn','reset-btn'].forEach(hide);
+  ['home-btn','rules-btn','settings-btn','abandon-btn','undo-btn','hint-btn','reset-btn','chat-btn'].forEach(hide);
   hide('role-badge');
+  stopTimer();
+  hide('tournament-banner');
+  document.getElementById('chat-panel').classList.add('hidden');
+  document.getElementById('chat-msgs').innerHTML = '';
+  chatOpen = false;
+  tournamentMode = false; tournamentWins = {X:0,O:0}; tournamentOver = false;
   if (ws) { ws.send(JSON.stringify({type:'cancel_matchmake'})); ws.onclose=null; ws.close(); ws=null; }
   currentRoomId = null;
   scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false; hintCell=null; hints=3; gameLog=[]; analysisCache={}; analysisReady=false;
@@ -1608,6 +1919,7 @@ function startLocal() {
   scores = {X:0,O:0};
   mode='local';
   autoMode = document.getElementById('auto-local').checked;
+  initTournament(document.getElementById('tournament-local').checked);
   hide('setup-local'); showGameIcons();
   G = newState(); G._firstPlayer = 'X';
   hints = 3; updateHintBtn();
@@ -1620,9 +1932,14 @@ function localClick(b,c) {
   if (G.active!==null&&G.active!==b) return;
   if (G.bw[b]||G.boards[b][c]) return;
   history.push(JSON.stringify(G));
+  const prevBw = [...G.bw];
   const prevState = JSON.parse(JSON.stringify(G));
   G = applyMove(G,b,c);
   gameLog.push({state: prevState, move:[b,c], player: prevState.player});
+  // Sound + haptic
+  const subWon = G.bw.some((v,i)=>v&&!prevBw[i]);
+  if (subWon) { SFX.subwin(); haptic([30,20,60]); }
+  else { SFX.move(); haptic(25); }
   runAutoAndRender();
   if (G.winner) setTimeout(showGameOver,600);
 }
@@ -1637,6 +1954,7 @@ function startBot() {
   scores = {X:0,O:0};
   mode='bot';
   autoMode = document.getElementById('auto-bot').checked;
+  initTournament(document.getElementById('tournament-bot').checked);
   hide('setup-bot'); showGameIcons();
   G = newState(); G._firstPlayer = 'X';
   hints = 3; updateHintBtn();
@@ -1654,9 +1972,12 @@ function botMove() {
     else move=botHard(G);
     botThinking=false;
     if (move) {
+      const prevBw = [...G.bw];
       const prevState = JSON.parse(JSON.stringify(G));
       G=applyMove(G,...move);
       gameLog.push({state: prevState, move, player: prevState.player});
+      const subWon = G.bw.some((v,i)=>v&&!prevBw[i]);
+      if (subWon) { SFX.subwin(); haptic([20,10,40]); } else { SFX.move(); haptic(15); }
       runAutoAndRender();
     }
     if (G.winner) setTimeout(showGameOver,600);
@@ -2001,6 +2322,7 @@ function useHint() {
     if (!move) return;
     if (mode !== 'bot') hints--;
     hintCell = move;
+    SFX.hint(); haptic(20);
     updateHintBtn();
     render();
   }, 30);
@@ -2278,6 +2600,12 @@ function connect(onOpen) {
         for (let b=0;b<9;b++) for (let c=0;c<9;c++) {
           if (!prev.boards[b][c] && G.boards[b][c]) {
             gameLog.push({state: JSON.parse(JSON.stringify(prev)), move:[b,c], player: prev.player});
+            // Son du coup adverse (le notre est déjà joué côté onlineClick)
+            if (prev.player !== myRole) {
+              const subWon = G.bw.some((v,i)=>v&&!prev.bw[i]);
+              if (subWon) { SFX.subwin(); haptic([20,10,40]); }
+              else { SFX.move(); haptic(15); }
+            }
           }
         }
       }
@@ -2288,11 +2616,19 @@ function connect(onOpen) {
         showGameIcons();
         updateHintBtn();
       }
+      // Démarrer/reset le timer à chaque coup (si la partie n'est pas finie)
+      if (!G.winner) startTimer();
+      else stopTimer();
       render();
       if (G.winner) setTimeout(showGameOver, 600);
     }
 
+    if (msg.type === 'chat') {
+      receivedChat(msg.msg);
+    }
+
     if (msg.type === 'waiting') {
+      stopTimer();
       show('waiting-screen');
       document.getElementById('wait-title').textContent = "EN ATTENTE D'UN JOUEUR";
       if (currentRoomId) {
@@ -2301,7 +2637,10 @@ function connect(onOpen) {
         if (display && val) { display.style.display = 'flex'; val.textContent = currentRoomId; }
       }
     }
-    if (msg.type === 'ready') { hide('waiting-screen'); hide('gameover'); showGameIcons(); updateHintBtn(); }
+    if (msg.type === 'ready') {
+      hide('waiting-screen'); hide('gameover'); showGameIcons(); updateHintBtn();
+      startTimer();
+    }
   };
 
   ws.onclose = () => {
@@ -2327,6 +2666,7 @@ function updateRoleBadge() {
 function onlineClick(b,c) {
   if (!G||G.winner) return;
   if (myRole==='spectator'||myRole!==G.player) return;
+  SFX.move(); haptic(25);
   ws.send(JSON.stringify({type:'move',board:b,cell:c}));
 }
 
@@ -2416,7 +2756,27 @@ function updateHUD() {
 // ════════════════════════════════════════════════════════
 function showGameOver(abandon=false) {
   hintCell = null;
+  stopTimer();
   const w=G.winner;
+
+  // Sons & vibrations de fin de manche
+  if (w === 'draw') { SFX.draw(); haptic([50,30,50]); }
+  else if (mode==='online' && myRole===w) { SFX.win(); haptic([80,30,80,30,120]); }
+  else if (mode==='online') { SFX.lose(); haptic([30,20,30]); }
+  else if (mode==='bot' && w===humanSide) { SFX.win(); haptic([80,30,80,30,120]); }
+  else if (mode==='bot') { SFX.lose(); haptic([30,20,30]); }
+  else { SFX.win(); haptic([60,20,60]); }
+
+  // Tournoi : vérifier si la série est terminée
+  if (tournamentMode && !tournamentOver && w && w !== 'draw') {
+    const serieOver = checkTournamentWinner(w);
+    if (serieOver) {
+      SFX.tourwin(); haptic([80,30,80,30,80,30,200]);
+      showTournamentOver(w);
+      return;
+    }
+  }
+
   const winner_el=document.getElementById('go-winner');
   const title_el=document.getElementById('go-title');
   const msg_el=document.getElementById('go-msg');
@@ -2454,8 +2814,23 @@ function showGameOver(abandon=false) {
   renderRankBadge();
   show('gameover');
   const replayBtn = document.getElementById('go-replay-btn');
-  if (mode === 'bot') replayBtn.style.display = '';
+  if (mode === 'bot' || tournamentMode) replayBtn.style.display = '';
   else replayBtn.style.display = 'none';
+}
+
+function showTournamentOver(champion) {
+  const winner_el=document.getElementById('go-winner');
+  const title_el=document.getElementById('go-title');
+  const msg_el=document.getElementById('go-msg');
+  winner_el.textContent='🏆 CHAMPION DU TOURNOI';
+  title_el.textContent = `${getThemeMark(champion)} ${names[champion]}`;
+  title_el.className=`go-title ${champion.toLowerCase()}`;
+  msg_el.textContent=`${tournamentWins[champion]}-${tournamentWins[champion==='X'?'O':'X']} — Série terminée !`;
+  spawnParticles(champion);
+  updateGoStats(null);
+  renderRankBadge();
+  show('gameover');
+  document.getElementById('go-replay-btn').style.display='none';
 }
 
 function resetGame() {
@@ -2470,6 +2845,7 @@ function resetGame() {
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   if (mode !== 'bot') hide('undo-btn');
+  renderTournamentBanner();
   runAutoAndRender();
 }
 
