@@ -107,8 +107,9 @@ function joinRoom(room, ws, name, role) {
   send(ws, { type: 'roomId', roomId: room.id });
 
   if (connectedCount(room) === 2) {
-    broadcastRoom(room, { type: 'ready' });
+    // Mettre à jour les noms pour les deux avant ready
     broadcastRoom(room, { type: 'names', names: room.names });
+    broadcastRoom(room, { type: 'ready' });
     console.log(`[Room ${room.id}] Partie démarrée: ${room.names.X} vs ${room.names.O}`);
   } else if (role !== 'spectator') {
     send(ws, { type: 'waiting' });

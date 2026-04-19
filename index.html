@@ -2242,7 +2242,7 @@ function connect(onOpen) {
   ws.onmessage = ({data}) => {
     const msg = JSON.parse(data);
 
-    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); showGameIcons(); updateHintBtn(); }
+    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); }
     if (msg.type === 'names') { names = msg.names; updateHUD(); }
     if (msg.type === 'automode') { autoMode = msg.autoMode; }
 
@@ -2280,6 +2280,13 @@ function connect(onOpen) {
             gameLog.push({state: JSON.parse(JSON.stringify(prev)), move:[b,c], player: prev.player});
           }
         }
+      }
+      // Si l'écran d'attente est encore visible, on le cache et on affiche les icônes
+      const ws_el = document.getElementById('waiting-screen');
+      if (ws_el && !ws_el.classList.contains('hidden')) {
+        hide('waiting-screen');
+        showGameIcons();
+        updateHintBtn();
       }
       render();
       if (G.winner) setTimeout(showGameOver, 600);
