@@ -1506,6 +1506,10 @@
           <button class="more-item" onclick="openDesign();closeMoreMenu()">
             <span class="more-item-icon">🎨</span><span class="more-item-label">Thème</span>
           </button>
+          <div style="height:1px;background:rgba(180,180,255,.1);margin:4px 2px;"></div>
+          <button class="more-item" id="more-abandon-item" onclick="showAbandon();closeMoreMenu()" style="display:none">
+            <span class="more-item-icon">⚑</span><span class="more-item-label" style="color:#ff6464">Abandonner</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1527,7 +1531,6 @@
   <div class="board" id="board"></div>
   <div class="action-row">
     <button class="btn reset hidden" id="reset-btn" onclick="resetGame()">↺ REJOUER</button>
-    <button class="btn abandon hidden" id="abandon-btn" onclick="showAbandon()">⚑ ABANDON</button>
     <button class="btn undo hidden" id="undo-btn" onclick="undoMove()">↩</button>
   </div>
 </div>
@@ -2000,8 +2003,10 @@ function autoComplete(state) {
 // MENU / SETUP
 // ════════════════════════════════════════════════════════
 function showGameIcons() {
-  show('home-btn'); show('abandon-btn');
-  show('hint-btn'); show('more-btn');
+  show('home-btn'); show('hint-btn'); show('more-btn');
+  // Afficher Abandon dans le menu ⋯ si partie en cours (pas bot replay)
+  const abandonItem = document.getElementById('more-abandon-item');
+  if (abandonItem) abandonItem.style.display = '';
   if (mode === 'bot') { show('undo-btn'); show('reset-btn'); }
   if (mode === 'online') showChatBar();
   updateHintBtn();
@@ -2011,9 +2016,11 @@ function backToMenu() {
   ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm'].forEach(hide);
   closeDesign();
   show('menu');
-  ['home-btn','abandon-btn','undo-btn','hint-btn','reset-btn','more-btn'].forEach(hide);
+  ['home-btn','undo-btn','hint-btn','reset-btn','more-btn'].forEach(hide);
   hide('role-badge');
   closeMoreMenu();
+  const abandonItem = document.getElementById('more-abandon-item');
+  if (abandonItem) abandonItem.style.display = 'none';
   stopTimer();
   timerEnabled = false;
   hide('tournament-banner');
@@ -2884,6 +2891,8 @@ function updateHUD() {
 function showGameOver(abandon=false) {
   hintCell = null;
   stopTimer();
+  const abandonItem = document.getElementById('more-abandon-item');
+  if (abandonItem) abandonItem.style.display = 'none';
   const w=G.winner;
 
   // Sons & vibrations de fin de manche
