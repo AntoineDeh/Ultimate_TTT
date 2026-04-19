@@ -34,13 +34,17 @@ Ultimate Tic-Tac-Toe est une version avancée du morpion classique. Le plateau e
 - 18 thèmes visuels animés avec emojis dynamiques
 - Système de statistiques et de rang (0 à 1000 points)
 - Analyse de partie coup par coup avec évaluation de qualité
+- Mode Tournoi (premier à 3 manches gagnées) — disponible dans tous les modes
+- Horloge par tour paramétrable (30 secondes, activable dans les options avant la partie)
+- Sons synthétisés (Web Audio API) + retour haptique
+- Chat en ligne avec conversation complète (barre persistante style Plato + drawer)
 
 ### Fichiers du projet
 
 ```
 Ultimate_TTT/
 ├── index.html       # Jeu complet — HTML + CSS + JavaScript en un seul fichier
-├── server.js        # Serveur Node.js — WebSocket, rooms, matchmaking
+├── server.js        # Serveur Node.js — WebSocket, rooms, matchmaking, timer serveur
 ├── package.json     # Configuration Node.js et dépendances
 ├── nixpacks.toml    # Configuration de build pour Railway
 └── README.md        # Ce fichier
@@ -116,7 +120,7 @@ Le cycle de développement utilisé tout au long du projet :
 
 ```
 1. Modifier index.html ou server.js (généré par Claude ou édité manuellement)
-2. Copier le fichier dans le dossier projet :
+2. Copier le(s) fichier(s) dans le dossier projet :
       ttt-update          (pour index.html)
       ttt-update-server   (pour server.js)
 3. Pousser sur GitHub :
@@ -125,6 +129,12 @@ Le cycle de développement utilisé tout au long du projet :
       git commit -m "description du changement"
       git push
 4. Railway redéploie automatiquement en ~1 minute
+```
+
+**Commande complète en une ligne (les deux fichiers) :**
+
+```bash
+ttt-update && ttt-update-server && cd ~/Ultimate_TTT_fix && git add -A && git commit -m "description" && git push
 ```
 
 ---
@@ -276,7 +286,9 @@ Aligner **3 sous-grilles remportées** sur la grille globale (ligne, colonne ou 
 
 ### ◈ Local — 2 joueurs
 
-Deux joueurs s'affrontent sur le même appareil en se passant le téléphone. Chaque joueur entre son pseudo avant la partie. Aucune statistique ni point n'est enregistré en mode local — il est impossible de savoir qui est quel joueur.
+Deux joueurs s'affrontent sur le même appareil en se passant le téléphone. Chaque joueur entre son pseudo avant la partie. Aucune statistique ni point n'est enregistré en mode local.
+
+Options disponibles avant la partie : auto-complétion, mode tournoi, horloge par tour.
 
 ### ◆ Contre le Bot — 3 niveaux
 
@@ -286,11 +298,11 @@ Deux joueurs s'affrontent sur le même appareil en se passant le téléphone. Ch
 | 🟡 Moyen | Minimax alpha-bêta profondeur 3 | Voit 3 coups à l'avance. Tente de gagner et bloquer les sous-grilles. |
 | 🔴 Difficile | Minimax alpha-bêta + table de transposition + move ordering + deepening itératif profondeur 8 | Très fort. Calcule le meilleur coup dans un délai de 5 secondes maximum. |
 
-Stats et points enregistrés pour chaque niveau.
+Stats et points enregistrés pour chaque niveau. Options disponibles : auto-complétion, mode tournoi, horloge par tour.
 
 ### ◉ En ligne — Multijoueur réseau
 
-Le jeu se connecte au serveur Railway via WebSocket. Deux sous-modes :
+Le jeu se connecte au serveur Railway via WebSocket. L'horloge par tour (30 secondes) est toujours active en ligne. Deux sous-modes :
 
 **🌐 PUBLIC — Matchmaking automatique**
 
@@ -300,7 +312,8 @@ Le serveur cherche un adversaire disponible ayant le **même réglage auto-compl
 
 - **Créer** : un code à 4 lettres est généré (ex: `KXBT`). Le créateur le partage via 📋 COPIER ou 📤 PARTAGER (menu natif Android, WhatsApp en fallback).
 - **Rejoindre** : entrer le code reçu dans le champ prévu. La connexion se fait immédiatement.
-- Le réglage auto-complétion du créateur s'applique aux deux joueurs.
+
+Options disponibles avant la partie : auto-complétion, mode tournoi.
 
 ---
 
@@ -313,21 +326,48 @@ Le serveur cherche un adversaire disponible ayant le **même réglage auto-compl
 - Transitions entre les écrans (setup → attente → jeu → fin de partie)
 - Écran d'attente avec affichage du code room et boutons de partage
 
-### 6.2 Boutons en jeu
+### 6.2 Interface en jeu
 
-| Bouton | Modes | Action |
-|--------|-------|--------|
-| ⌂ | Tous | Retour au menu |
-| i | Tous | Règles du jeu |
-| 💡 | Tous | Indice (3/manche en ligne et local, illimité vs bot) |
-| ↩ | Bot uniquement | Annuler le dernier coup (illimité) |
-| ↺ REJOUER | Fin de partie | Nouvelle manche, score conservé |
-| ⚑ ABANDON | En cours | Le point va à l'adversaire |
-| 🔍 ANALYSER | Fin de partie | Analyse coup par coup |
+L'interface en jeu est épurée. Les actions sont regroupées ainsi :
 
-### 6.3 Analyse de partie
+| Élément | Emplacement | Action |
+|---------|-------------|--------|
+| ⌂ | Haut gauche | Retour au menu |
+| 💡 | Haut gauche | Indice (3/manche en ligne et local, illimité vs bot) |
+| ⋯ | Haut droite | Menu contextuel (règles, son, thème, abandon) |
+| ↩ | Bas | Annuler le dernier coup (bot uniquement, illimité) |
+| ↺ REJOUER | Bas | Nouvelle manche, score conservé (bot + tournoi) |
+| 💬 barre | Bas | Chat en ligne (barre persistante, ouvre le drawer) |
 
-Après chaque partie, l'analyse pré-calcule le meilleur coup pour chaque position et le compare au coup joué :
+**Menu ⋯ (trois points) :** regroupe les actions secondaires disponibles en cours de partie — règles du jeu, activation/désactivation du son, choix du thème, et abandon de la manche en cours. L'option Abandonner n'est visible que pendant une partie active.
+
+### 6.3 Mode Tournoi
+
+Activable avant la partie dans tous les modes (local, bot, en ligne). Premier joueur à remporter **3 manches** gagne la série. Une bannière avec pip-row animée affiche le score de la série en temps réel. Une fanfare spéciale et un écran dédié célèbrent le champion.
+
+### 6.4 Horloge par tour
+
+Chaque joueur dispose de **30 secondes** pour jouer. Une barre de progression rouge s'affiche sous le turn-banner et compte à rebours avec alerte visuelle et sonore sous les 8 dernières secondes. En cas de timeout : coup aléatoire automatique. Activable dans les options de setup (local, bot). Toujours active en ligne avec un filet de sécurité côté serveur (35 secondes).
+
+### 6.5 Chat en ligne (style Plato)
+
+Une barre persistante s'affiche en bas de l'écran dès que la partie en ligne démarre. Elle montre le dernier message et un badge rouge avec le nombre de messages non lus. Un tap ouvre un drawer qui monte depuis le bas avec :
+
+- La conversation complète scrollable (bulles bleues = soi, roses = adversaire, avec nom)
+- 7 raccourcis rapides en scroll horizontal
+- Un champ de saisie libre (Entrée = envoyer, Shift+Entrée = saut de ligne)
+
+### 6.6 Sons (Web Audio API)
+
+Tous les sons sont synthétisés via `AudioContext` — aucun fichier audio externe. Sons distincts pour : coup normal, sous-grille gagnée, victoire de manche, défaite, match nul, indice, message chat, alerte timer, fanfare de tournoi. Activable/désactivable depuis le menu ⋯.
+
+### 6.7 Retour haptique
+
+`navigator.vibrate()` déclenche un pattern de vibration adapté à chaque événement : coup joué (25ms), sous-grille gagnée (pattern long), victoire (pattern festif), chat reçu (double pulse), alerte timer (vibration répétée).
+
+### 6.8 Analyse de partie
+
+Après chaque partie (local et bot), l'analyse pré-calcule le meilleur coup pour chaque position et le compare au coup joué :
 
 | Qualité | Signification |
 |---------|--------------|
@@ -339,9 +379,9 @@ Après chaque partie, l'analyse pré-calcule le meilleur coup pour chaque positi
 
 Navigation ← → pour avancer coup par coup. Coup joué en bleu, meilleur coup en vert.
 
-### 6.4 Thèmes — 18 designs
+### 6.9 Thèmes — 18 designs
 
-Chaque thème modifie le fond, les couleurs, les animations et les emojis des pièces. Le logo du menu se met à jour automatiquement.
+Chaque thème modifie le fond, les couleurs, les animations et les emojis des pièces. Le logo du menu se met à jour automatiquement. Accessible depuis le menu principal (🎨 DESIGN) ou depuis le menu ⋯ en cours de partie.
 
 | Thème | Pièce X | Pièce O |
 |-------|---------|---------|
@@ -364,7 +404,7 @@ Chaque thème modifie le fond, les couleurs, les animations et les emojis des pi
 | 🔩 Rouille | 🔩 | ⚙️ |
 | 🧁 Café | ☕ | 🧁 |
 
-### 6.5 Statistiques et rang
+### 6.10 Statistiques et rang
 
 Les statistiques sont sauvegardées en `localStorage` et organisées par mode de jeu. Le score est recalculé automatiquement depuis les statistiques à chaque retour au menu — il est toujours cohérent.
 
@@ -384,7 +424,7 @@ Les statistiques sont sauvegardées en `localStorage` et organisées par mode de
 **Gains :** +75 (victoire en ligne), +60 (bot difficile), +35 (bot moyen), +20 (bot facile), +20 (victoire < 20 coups), ×1.2 (streak ≥ 3), ×1.5 (streak ≥ 5), +5 (égalité).  
 **Malus :** -25 par défaite si score ≥ 100. Zone protégée sous 100 points — aucun malus.
 
-### 6.6 Easter egg
+### 6.11 Easter egg
 
 3 clics rapides sur le titre **ULTIMATE TTT** → popup → mot de passe `Antoine` → +3 indices pour la manche en cours. 3 tentatives échouées ferment la page.
 
@@ -396,9 +436,9 @@ Les statistiques sont sauvegardées en `localStorage` et organisées par mode de
 
 Fichier HTML unique contenant l'intégralité du jeu côté client :
 
-- **HTML** : structure des overlays (menu, setup, jeu, stats, règles, design, analyse, gameover, attente)
+- **HTML** : structure des overlays (menu, setup, jeu, stats, règles, design, analyse, gameover, attente, chat drawer)
 - **CSS** : 18 thèmes complets avec variables CSS, animations `@keyframes`, responsive mobile-first
-- **JavaScript** : logique de jeu, IA minimax, client WebSocket, gestion des stats, rendu DOM
+- **JavaScript** : logique de jeu, IA minimax, client WebSocket, gestion des stats, rendu DOM, son, haptique, timer, chat, tournoi
 
 Aucun framework ni bibliothèque externe — JavaScript vanilla pur.
 
@@ -410,9 +450,10 @@ Serveur Node.js avec les responsabilités suivantes :
 - Création d'une room avec un code unique à 4 lettres (caractères non ambigus)
 - Rejoindre une room par code
 - Suppression automatique d'une room quand elle est vide
+- Timer côté serveur : si un joueur ne joue pas en 35s, coup aléatoire forcé (filet de sécurité)
 
 **Matchmaking :**
-- File d'attente par réglage auto-complétion (deux joueurs ne sont appariés que s'ils ont le même réglage)
+- File d'attente par réglage auto-complétion
 - Appariement automatique dès que 2 joueurs compatibles sont en attente
 - Nettoyage des connexions fermées
 
@@ -426,13 +467,14 @@ Serveur Node.js avec les responsabilités suivantes :
 | Message | Description |
 |---------|-------------|
 | `create_room` | Crée une room privée |
-| `join_room` | Rejoint une room par code |
+| `join_room` | Rejoint une room par code (aussi utilisé pour la reconnexion) |
 | `matchmake` | Entre dans la file de matchmaking |
 | `cancel_matchmake` | Quitte la file |
 | `move` | Joue un coup |
 | `reset` | Demande une nouvelle manche |
 | `name` | Envoie son pseudo |
 | `automode` | Envoie le réglage auto-complétion |
+| `chat` | Envoie un message (max 120 caractères) |
 
 **Messages WebSocket (serveur → client) :**
 
@@ -447,6 +489,7 @@ Serveur Node.js avec les responsabilités suivantes :
 | `matched` | Adversaire trouvé (matchmaking) |
 | `matchmaking` | Position dans la file d'attente |
 | `error` | Message d'erreur (room introuvable, pleine...) |
+| `chat` | Message reçu de l'adversaire |
 
 ### 7.3 Algorithme minimax
 
@@ -460,9 +503,10 @@ L'IA utilise l'algorithme minimax avec élagage alpha-bêta. Le minimax explore 
 - **Limite de temps** : arrête le calcul au bout de 5 secondes et retourne le meilleur coup trouvé
 
 **Fonction d'évaluation :**
-- +100 points par sous-grille gagnée
-- -100 points par sous-grille perdue
-- Points intermédiaires pour les menaces (2 symboles alignés sans opposition)
+- ±100 points par sous-grille gagnée/perdue
+- ±50 points pour 2 sous-grilles alignées avec une libre (menace macro)
+- ±30/15 points pour le centre et les coins de la grille globale
+- Points intermédiaires pour les menaces micro dans chaque sous-grille
 
 ### 7.4 Données persistantes
 
@@ -472,6 +516,7 @@ Toutes les données sont stockées dans le `localStorage` du navigateur :
 |-----|---------|
 | `ttt-theme` | Thème actif |
 | `ttt-stats` | Objet JSON contenant toutes les statistiques par mode |
+| `ttt-sound` | Préférence son (`on` / `off`) |
 
 Le score de rang n'est pas stocké — il est recalculé à chaque fois depuis `ttt-stats`.
 
@@ -488,6 +533,8 @@ Le score de rang n'est pas stocké — il est recalculé à chaque fois depuis `
 | Code room invalide | Mauvais code ou room expirée | Vérifier 4 lettres majuscules, ou créer une nouvelle room |
 | Score à 0 malgré des victoires | Cache localStorage corrompu | Réinitialiser les stats depuis le menu Statistiques |
 | `Cannot find module 'ws'` | `npm install` non exécuté | `cd ~/Ultimate_TTT_fix && npm install` |
+| Chat invisible en ligne | La barre n'apparaît qu'une fois la partie démarrée | Attendre que les deux joueurs soient connectés |
+| Timer ne s'affiche pas | Option désactivée dans le setup | Activer "Horloge par tour" avant de lancer la partie |
 
 ---
 
