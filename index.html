@@ -2004,11 +2004,9 @@ function autoComplete(state) {
 // ════════════════════════════════════════════════════════
 function showGameIcons() {
   show('home-btn'); show('hint-btn'); show('more-btn');
-  // Afficher Abandon dans le menu ⋯ si partie en cours (pas bot replay)
   const abandonItem = document.getElementById('more-abandon-item');
   if (abandonItem) abandonItem.style.display = '';
   if (mode === 'bot') { show('undo-btn'); show('reset-btn'); }
-  if (mode === 'online') showChatBar();
   updateHintBtn();
   updateMoreSoundItem();
 }
@@ -2702,12 +2700,17 @@ function connect(onOpen) {
     if (msg.type === 'names') { names = msg.names; updateHUD(); }
     if (msg.type === 'automode') { autoMode = msg.autoMode; }
 
-    // Room créée → afficher le code
-    if (msg.type === 'room_created' || msg.type === 'roomId') {
+    // Room privée créée → afficher le code
+    if (msg.type === 'room_created') {
       currentRoomId = msg.roomId;
       const display = document.getElementById('room-code-display');
       const val = document.getElementById('room-code-value');
       if (display && val) { display.style.display = 'flex'; val.textContent = msg.roomId; }
+    }
+
+    // roomId reçu après matchmaking ou join — stocker sans afficher le code
+    if (msg.type === 'roomId' && msg.type !== 'room_created') {
+      currentRoomId = msg.roomId;
     }
 
     // Matchmaking : position dans la file
@@ -2748,6 +2751,7 @@ function connect(onOpen) {
       if (ws_el && !ws_el.classList.contains('hidden')) {
         hide('waiting-screen');
         showGameIcons();
+        showChatBar();
         updateHintBtn();
       }
       // Démarrer/reset le timer à chaque coup (si la partie n'est pas finie)
@@ -2773,6 +2777,7 @@ function connect(onOpen) {
     }
     if (msg.type === 'ready') {
       hide('waiting-screen'); hide('gameover'); showGameIcons(); updateHintBtn();
+      showChatBar();
       startTimer();
     }
   };
