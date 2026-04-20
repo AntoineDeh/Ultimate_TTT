@@ -11,13 +11,12 @@ const crypto  = require('crypto');
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const { Pool } = require('pg');
+const nodemailer = require('nodemailer');
 const { WebSocketServer } = require('ws');
 
 const PORT       = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ttt_secret_change_me_in_prod';
-const RESEND_KEY = process.env.RESEND_API_KEY || '';
 const APP_URL    = process.env.APP_URL || 'https://ultimatettt-production.up.railway.app';
-const FROM_EMAIL = 'Ultimate TTT <onboarding@resend.dev>';
 
 // ── PostgreSQL ─────────────────────────────────────────────────────────────────
 const db = new Pool({
@@ -85,20 +84,20 @@ function publicProfile(u) {
   return { id: u.id, pseudo: u.pseudo, avatar: u.avatar, stats: u.stats || {} };
 }
 
-// ── Email via Resend ──────────────────────────────────────────────────────────
+// ── Email via Gmail SMTP ─────────────────────────────────────────────────────
+const mailer = nodemailer.createTransport({
+  service: 'gmail',
+  auth: { user: process.env.GMAIL_USER || '', pass: process.env.GMAIL_PASS || '' }
+});
+
 async function sendMail(to, subject, html) {
-  if (!RESEND_KEY) { console.warn('[Mail] RESEND_API_KEY manquant'); return false; }
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+    console.warn('[Mail] GMAIL_USER/GMAIL_PASS non définis'); return false;
+  }
   try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM_EMAIL, to, subject, html })
-    });
-    const data = await res.json();
-    if (res.ok) { console.log(`[Mail] Envoyé à ${to}`); return true; }
-    console.error('[Mail] Erreur Resend:', JSON.stringify(data));
-    return false;
-  } catch(e) { console.error('[Mail] Erreur:', e.message); return false; }
+    await mailer.sendMail({ from: `"Ultimate TTT" <${process.env.GMAIL_USER}>`, to, subject, html });
+    console.log(`[Mail] Envoyé à ${to}`); return true;
+  } catch(e) { console.error('[Mail] Erreur Gmail:', e.message); return false; }
 }
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
