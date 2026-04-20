@@ -2,11 +2,14 @@
   "name": "ultimate-ttt",
   "version": "2.0.0",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "ws": "^8.20.0",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.0"
+    "nodemailer": "^8.0.5",
+    "pg": "^8.11.0",
+    "ws": "^8.20.0"
   }
 }
