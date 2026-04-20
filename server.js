@@ -84,23 +84,26 @@ function publicProfile(u) {
   return { id: u.id, pseudo: u.pseudo, avatar: u.avatar, stats: u.stats || {} };
 }
 
-// ── Email via Gmail SMTP ─────────────────────────────────────────────────────
+// ── Email via Brevo SMTP ─────────────────────────────────────────────────────
 const mailer = nodemailer.createTransport({
-  service: 'gmail',
-  auth: { user: process.env.GMAIL_USER || '', pass: process.env.GMAIL_PASS || '' },
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 10000,
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_SMTP_USER || '',
+    pass: process.env.BREVO_SMTP_PASS || ''
+  }
 });
 
 async function sendMail(to, subject, html) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-    console.warn('[Mail] GMAIL_USER/GMAIL_PASS non définis'); return false;
+  if (!process.env.BREVO_SMTP_USER || !process.env.BREVO_SMTP_PASS) {
+    console.warn('[Mail] BREVO_SMTP_USER/PASS non definis'); return false;
   }
   try {
-    await mailer.sendMail({ from: `"Ultimate TTT" <${process.env.GMAIL_USER}>`, to, subject, html });
-    console.log(`[Mail] Envoyé à ${to}`); return true;
-  } catch(e) { console.error('[Mail] Erreur Gmail:', e.message); return false; }
+    const from = process.env.BREVO_FROM || 'ultimatettt.noreply@gmail.com';
+    await mailer.sendMail({ from: '"Ultimate TTT" <' + from + '>', to, subject, html });
+    console.log('[Mail] Envoye a ' + to); return true;
+  } catch(e) { console.error('[Mail] Erreur Brevo:', e.message); return false; }
 }
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
