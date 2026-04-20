@@ -87,7 +87,10 @@ function publicProfile(u) {
 // ── Email via Gmail SMTP ─────────────────────────────────────────────────────
 const mailer = nodemailer.createTransport({
   service: 'gmail',
-  auth: { user: process.env.GMAIL_USER || '', pass: process.env.GMAIL_PASS || '' }
+  auth: { user: process.env.GMAIL_USER || '', pass: process.env.GMAIL_PASS || '' },
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 10000,
 });
 
 async function sendMail(to, subject, html) {
@@ -334,13 +337,15 @@ const server = http.createServer(async (req, res) => {
   if (req.method==='POST' && url==='/auth/forgot') {
     const {email}=await readBody(req);
     if (!email) return sendJSON(res,400,{error:'Email manquant.'});
+    // Répondre immédiatement — envoi du mail en arrière-plan
+    sendJSON(res,200,{ok:true});
     const user=await findUserByEmail(email);
     if (user) {
       const token=crypto.randomBytes(32).toString('hex');
       const expires=Date.now()+15*60*1000;
       await updateUser(user.id,{resetToken:token,resetExpires:expires});
       const link=`${APP_URL}?reset=${token}`;
-      await sendMail(user.email,'Réinitialisation mot de passe — Ultimate TTT',
+      sendMail(user.email,'Réinitialisation mot de passe — Ultimate TTT',
         `<div style="font-family:monospace;background:#05050f;color:#dde0ff;padding:32px;border-radius:12px;max-width:480px;margin:auto;">
         <h2 style="color:#00e5ff;">🎮 ULTIMATE TTT</h2>
         <p style="margin-top:16px;">Tu as demandé à réinitialiser ton mot de passe.</p>
@@ -349,9 +354,9 @@ const server = http.createServer(async (req, res) => {
           RÉINITIALISER →
         </a>
         <p style="margin-top:20px;opacity:.4;font-size:.75rem;">Si tu n'as pas fait cette demande, ignore cet email.</p>
-        </div>`);
+        </div>`).catch(e => console.error('[Mail] Erreur background:', e.message));
     }
-    return sendJSON(res,200,{ok:true});
+    return;
   }
 
   // POST /auth/reset
