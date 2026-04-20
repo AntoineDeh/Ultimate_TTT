@@ -2262,6 +2262,7 @@ function switchAuthTab(tab) {
   document.getElementById('tab-register').classList.toggle('active', !isLogin);
   document.getElementById('field-pseudo').style.display  = isLogin ? 'none' : '';
   document.getElementById('field-avatar').style.display  = isLogin ? 'none' : '';
+  document.getElementById('forgot-link').style.display   = isLogin ? '' : 'none';
   document.getElementById('auth-submit-btn').textContent = isLogin ? 'SE CONNECTER' : "S'INSCRIRE";
   document.getElementById('auth-password').autocomplete  = isLogin ? 'current-password' : 'new-password';
   setAuthMsg('', '');

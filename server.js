@@ -20,7 +20,10 @@ const APP_URL    = process.env.APP_URL || 'https://ultimatettt-production.up.rai
 const FROM_EMAIL = 'Ultimate TTT <onboarding@resend.dev>';
 
 // ── PostgreSQL ─────────────────────────────────────────────────────────────────
-const db = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
 
 async function initDB() {
   await db.query(`
@@ -258,9 +261,14 @@ const server = http.createServer(async (req, res) => {
     if (password.length<6) return sendJSON(res,400,{error:'Mot de passe : 6 caractères minimum.'});
     if (await findUserByEmail(email)) return sendJSON(res,409,{error:'Cet email est déjà utilisé.'});
     const id=crypto.randomUUID();
-    const user=await createUser({id,pseudo:pseudo.trim(),email,passwordHash:await bcrypt.hash(password,10),avatar});
-    console.log(`[Auth] Inscription: ${pseudo}`);
-    return sendJSON(res,201,{token:makeToken(id),user:publicProfile(user)});
+    try {
+      const user=await createUser({id,pseudo:pseudo.trim(),email,passwordHash:await bcrypt.hash(password,10),avatar});
+      console.log(`[Auth] Inscription: ${pseudo}`);
+      return sendJSON(res,201,{token:makeToken(id),user:publicProfile(user)});
+    } catch(e) {
+      console.error('[Auth] Erreur inscription DB:', e.message);
+      return sendJSON(res,500,{error:'Erreur serveur: ' + e.message});
+    }
   }
 
   // POST /auth/login
