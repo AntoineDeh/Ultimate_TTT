@@ -1,11 +1,11 @@
 # 🎮 Ultimate Tic-Tac-Toe
 
-> Compte rendu de projet — Développement d'un jeu web multijoueur déployé sur le cloud
+> Jeu web multijoueur déployé sur le cloud — développé sur Android/Termux
 
 **Auteur** : Antoine Dehoux  
-**Stack** : HTML / CSS / JavaScript / Node.js / WebSocket / Railway  
+**Stack** : HTML / CSS / JavaScript / Node.js / WebSocket / PostgreSQL / Railway  
 **Repo GitHub** : https://github.com/AntoineDeh/Ultimate_TTT  
-**URL de production** : https://ultimatettt-production.up.railway.app  
+**URL de production** : https://ultimatettt-production.up.railway.app
 
 ---
 
@@ -14,39 +14,41 @@
 1. [Présentation du projet](#1-présentation-du-projet)
 2. [Mise en place de l'environnement](#2-mise-en-place-de-lenvironnement)
 3. [Déploiement sur Railway](#3-déploiement-sur-railway)
-4. [Règles du jeu](#4-règles-du-jeu)
-5. [Modes de jeu](#5-modes-de-jeu)
-6. [Fonctionnalités développées](#6-fonctionnalités-développées)
-7. [Architecture technique](#7-architecture-technique)
-8. [Dépannage](#8-dépannage)
+4. [Variables d'environnement](#4-variables-denvironnement)
+5. [Règles du jeu](#5-règles-du-jeu)
+6. [Modes de jeu](#6-modes-de-jeu)
+7. [Fonctionnalités développées](#7-fonctionnalités-développées)
+8. [Architecture technique](#8-architecture-technique)
+9. [Dépannage](#9-dépannage)
 
 ---
 
 ## 1. Présentation du projet
 
-Ultimate Tic-Tac-Toe est une version avancée du morpion classique. Le plateau est une grille de 9×9 cases organisée en 9 sous-grilles de 3×3. Le jeu a été développé entièrement en JavaScript vanilla (sans framework), optimisé pour mobile Android, et déployé sur un serveur cloud accessible mondialement.
+Ultimate Tic-Tac-Toe est une version avancée du morpion classique sur une grille 9×9. Développé entièrement en JavaScript vanilla, optimisé pour mobile Android, déployé sur Railway avec base de données PostgreSQL persistante.
 
 ### Fonctionnalités principales
 
-- 3 modes de jeu : local 2 joueurs, contre une IA (3 niveaux), multijoueur en ligne
-- Multijoueur en ligne : rooms privées avec code + matchmaking automatique
-- IA avec algorithme minimax alpha-bêta (profondeur jusqu'à 8)
-- 18 thèmes visuels animés avec emojis dynamiques
-- Système de statistiques et de rang (0 à 1000 points)
-- Analyse de partie coup par coup avec évaluation de qualité
-- Mode Tournoi (premier à 3 manches gagnées) — disponible dans tous les modes
-- Horloge par tour paramétrable (30 secondes, activable dans les options avant la partie)
-- Sons synthétisés (Web Audio API) + retour haptique
-- Chat en ligne avec conversation complète (barre persistante style Plato + drawer)
+- **Système de comptes** : inscription / connexion / JWT / bcrypt / réinitialisation mot de passe par email
+- **3 modes de jeu** : local 2 joueurs, contre IA (3 niveaux), multijoueur en ligne
+- **Multijoueur** : rooms privées avec code + matchmaking automatique
+- **IA minimax** alpha-bêta avec table de transposition, profondeur jusqu'à 8
+- **20 thèmes visuels** animés avec emojis dynamiques
+- **Statistiques et rang** (0 à 1000 points) persistés en base de données
+- **Analyse de partie** coup par coup avec évaluation de qualité
+- **Mode Tournoi** (premier à 3 manches) — tous modes
+- **Horloge par tour** paramétrable (15s / 30s / 60s)
+- **Sons** synthétisés (Web Audio API) + retour haptique
+- **Chat** en ligne style Plato (barre persistante + drawer)
 
 ### Fichiers du projet
 
 ```
 Ultimate_TTT/
-├── index.html       # Jeu complet — HTML + CSS + JavaScript en un seul fichier
-├── server.js        # Serveur Node.js — WebSocket, rooms, matchmaking, timer serveur
-├── package.json     # Configuration Node.js et dépendances
-├── nixpacks.toml    # Configuration de build pour Railway
+├── index.html       # Jeu complet — HTML + CSS + JavaScript
+├── server.js        # Serveur Node.js — Auth, WebSocket, rooms, matchmaking
+├── package.json     # Dépendances Node.js
+├── nixpacks.toml    # Configuration de build Railway
 └── README.md        # Ce fichier
 ```
 
@@ -54,27 +56,17 @@ Ultimate_TTT/
 
 ## 2. Mise en place de l'environnement
 
-Le développement a été réalisé sur **Android via Termux** — un émulateur de terminal Linux pour Android. Le jeu étant en production sur Railway, Termux n'est nécessaire que pour modifier le code et pousser les changements sur GitHub.
+Développement réalisé sur **Android via Termux**.
 
-### 2.1 Installer Termux
-
-1. Installer **Termux** depuis le Play Store ou F-Droid
-2. Ouvrir Termux
-3. Autoriser l'accès au stockage :
+### 2.1 Installer Termux et les dépendances
 
 ```bash
 termux-setup-storage
-# → Appuyer sur "Autoriser" dans la popup Android
-```
-
-### 2.2 Installer les dépendances système
-
-```bash
 pkg update && pkg upgrade -y
 pkg install nodejs git -y
 ```
 
-### 2.3 Cloner le projet
+### 2.2 Cloner le projet
 
 ```bash
 git clone https://github.com/AntoineDeh/Ultimate_TTT.git ~/Ultimate_TTT_fix
@@ -82,9 +74,7 @@ cd ~/Ultimate_TTT_fix
 npm install
 ```
 
-`npm install` télécharge la dépendance `ws` (WebSocket) listée dans `package.json`.
-
-### 2.4 Configurer Git
+### 2.3 Configurer Git
 
 ```bash
 git config --global user.email "email@example.com"
@@ -92,15 +82,13 @@ git config --global user.name "Prénom Nom"
 git config pull.rebase false
 ```
 
-### 2.5 Configurer les alias Termux (optionnel mais recommandé)
-
-Ces raccourcis évitent de retaper les mêmes commandes à chaque fois.
+### 2.4 Alias Termux
 
 ```bash
 nano ~/.bashrc
 ```
 
-Ajouter à la fin du fichier :
+Ajouter :
 
 ```bash
 # === Ultimate TTT ===
@@ -108,82 +96,75 @@ alias ttt-update='cp ~/storage/downloads/index.html ~/Ultimate_TTT_fix/ && echo 
 alias ttt-update-server='cp ~/storage/downloads/server.js ~/Ultimate_TTT_fix/ && echo "Serveur mis à jour !"'
 ```
 
-Sauvegarder : **Ctrl+X** → **Y** → **Entrée**, puis :
-
 ```bash
 source ~/.bashrc
 ```
 
-### 2.6 Workflow de développement
-
-Le cycle de développement utilisé tout au long du projet :
+### 2.5 Workflow de développement
 
 ```
-1. Modifier index.html ou server.js (généré par Claude ou édité manuellement)
-2. Copier le(s) fichier(s) dans le dossier projet :
-      ttt-update          (pour index.html)
-      ttt-update-server   (pour server.js)
-3. Pousser sur GitHub :
+1. Modifier index.html ou server.js
+2. Copier dans le projet :
+      ttt-update          → index.html
+      ttt-update-server   → server.js
+3. Push :
       cd ~/Ultimate_TTT_fix
-      git add -A
-      git commit -m "description du changement"
-      git push
-4. Railway redéploie automatiquement en ~1 minute
+      git add -A && git commit -m "description" && git push
+4. Railway redéploie automatiquement (~1 min)
 ```
 
-**Commande complète en une ligne (les deux fichiers) :**
+**Commande complète :**
 
 ```bash
-ttt-update && ttt-update-server && cd ~/Ultimate_TTT_fix && git add -A && git commit -m "description" && git push
+ttt-update && cd ~/Ultimate_TTT_fix && git add -A && git commit -m "description" && git push origin main
 ```
 
 ---
 
 ## 3. Déploiement sur Railway
 
-Railway est une plateforme cloud qui héberge le serveur Node.js. Chaque `git push` sur GitHub déclenche automatiquement un redéploiement. L'URL de production est permanente et accessible sans laisser de serveur local allumé.
+### 3.1 Créer le projet
 
-### 3.1 Tarifs Railway
+1. **railway.app** → Login with GitHub
+2. **New Project** → Deploy from GitHub repo → `AntoineDeh/Ultimate_TTT`
 
-| Plan | Prix | RAM | Capacité estimée |
-|------|------|-----|-----------------|
-| Trial | Gratuit 30 jours ($5 crédits) | 1 Go | ~200 joueurs simultanés |
-| Hobby | 5 $/mois | 1 Go | ~200–500 joueurs simultanés |
-| Pro | 20 $/mois | jusqu'à 1 To | Des milliers de joueurs |
+### 3.2 Ajouter PostgreSQL
 
-Pour un usage personnel jusqu'à quelques centaines de joueurs, le plan **Hobby à 5$/mois** est suffisant.
+Dans le projet Railway → **+ New** → **Database** → **Add PostgreSQL**  
+Railway crée automatiquement la variable `DATABASE_URL` dans le service Postgres.
 
-### 3.2 Créer un compte Railway
+Dans le service **Ultimate_TTT** → **Variables** → ajouter :
+```
+DATABASE_URL = ${{Postgres.DATABASE_URL}}
+```
 
-1. Aller sur **https://railway.app**
-2. Cliquer **Login** → **Login with GitHub**
-3. Autoriser Railway à accéder au compte GitHub
+La table `users` est créée automatiquement au premier démarrage.
 
-### 3.3 Créer le projet
+### 3.3 Paramètres importants
 
-1. Cliquer **New Project**
-2. Sélectionner **Deploy from GitHub repo**
-3. Choisir le repo **AntoineDeh/Ultimate_TTT**
-4. Railway détecte automatiquement Node.js
+- **Settings → Serverless** : **désactivé** (WebSocket nécessite un serveur permanent)
+- **Settings → Networking** → **Generate Domain** pour l'URL publique
 
-### 3.4 Fichiers de configuration requis
+### 3.4 Fichiers de configuration
 
-Ces deux fichiers doivent être présents à la racine du repo.
-
-**package.json** — indique à Railway comment démarrer le serveur :
-
+**package.json** :
 ```json
 {
   "name": "ultimate-ttt",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "server.js",
   "scripts": { "start": "node server.js" },
-  "dependencies": { "ws": "^8.20.0" }
+  "dependencies": {
+    "ws": "^8.20.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.0",
+    "nodemailer": "^6.9.0"
+  }
 }
 ```
 
-**nixpacks.toml** — définit les étapes de build :
-
+**nixpacks.toml** :
 ```toml
 [phases.install]
 cmds = ["npm install"]
@@ -192,223 +173,155 @@ cmds = ["npm install"]
 cmd = "node server.js"
 ```
 
-> Sans `nixpacks.toml`, Railway peut échouer avec l'erreur `Error creating build plan with Railpack`.
+---
 
-### 3.5 Paramètres du service
+## 4. Variables d'environnement
 
-Dans l'onglet **Settings** du service Railway :
+À configurer dans Railway → service **Ultimate_TTT** → **Variables** :
 
-- **Custom Start Command** : `node server.js`
-- **Serverless** : **désactivé** — un serveur WebSocket doit rester actif en permanence. Si Serverless est activé, le conteneur s'éteint entre les requêtes et coupe les connexions WebSocket.
+| Variable | Description | Exemple |
+|----------|-------------|---------|
+| `DATABASE_URL` | URL PostgreSQL Railway | `${{Postgres.DATABASE_URL}}` |
+| `JWT_SECRET` | Clé secrète pour les tokens JWT | `ttt_mon_secret_xyz` |
+| `APP_URL` | URL publique du jeu | `https://ultimatettt-production.up.railway.app` |
+| `BREVO_SMTP_USER` | Login SMTP Brevo | `a8b1e3001@smtp-brevo.com` |
+| `BREVO_SMTP_PASS` | Clé API Brevo | `xkeysib-...` |
+| `BREVO_FROM` | Email expéditeur vérifié dans Brevo | `ultimatettt.noreply@gmail.com` |
 
-### 3.6 Générer le domaine public
-
-1. Onglet **Settings** → section **Networking** → **Public Networking**
-2. Cliquer **Generate Domain**
-3. L'URL générée est permanente : `https://ultimatettt-production.up.railway.app`
-
-### 3.7 Vérifier le déploiement
-
-L'onglet **Deployments** affiche **ACTIVE** et **Deployment successful** quand le serveur tourne correctement. Ouvrir l'URL dans Chrome confirme que le jeu est accessible.
-
-### 3.8 Mettre à jour le serveur en production
-
-Toute modification poussée sur GitHub déclenche un redéploiement automatique. Pour forcer un redéploiement sans modification de code :
-
-```bash
-cd ~/Ultimate_TTT_fix
-git commit --allow-empty -m "force redeploy"
-git push
-```
+> **Note** : L'expéditeur `BREVO_FROM` doit être vérifié dans Brevo → **Transactionnel** → **Expéditeurs**.
 
 ---
 
-## 4. Règles du jeu
+## 5. Règles du jeu
 
-### 4.1 Concept général
+### Le plateau
 
-Le plateau est une **grille 3×3 de sous-grilles**, chacune étant un morpion 3×3 classique. On joue donc sur une grille de 9×9 cases au total.
+Grille 3×3 de sous-grilles, chacune étant un morpion 3×3. Total : 9×9 cases.
 
-```
-┌─────────┬─────────┬─────────┐
-│  X · ·  │  · · ·  │  · · O  │
-│  · O ·  │  X · ·  │  · · ·  │  ← grille globale 3×3
-│  · · ·  │  · · O  │  X · ·  │    (chaque bloc = une sous-grille)
-├─────────┼─────────┼─────────┤
-│  · · ·  │  O · ·  │  · · ·  │
-│  · X ·  │  · X ·  │  · O ·  │
-│  · · O  │  · · ·  │  · · X  │
-├─────────┼─────────┼─────────┤
-│  · · ·  │  · · ·  │  · · ·  │
-│  X · ·  │  · · X  │  O · ·  │
-│  · · ·  │  · O ·  │  · · ·  │
-└─────────┴─────────┴─────────┘
-```
+### Déroulement
 
-### 4.2 Déroulement d'un tour
+- Le coup joué dans la **case C** envoie l'adversaire dans la **sous-grille C**
+- Si la sous-grille imposée est terminée → liberté de jouer n'importe où
+- Gagner une sous-grille = l'aligner sur la grille globale
+- **Victoire** : aligner 3 sous-grilles sur la grille globale
 
-**Règle 1 — Le coup joué détermine où l'adversaire doit jouer**
+### Option auto-complétion
 
-Quand un joueur pose son symbole dans la **case numéro C** d'une sous-grille, l'adversaire doit obligatoirement jouer dans la **sous-grille numéro C**. Les cases et sous-grilles sont numérotées de 0 à 8, de gauche à droite et de haut en bas.
-
-```
-Numérotation des cases/sous-grilles :
-
-  0 │ 1 │ 2
-  ──┼───┼──
-  3 │ 4 │ 5
-  ──┼───┼──
-  6 │ 7 │ 8
-```
-
-**Exemple** : X joue dans la case 5 (droite du milieu) d'une sous-grille → O doit jouer dans la sous-grille 5.
-
-**Règle 2 — Sous-grille terminée = liberté de choix**
-
-Si la sous-grille imposée est déjà gagnée ou pleine (match nul), le joueur peut jouer dans **n'importe quelle sous-grille encore active**.
-
-**Règle 3 — Gagner une sous-grille**
-
-Aligner 3 symboles identiques dans une sous-grille (ligne, colonne ou diagonale). La sous-grille est alors remportée et affiche le symbole du gagnant.
-
-**Règle 4 — Gagner la partie**
-
-Aligner **3 sous-grilles remportées** sur la grille globale (ligne, colonne ou diagonale). Si toutes les sous-grilles sont terminées sans qu'un joueur ait aligné 3 sous-grilles, la partie est nulle.
-
-### 4.3 Option auto-complétion
-
-- **Activée** : si un coup dans la sous-grille active la fait gagner, il est joué automatiquement
-- **Désactivée** (défaut) : les cases gagnantes sont surlignées en jaune — le joueur doit cliquer
+- **Activée** : coup gagnant joué automatiquement
+- **Désactivée** : cases gagnantes surlignées en jaune, le joueur clique
 
 ---
 
-## 5. Modes de jeu
+## 6. Modes de jeu
 
 ### ◈ Local — 2 joueurs
 
-Deux joueurs s'affrontent sur le même appareil en se passant le téléphone. Chaque joueur entre son pseudo avant la partie. Aucune statistique ni point n'est enregistré en mode local.
+Deux joueurs sur le même appareil. Pseudos personnalisables (J1 pré-rempli depuis le profil connecté). Aucune statistique enregistrée.
 
-Options disponibles avant la partie : auto-complétion, mode tournoi, horloge par tour.
-
-### ◆ Contre le Bot — 3 niveaux
+### ◆ Contre le Bot
 
 | Niveau | Algorithme | Comportement |
 |--------|-----------|-------------|
-| 🟢 Facile | Minimax profondeur 1 (70%) + pire coup possible (30%) | Joue correctement mais fait des gaffes intentionnelles. Saisit toujours une victoire immédiate. |
-| 🟡 Moyen | Minimax alpha-bêta profondeur 3 | Voit 3 coups à l'avance. Tente de gagner et bloquer les sous-grilles. |
-| 🔴 Difficile | Minimax alpha-bêta + table de transposition + move ordering + deepening itératif profondeur 8 | Très fort. Calcule le meilleur coup dans un délai de 5 secondes maximum. |
+| 🟢 Facile | Minimax profondeur 1 (70%) + coup aléatoire (30%) | Saisit les victoires immédiates, fait des erreurs |
+| 🟡 Moyen | Minimax alpha-bêta profondeur 3 | Voir 3 coups à l'avance |
+| 🔴 Difficile | Minimax + table transposition + move ordering, profondeur 8 | Très fort, 5s max par coup |
 
-Stats et points enregistrés pour chaque niveau. Options disponibles : auto-complétion, mode tournoi, horloge par tour.
+### ◉ En ligne
 
-### ◉ En ligne — Multijoueur réseau
+WebSocket vers Railway. Horloge toujours active (filet sécurité 35s côté serveur).
 
-Le jeu se connecte au serveur Railway via WebSocket. L'horloge par tour (30 secondes) est toujours active en ligne. Deux sous-modes :
-
-**🌐 PUBLIC — Matchmaking automatique**
-
-Le serveur cherche un adversaire disponible ayant le **même réglage auto-complétion**. La partie démarre automatiquement. Si aucun adversaire compatible n'est en attente, le joueur reste dans la file jusqu'à l'arrivée d'un autre joueur.
-
-**🔒 PRIVÉ — Room avec code**
-
-- **Créer** : un code à 4 lettres est généré (ex: `KXBT`). Le créateur le partage via 📋 COPIER ou 📤 PARTAGER (menu natif Android, WhatsApp en fallback).
-- **Rejoindre** : entrer le code reçu dans le champ prévu. La connexion se fait immédiatement.
-
-Options disponibles avant la partie : auto-complétion, mode tournoi.
+**🌐 PUBLIC** : matchmaking automatique par réglage auto-complétion  
+**🔒 PRIVÉ** : code 4 lettres — créer / rejoindre / partager (📋 copier ou 📤 partager natif)
 
 ---
 
-## 6. Fonctionnalités développées
+## 7. Fonctionnalités développées
 
-### 6.1 Interface et navigation
+### 7.1 Système d'authentification
 
-- Menu principal avec logo animé (grille 3×3 avec emojis du thème actif)
-- Badge de rang cliquable — affiche le détail du système de points
-- Transitions entre les écrans (setup → attente → jeu → fin de partie)
-- Écran d'attente avec affichage du code room et boutons de partage
+- **Inscription** : pseudo, email, mot de passe (6 car. min), avatar emoji (24 choix)
+- **Connexion** : email + mot de passe, affichage/masquage avec 👁️
+- **Auto-login** : JWT stocké en localStorage, valable 30 jours
+- **Email mémorisé** : pré-rempli à la prochaine ouverture
+- **Mot de passe oublié** : lien de réinitialisation envoyé par email (Brevo, valable 15 min)
+- **Profil** : avatar modifiable depuis le menu ⋯ du profil
+- **Suppression de compte** : double confirmation, suppression en base
 
-### 6.2 Interface en jeu
+**Sécurité** : mots de passe hashés bcrypt (10 rounds), tokens JWT signés, protection double email.
 
-L'interface en jeu est épurée. Les actions sont regroupées ainsi :
+### 7.2 Base de données PostgreSQL
+
+Table `users` créée automatiquement :
+
+```sql
+CREATE TABLE IF NOT EXISTS users (
+  id            TEXT PRIMARY KEY,
+  pseudo        TEXT NOT NULL,
+  email         TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  avatar        TEXT DEFAULT '🎮',
+  stats         JSONB DEFAULT '{}',
+  reset_token   TEXT,
+  reset_expires BIGINT,
+  created_at    TEXT
+)
+```
+
+Les statistiques sont persistées en base et survivent aux redéploiements.
+
+### 7.3 Interface en jeu
 
 | Élément | Emplacement | Action |
 |---------|-------------|--------|
 | ⌂ | Haut gauche | Retour au menu |
-| 💡 | Haut gauche | Indice (3/manche en ligne et local, illimité vs bot) |
-| ⋯ | Haut droite | Menu contextuel (règles, son, thème, abandon) |
-| ↩ | Bas | Annuler le dernier coup (bot uniquement, illimité) |
-| ↺ REJOUER | Bas | Nouvelle manche, score conservé (bot + tournoi) |
-| 💬 barre | Bas | Chat en ligne (barre persistante, ouvre le drawer) |
+| 💡 | Haut gauche | Indice (3/manche) |
+| ⋯ | Haut droite | Règles, son, thème, abandon |
+| ↩ | Bas | Annuler coup (bot uniquement) |
+| ▶ REJOUER | Bas | Nouvelle manche (bot + tournoi) |
+| 💬 | Bas | Chat en ligne |
 
-**Menu ⋯ (trois points) :** regroupe les actions secondaires disponibles en cours de partie — règles du jeu, activation/désactivation du son, choix du thème, et abandon de la manche en cours. L'option Abandonner n'est visible que pendant une partie active.
+### 7.4 Mode Tournoi
 
-### 6.3 Mode Tournoi
+Premier à **3 manches** gagnées. Bannière avec pip-row animée. Bouton "MANCHE SUIVANTE" entre les manches. Chaque manche enregistre ses propres statistiques.
 
-Activable avant la partie dans tous les modes (local, bot, en ligne). Premier joueur à remporter **3 manches** gagne la série. Une bannière avec pip-row animée affiche le score de la série en temps réel. Une fanfare spéciale et un écran dédié célèbrent le champion.
+### 7.5 Horloge par tour
 
-### 6.4 Horloge par tour
+**15s / 30s / 60s** sélectionnables dans le setup. Barre de progression sous le turn-banner. Alerte visuelle + sonore sous les 8 dernières secondes. Timeout → coup aléatoire automatique.
 
-Chaque joueur dispose de **30 secondes** pour jouer. Une barre de progression rouge s'affiche sous le turn-banner et compte à rebours avec alerte visuelle et sonore sous les 8 dernières secondes. En cas de timeout : coup aléatoire automatique. Activable dans les options de setup (local, bot). Toujours active en ligne avec un filet de sécurité côté serveur (35 secondes).
+### 7.6 Chat en ligne (style Plato)
 
-### 6.5 Chat en ligne (style Plato)
+Barre persistante visible uniquement quand la partie est en cours. Tap → drawer avec conversation complète, 7 raccourcis rapides, champ libre (Entrée = envoyer).
 
-Une barre persistante s'affiche en bas de l'écran dès que la partie en ligne démarre. Elle montre le dernier message et un badge rouge avec le nombre de messages non lus. Un tap ouvre un drawer qui monte depuis le bas avec :
+### 7.7 Avatars en ligne
 
-- La conversation complète scrollable (bulles bleues = soi, roses = adversaire, avec nom)
-- 7 raccourcis rapides en scroll horizontal
-- Un champ de saisie libre (Entrée = envoyer, Shift+Entrée = saut de ligne)
+L'avatar emoji choisi à l'inscription est visible dans le scoreboard et la bannière de tour pendant les parties en ligne.
 
-### 6.6 Sons (Web Audio API)
+### 7.8 Sons et haptique
 
-Tous les sons sont synthétisés via `AudioContext` — aucun fichier audio externe. Sons distincts pour : coup normal, sous-grille gagnée, victoire de manche, défaite, match nul, indice, message chat, alerte timer, fanfare de tournoi. Activable/désactivable depuis le menu ⋯.
+Sons synthétisés via Web Audio API (aucun fichier externe). Patterns de vibration distincts par événement.
 
-### 6.7 Retour haptique
+### 7.9 Analyse de partie
 
-`navigator.vibrate()` déclenche un pattern de vibration adapté à chaque événement : coup joué (25ms), sous-grille gagnée (pattern long), victoire (pattern festif), chat reçu (double pulse), alerte timer (vibration répétée).
+Après chaque partie (local + bot) : meilleur coup calculé pour chaque position, comparé au coup joué. Navigation ← → coup par coup. Qualités : Excellent / Bon / Imprécis / Erreur / Gaffe.
 
-### 6.8 Analyse de partie
+### 7.10 Thèmes — 20 designs
 
-Après chaque partie (local et bot), l'analyse pré-calcule le meilleur coup pour chaque position et le compare au coup joué :
+| Thème | X | O | | Thème | X | O |
+|-------|---|---|-|-------|---|---|
+| 🤖 Cyberpunk | X | O | | 🌊 Ocean | 🐙 | 🦈 |
+| 🎮 Mario | 🍄 | ⭐ | | 🔥 Enfer | 😈 | 💀 |
+| 🌴 Jungle | 🦁 | 🐸 | | 🚀 Espace | 👾 | 🛸 |
+| 👸 Princesse | 🌸 | 💎 | | 🌆 Synthwave | 🎸 | 🌴 |
+| 🧊 Glace | ❄️ | 💎 | | ⚡ Storm | ⚡ | 🌩️ |
+| 🏯 Japon | ⛩️ | 🌸 | | 🧪 Labo | ⚗️ | 🧬 |
+| 🎃 Halloween | 🎃 | 👻 | | 🌺 Hawaii | 🌺 | 🐠 |
+| 🏔️ Montagne | 🦅 | 🐺 | | 🎭 Théâtre | 😂 | 😢 |
+| 🔩 Rouille | 🔩 | ⚙️ | | 🎮 Mario | 🍄 | ⭐ |
+| 🌊 Arctique | 🐻‍❄️ | 🦊 | | 🌿 Forêt | 🌿 | 🍄 |
 
-| Qualité | Signification |
-|---------|--------------|
-| ✅ Excellent | Meilleur coup possible |
-| 👍 Bon | Très bon coup |
-| ⚠️ Imprécis | Coup sous-optimal |
-| ❌ Erreur | Mauvais coup |
-| 💀 Gaffe | Très mauvais coup |
+### 7.11 Statistiques et rang
 
-Navigation ← → pour avancer coup par coup. Coup joué en bleu, meilleur coup en vert.
-
-### 6.9 Thèmes — 18 designs
-
-Chaque thème modifie le fond, les couleurs, les animations et les emojis des pièces. Le logo du menu se met à jour automatiquement. Accessible depuis le menu principal (🎨 DESIGN) ou depuis le menu ⋯ en cours de partie.
-
-| Thème | Pièce X | Pièce O |
-|-------|---------|---------|
-| 🤖 Cyberpunk | X | O |
-| 🎮 Mario | 🍄 | ⭐ |
-| 🌴 Jungle | 🦁 | 🐸 |
-| 👸 Princesse | 🌸 | 💎 |
-| 🌊 Ocean | 🐙 | 🦈 |
-| 🔥 Enfer | 😈 | 💀 |
-| 🚀 Espace | 👾 | 🛸 |
-| 🍬 Candy | 🍭 | 🍬 |
-| 🧊 Arctique | 🐻‍❄️ | 🦊 |
-| 🏯 Japon | ⛩️ | 🌸 |
-| 🤠 Western | 🤠 | 💀 |
-| 🧪 Labo | ⚗️ | 🧬 |
-| 🎃 Halloween | 🎃 | 👻 |
-| 🌺 Hawaii | 🌺 | 🐠 |
-| 🏔️ Montagne | 🦅 | 🐺 |
-| 🎭 Théâtre | 😂 | 😢 |
-| 🔩 Rouille | 🔩 | ⚙️ |
-| 🧁 Café | ☕ | 🧁 |
-
-### 6.10 Statistiques et rang
-
-Les statistiques sont sauvegardées en `localStorage` et organisées par mode de jeu. Le score est recalculé automatiquement depuis les statistiques à chaque retour au menu — il est toujours cohérent.
-
-**Données enregistrées par mode :** victoires / défaites / égalités / taux de victoire / streak actuel / meilleur streak / victoire la plus rapide (en coups) / partie la plus longue (en coups).
+**Données par mode** : victoires / défaites / égalités / streak / meilleur streak / victoire la plus rapide / partie la plus longue.
 
 **Rangs :**
 
@@ -421,122 +334,102 @@ Les statistiques sont sauvegardées en `localStorage` et organisées par mode de
 | 👑 Grand Maître | 800 – 949 |
 | 🔥 Légende | 950 – 1000 |
 
-**Gains :** +75 (victoire en ligne), +60 (bot difficile), +35 (bot moyen), +20 (bot facile), +20 (victoire < 20 coups), ×1.2 (streak ≥ 3), ×1.5 (streak ≥ 5), +5 (égalité).  
-**Malus :** -25 par défaite si score ≥ 100. Zone protégée sous 100 points — aucun malus.
+**Points** : +75 online, +60 bot difficile, +35 bot moyen, +20 bot facile.  
+**Bonus** : +20 victoire < 20 coups, ×1.2 streak ≥ 3, ×1.5 streak ≥ 5, +5 égalité.  
+**Malus** : -25 par défaite (protégé sous 100 pts).
 
-### 6.11 Easter egg
+### 7.12 Easter egg
 
-3 clics rapides sur le titre **ULTIMATE TTT** → popup → mot de passe `Antoine` → +3 indices pour la manche en cours. 3 tentatives échouées ferment la page.
+3 clics rapides sur **ULTIMATE TTT** → mot de passe `Antoine` → +3 indices. 3 échecs → ferme la page.
 
 ---
 
-## 7. Architecture technique
+## 8. Architecture technique
 
-### 7.1 Frontend (index.html)
+### 8.1 Frontend (index.html)
 
-Fichier HTML unique contenant l'intégralité du jeu côté client :
+Fichier HTML unique — HTML + CSS + JS vanilla. Aucun framework.
 
-- **HTML** : structure des overlays (menu, setup, jeu, stats, règles, design, analyse, gameover, attente, chat drawer)
-- **CSS** : 18 thèmes complets avec variables CSS, animations `@keyframes`, responsive mobile-first
-- **JavaScript** : logique de jeu, IA minimax, client WebSocket, gestion des stats, rendu DOM, son, haptique, timer, chat, tournoi
+- **CSS** : 20 thèmes avec variables CSS, animations `@keyframes`, responsive mobile-first
+- **JS** : logique jeu, IA minimax, client WebSocket, auth JWT, stats, son, haptique, timer, chat, tournoi
 
-Aucun framework ni bibliothèque externe — JavaScript vanilla pur.
+### 8.2 Backend (server.js)
 
-### 7.2 Backend (server.js)
+Node.js + `ws` + `pg` + `bcryptjs` + `jsonwebtoken` + `nodemailer`.
 
-Serveur Node.js avec les responsabilités suivantes :
+**Routes HTTP :**
 
-**Gestion des rooms :**
-- Création d'une room avec un code unique à 4 lettres (caractères non ambigus)
-- Rejoindre une room par code
-- Suppression automatique d'une room quand elle est vide
-- Timer côté serveur : si un joueur ne joue pas en 35s, coup aléatoire forcé (filet de sécurité)
+| Route | Méthode | Description |
+|-------|---------|-------------|
+| `/auth/register` | POST | Inscription |
+| `/auth/login` | POST | Connexion |
+| `/auth/me` | GET | Auto-login (vérifie JWT) |
+| `/auth/profile` | PUT | Modifier pseudo/avatar |
+| `/auth/stats` | PUT | Sync statistiques |
+| `/auth/forgot` | POST | Demande reset mot de passe |
+| `/auth/reset` | POST | Nouveau mot de passe (token) |
+| `/auth/account` | DELETE | Supprimer le compte |
+| `/` | GET | Servir index.html |
 
-**Matchmaking :**
-- File d'attente par réglage auto-complétion
-- Appariement automatique dès que 2 joueurs compatibles sont en attente
-- Nettoyage des connexions fermées
-
-**Logique de jeu côté serveur :**
-- Validation de chaque coup (respect des règles, tour du bon joueur)
-- Calcul du résultat (victoire, nul)
-- Diffusion de l'état de la partie aux deux joueurs
-
-**Messages WebSocket (client → serveur) :**
+**Messages WebSocket client → serveur :**
 
 | Message | Description |
 |---------|-------------|
-| `create_room` | Crée une room privée |
-| `join_room` | Rejoint une room par code (aussi utilisé pour la reconnexion) |
-| `matchmake` | Entre dans la file de matchmaking |
-| `cancel_matchmake` | Quitte la file |
-| `move` | Joue un coup |
-| `reset` | Demande une nouvelle manche |
-| `name` | Envoie son pseudo |
-| `automode` | Envoie le réglage auto-complétion |
-| `chat` | Envoie un message (max 120 caractères) |
+| `auth` | Authentifier le socket (JWT) |
+| `create_room` | Créer une room privée |
+| `join_room` | Rejoindre par code |
+| `matchmake` | Entrer en matchmaking |
+| `cancel_matchmake` | Quitter la file |
+| `move` | Jouer un coup |
+| `reset` | Nouvelle manche |
+| `automode` | Réglage auto-complétion |
+| `chat` | Envoyer un message |
 
-**Messages WebSocket (serveur → client) :**
+**Messages WebSocket serveur → client :**
 
 | Message | Description |
 |---------|-------------|
-| `role` | Indique au joueur s'il est X ou O |
-| `roomId` | Code de la room créée |
-| `state` | État complet de la partie |
-| `names` | Pseudos des deux joueurs |
-| `waiting` | L'adversaire s'est déconnecté |
-| `ready` | Les deux joueurs sont connectés |
-| `matched` | Adversaire trouvé (matchmaking) |
-| `matchmaking` | Position dans la file d'attente |
-| `error` | Message d'erreur (room introuvable, pleine...) |
-| `chat` | Message reçu de l'adversaire |
+| `auth_ok` | Socket authentifié |
+| `role` | X ou O |
+| `roomId` | Code de la room |
+| `state` | État de la partie |
+| `names` | Pseudos + avatars |
+| `waiting` | Adversaire déconnecté |
+| `ready` | Partie prête |
+| `matched` | Adversaire trouvé |
+| `chat` | Message reçu |
 
-### 7.3 Algorithme minimax
+### 8.3 Algorithme minimax
 
-L'IA utilise l'algorithme minimax avec élagage alpha-bêta. Le minimax explore l'arbre des coups possibles en alternant entre maximiser le score (bot) et le minimiser (humain).
-
-**Optimisations implémentées :**
-- **Alpha-bêta pruning** : élague les branches inutiles, réduit drastiquement le temps de calcul
-- **Table de transposition** : mémorise les positions déjà calculées pour éviter les recalculs
-- **Move ordering** : trie les coups prometteurs en premier (victoires immédiates, blocages) pour maximiser l'efficacité de l'alpha-bêta
-- **Deepening itératif** : augmente la profondeur progressivement jusqu'à la limite de temps (5 secondes)
-- **Limite de temps** : arrête le calcul au bout de 5 secondes et retourne le meilleur coup trouvé
+Minimax avec alpha-bêta, table de transposition, move ordering, deepening itératif.
 
 **Fonction d'évaluation :**
-- ±100 points par sous-grille gagnée/perdue
-- ±50 points pour 2 sous-grilles alignées avec une libre (menace macro)
-- ±30/15 points pour le centre et les coins de la grille globale
-- Points intermédiaires pour les menaces micro dans chaque sous-grille
+- ±100 pts par sous-grille gagnée/perdue
+- ±50 pts pour 2 sous-grilles alignées avec une libre
+- ±30/15 pts pour centre et coins de la grille globale
 
-### 7.4 Données persistantes
+### 8.4 Envoi d'emails (Brevo)
 
-Toutes les données sont stockées dans le `localStorage` du navigateur :
-
-| Clé | Contenu |
-|-----|---------|
-| `ttt-theme` | Thème actif |
-| `ttt-stats` | Objet JSON contenant toutes les statistiques par mode |
-| `ttt-sound` | Préférence son (`on` / `off`) |
-
-Le score de rang n'est pas stocké — il est recalculé à chaque fois depuis `ttt-stats`.
+Réinitialisation du mot de passe via l'API HTTP Brevo (contourne les restrictions SMTP de Railway). Le serveur répond immédiatement au client, l'email est envoyé en arrière-plan.
 
 ---
 
-## 8. Dépannage
+## 9. Dépannage
 
-| Symptôme | Cause probable | Solution |
-|----------|---------------|----------|
-| Boutons qui ne répondent pas | Ancienne version en cache Chrome | Vider le cache : Chrome → ⋮ → Paramètres → Confidentialité → Effacer les données |
-| `git push` refusé | Branches divergentes | `git config pull.rebase false && git pull && git push` |
-| Railway : "Error creating build plan" | `nixpacks.toml` ou `package.json` manquant | Vérifier que les deux fichiers sont à la racine du repo |
-| Railway : WebSocket déconnecté | Serverless activé | Désactiver Serverless dans Settings du service Railway |
-| Code room invalide | Mauvais code ou room expirée | Vérifier 4 lettres majuscules, ou créer une nouvelle room |
-| Score à 0 malgré des victoires | Cache localStorage corrompu | Réinitialiser les stats depuis le menu Statistiques |
-| `Cannot find module 'ws'` | `npm install` non exécuté | `cd ~/Ultimate_TTT_fix && npm install` |
-| Chat invisible en ligne | La barre n'apparaît qu'une fois la partie démarrée | Attendre que les deux joueurs soient connectés |
-| Timer ne s'affiche pas | Option désactivée dans le setup | Activer "Horloge par tour" avant de lancer la partie |
+| Symptôme | Cause | Solution |
+|----------|-------|----------|
+| Écran auth ne disparaît pas après connexion | Bug menu hidden | Vider le cache Chrome |
+| `ECONNREFUSED 127.0.0.1:5432` | `DATABASE_URL` non transmise | Vérifier la variable dans Railway + redéployer |
+| `Cannot find module 'nodemailer'` | node_modules dans git | `git rm -r --cached node_modules && npm install && git push` |
+| Mail non reçu | Expéditeur non vérifié dans Brevo | Vérifier Brevo → Expéditeurs |
+| Mail non reçu | SMTP bloqué par Railway | Utiliser l'API HTTP Brevo (actuel) |
+| Users:0 après redéploiement | users.json écrasé | Migré vers PostgreSQL — résolu |
+| `git push` refusé | Branches divergentes | `git pull && git push` |
+| Railway : build échoue | node_modules dans le repo | Ajouter `node_modules/` dans `.gitignore` |
+| Serverless activé | WebSocket coupé | Désactiver Serverless dans Settings Railway |
+| Cache affiché dans l'œil mais Edit différent | Bug d'affichage Railway | La valeur dans Edit est la bonne |
 
 ---
 
-*Projet développé par Antoine Dehoux sur Android/Termux*  
-*Stack : HTML · CSS · JavaScript · Node.js · WebSocket · GitHub · Railway.app*
+*Développé par Antoine Dehoux sur Android/Termux*  
+*Stack : HTML · CSS · JavaScript · Node.js · WebSocket · PostgreSQL · JWT · Brevo · Railway*
