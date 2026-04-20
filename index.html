@@ -1088,8 +1088,13 @@
 
       <div class="auth-field">
         <div class="auth-label">Mot de passe</div>
-        <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')submitAuth()">
+        <div style="position:relative;">
+          <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')submitAuth()" style="padding-right:44px;">
+          <button onclick="togglePwdVisibility()" type="button"
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(180,180,255,.45);font-size:1rem;padding:0;line-height:1;"
+            id="pwd-eye-btn">👁️</button>
+        </div>
       </div>
       <span class="auth-forgot-link" id="forgot-link" onclick="showForgotView()">Mot de passe oublié ?</span>
 
@@ -1162,6 +1167,41 @@
   </div>
 </div>
 
+
+<!-- Avatar picker overlay -->
+<div class="overlay" id="avatar-picker" style="display:none;position:fixed;inset:0;background:rgba(3,3,12,.92);z-index:900;align-items:center;justify-content:center;backdrop-filter:blur(8px);">
+  <div style="background:rgba(10,10,28,.95);border:1px solid rgba(180,180,255,.15);border-radius:20px;padding:24px 20px;width:min(320px,90vw);display:flex;flex-direction:column;gap:14px;align-items:center;">
+    <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.2em;color:#fff;">CHANGER L'AVATAR</div>
+    <div id="current-avatar-preview" style="font-size:3rem;"></div>
+    <div class="auth-avatar-grid" style="width:100%;">
+      <button class="auth-avatar-btn" onclick="pickAvatar('🎮')" data-pav="🎮">🎮</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🦊')" data-pav="🦊">🦊</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🐺')" data-pav="🐺">🐺</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🦁')" data-pav="🦁">🦁</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🐻')" data-pav="🐻">🐻</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🐸')" data-pav="🐸">🐸</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🦅')" data-pav="🦅">🦅</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🐙')" data-pav="🐙">🐙</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🦈')" data-pav="🦈">🦈</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('👾')" data-pav="👾">👾</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🤖')" data-pav="🤖">🤖</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('💎')" data-pav="💎">💎</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🔥')" data-pav="🔥">🔥</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('⚡')" data-pav="⚡">⚡</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🌸')" data-pav="🌸">🌸</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🍄')" data-pav="🍄">🍄</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('⭐')" data-pav="⭐">⭐</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🏆')" data-pav="🏆">🏆</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🎸')" data-pav="🎸">🎸</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🎃')" data-pav="🎃">🎃</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('👑')" data-pav="👑">👑</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🧊')" data-pav="🧊">🧊</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('🌊')" data-pav="🌊">🌊</button>
+        <button class="auth-avatar-btn" onclick="pickAvatar('☕')" data-pav="☕">☕</button>
+    </div>
+    <button onclick="closeAvatarPicker()" style="font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;padding:10px 24px;border-radius:10px;border:1px solid rgba(180,180,255,.2);background:transparent;color:rgba(180,180,255,.5);cursor:pointer;">ANNULER</button>
+  </div>
+</div>
 <div class="particles" id="pts"></div>
 
 <!-- Chat bar (Plato-style, online only) -->
@@ -1348,6 +1388,10 @@
     </div>
     <button class="menu-user-logout" onclick="toggleUserMenu()" id="user-menu-btn">⋯</button>
     <div class="more-dropdown hidden" id="user-dropdown" style="top:calc(100% + 4px);right:0;min-width:160px;">
+      <button class="more-item" onclick="openAvatarPicker();closeUserMenu()">
+        <span class="more-item-icon">🎨</span><span class="more-item-label">Changer l'avatar</span>
+      </button>
+      <div style="height:1px;background:rgba(180,180,255,.1);margin:4px 2px;"></div>
       <button class="more-item" onclick="logout();closeUserMenu()">
         <span class="more-item-icon">🚪</span><span class="more-item-label">Se déconnecter</span>
       </button>
@@ -2236,10 +2280,11 @@ let selectedAvatar = '🎮';
 
 const API = ''; // même origine que le jeu
 
-async function authFetch(method, endpoint, body, token) {
+async function authFetch(method, endpoint, body, token, signal) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (token) opts.headers['Authorization'] = 'Bearer ' + token;
   if (body)  opts.body = JSON.stringify(body);
+  if (signal) opts.signal = signal;
   const res = await fetch(API + endpoint, opts);
   return { status: res.status, data: await res.json() };
 }
@@ -2261,6 +2306,8 @@ async function authFetch(method, endpoint, body, token) {
   }
   // Pas de token valide → afficher l'écran auth
   document.getElementById('auth-screen').classList.remove('hidden');
+  const savedEmail = localStorage.getItem('ttt-saved-email');
+  if (savedEmail) document.getElementById('auth-email').value = savedEmail;
 })();
 
 function switchAuthTab(tab) {
@@ -2280,6 +2327,18 @@ function selectAvatar(av) {
   document.querySelectorAll('.auth-avatar-btn').forEach(btn => {
     btn.classList.toggle('selected', btn.dataset.av === av);
   });
+}
+
+function togglePwdVisibility() {
+  const inp = document.getElementById('auth-password');
+  const btn = document.getElementById('pwd-eye-btn');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    btn.textContent = '👁️';
+  }
 }
 
 function setAuthMsg(text, type) {
@@ -2313,6 +2372,7 @@ async function submitAuth() {
       authToken   = data.token;
       currentUser = data.user;
       localStorage.setItem('ttt-token', authToken);
+      if (isLogin) localStorage.setItem('ttt-saved-email', email);
       onLoggedIn(!isLogin); // migration stats uniquement à l'inscription
     } else {
       setAuthMsg(data.error || 'Erreur serveur.', 'error');
@@ -2357,12 +2417,49 @@ function updateMenuUserBar() {
 function prefillUserName() {
   if (!currentUser) return;
   const pseudo = currentUser.pseudo;
-  ['name-human','name-online'].forEach(id => {
+  ['name-human','name-online','name-x'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.value) el.value = pseudo;
   });
 }
 
+
+// ── Changement d'avatar depuis le menu ───────────────
+let pickedAvatar = null;
+
+function openAvatarPicker() {
+  pickedAvatar = currentUser?.avatar || '🎮';
+  document.getElementById('current-avatar-preview').textContent = pickedAvatar;
+  // Marquer l'avatar actuel
+  document.querySelectorAll('[data-pav]').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.pav === pickedAvatar);
+  });
+  const el = document.getElementById('avatar-picker');
+  el.style.display = 'flex';
+}
+
+function closeAvatarPicker() {
+  document.getElementById('avatar-picker').style.display = 'none';
+}
+
+async function pickAvatar(av) {
+  pickedAvatar = av;
+  document.getElementById('current-avatar-preview').textContent = av;
+  document.querySelectorAll('[data-pav]').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.pav === av);
+  });
+  // Sauvegarder immédiatement
+  if (currentUser && authToken) {
+    try {
+      const { status, data } = await authFetch('PUT', '/auth/profile', { avatar: av }, authToken);
+      if (status === 200) {
+        currentUser.avatar = av;
+        updateMenuUserBar();
+      }
+    } catch(e) {}
+  }
+  setTimeout(closeAvatarPicker, 400);
+}
 function toggleUserMenu() {
   const drop = document.getElementById('user-dropdown');
   const isOpen = !drop.classList.contains('hidden');
@@ -2399,6 +2496,9 @@ function logout() {
   document.getElementById('view-forgot').classList.remove('active');
   document.getElementById('view-reset').classList.remove('active');
   switchAuthTab('login');
+  // Pré-remplir email mémorisé
+  const saved = localStorage.getItem('ttt-saved-email');
+  if (saved) document.getElementById('auth-email').value = saved;
 }
 
 async function deleteAccount() {
@@ -2454,14 +2554,21 @@ async function submitForgot() {
   setForgotMsg('Envoi en cours…', '');
 
   try {
-    const { status, data } = await authFetch('POST', '/auth/forgot', { email });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    const { status, data } = await authFetch('POST', '/auth/forgot', { email }, null, controller.signal);
+    clearTimeout(timeout);
     if (status === 200) {
       setForgotMsg('✅ Email envoyé ! Vérifie ta boîte (et tes spams).', 'success');
     } else {
       setForgotMsg(data.error || 'Erreur serveur.', 'error');
     }
   } catch(e) {
-    setForgotMsg('Connexion impossible.', 'error');
+    if (e.name === 'AbortError') {
+      setForgotMsg('Délai dépassé. Réessaie dans quelques secondes.', 'error');
+    } else {
+      setForgotMsg('Connexion impossible.', 'error');
+    }
   }
   btn.disabled = false;
 }
@@ -3211,6 +3318,7 @@ function undoMove() {
 // ONLINE MODE
 // ════════════════════════════════════════════════════════
 let myRole=null, ws=null, myName='Joueur';
+let onlineAvatars = {X:'🎮', O:'🎮'};
 
 let currentRoomId = null;
 
@@ -3322,7 +3430,7 @@ function connect(onOpen) {
     const msg = JSON.parse(data);
 
     if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); }
-    if (msg.type === 'names') { names = msg.names; updateHUD(); }
+    if (msg.type === 'names') { names = msg.names; if (msg.avatars) onlineAvatars = msg.avatars; updateHUD(); }
     if (msg.type === 'automode') { autoMode = msg.autoMode; }
 
     // Room privée créée → afficher le code
@@ -3489,8 +3597,11 @@ function render() {
 function updateHUD() {
   document.getElementById('sx').textContent=scores.X;
   document.getElementById('so').textContent=scores.O;
-  document.getElementById('sname-x').textContent=names.X;
-  document.getElementById('sname-o').textContent=names.O;
+  // Afficher avatar + pseudo en ligne
+  const avX = mode==='online' ? (onlineAvatars.X||'') : '';
+  const avO = mode==='online' ? (onlineAvatars.O||'') : '';
+  document.getElementById('sname-x').textContent = (avX ? avX+' ' : '') + names.X;
+  document.getElementById('sname-o').textContent = (avO ? avO+' ' : '') + names.O;
   document.getElementById('lbl-x').textContent=getThemeMark('X');
   document.getElementById('lbl-o').textContent=getThemeMark('O');
 
@@ -3503,13 +3614,14 @@ function updateHUD() {
   const p=G.player, pl=p.toLowerCase();
   const pname=names[p];
   const mark=getThemeMark(p);
+  const av = mode==='online' ? (onlineAvatars[p]||mark) : mark;
   banner.className=`turn-banner ${pl}`;
   dot.className=`turn-dot ${pl}`;
   text.className=`turn-text ${pl}`;
 
   if (mode==='online') {
     const isMe=myRole===p;
-    text.textContent=isMe?`${mark} ${pname} — À VOUS !`:`⏳ ${mark} ${pname}…`;
+    text.textContent=isMe?`${av} ${pname} — À VOUS !`:`⏳ ${av} ${pname}…`;
   } else {
     text.textContent=`${mark} ${pname}`;
   }
@@ -3587,8 +3699,12 @@ function showGameOver(abandon=false) {
   renderRankBadge();
   show('gameover');
   const replayBtn = document.getElementById('go-replay-btn');
-  if (mode === 'bot' || tournamentMode) replayBtn.style.display = '';
-  else replayBtn.style.display = 'none';
+  if (mode === 'bot' || tournamentMode) {
+    replayBtn.style.display = '';
+    replayBtn.textContent = tournamentMode ? '▶ MANCHE SUIVANTE' : '▶ REJOUER';
+  } else {
+    replayBtn.style.display = 'none';
+  }
 }
 
 function showTournamentOver(champion) {
