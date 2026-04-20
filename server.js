@@ -11,7 +11,6 @@ const crypto  = require('crypto');
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const { Pool } = require('pg');
-const nodemailer = require('nodemailer');
 const { WebSocketServer } = require('ws');
 
 const PORT       = process.env.PORT || 3000;
@@ -84,26 +83,31 @@ function publicProfile(u) {
   return { id: u.id, pseudo: u.pseudo, avatar: u.avatar, stats: u.stats || {} };
 }
 
-// ── Email via Brevo SMTP ─────────────────────────────────────────────────────
-const mailer = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_SMTP_USER || '',
-    pass: process.env.BREVO_SMTP_PASS || ''
-  }
-});
-
+// ── Email via Brevo API HTTP (contourne le blocage SMTP de Railway) ──────────
 async function sendMail(to, subject, html) {
-  if (!process.env.BREVO_SMTP_USER || !process.env.BREVO_SMTP_PASS) {
-    console.warn('[Mail] BREVO_SMTP_USER/PASS non definis'); return false;
-  }
+  const apiKey = process.env.BREVO_SMTP_PASS || '';
+  const from   = process.env.BREVO_FROM || 'ultimatettt.noreply@gmail.com';
+  if (!apiKey) { console.warn('[Mail] BREVO_SMTP_PASS (API key) non defini'); return false; }
   try {
-    const from = process.env.BREVO_FROM || 'ultimatettt.noreply@gmail.com';
-    await mailer.sendMail({ from: '"Ultimate TTT" <' + from + '>', to, subject, html });
-    console.log('[Mail] Envoye a ' + to); return true;
-  } catch(e) { console.error('[Mail] Erreur Brevo:', e.message); return false; }
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { name: 'Ultimate TTT', email: from },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html
+      })
+    });
+    const data = await res.json();
+    if (res.ok) { console.log('[Mail] Envoye a ' + to); return true; }
+    console.error('[Mail] Erreur Brevo API:', JSON.stringify(data));
+    return false;
+  } catch(e) { console.error('[Mail] Erreur:', e.message); return false; }
 }
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
