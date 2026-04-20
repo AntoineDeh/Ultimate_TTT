@@ -1122,6 +1122,32 @@
     .challenge-notif-text { display:flex; flex-direction:column; gap:2px; }
     .challenge-notif-title { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700; color:#f5c842; letter-spacing:.1em; }
     .challenge-notif-sub { font-size:.6rem; color:rgba(200,160,40,.6); }
+
+    /* ── Notification défis journaliers ── */
+    .daily-notif { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+      background:rgba(10,8,0,.96); border:1px solid rgba(245,200,66,.35); border-radius:16px;
+      padding:14px 16px; width:min(320px,88vw); z-index:850;
+      box-shadow:0 8px 40px rgba(0,0,0,.7), 0 0 20px rgba(245,200,66,.1);
+      display:none; flex-direction:column; gap:8px;
+      opacity:0; transition:opacity .4s ease, transform .4s cubic-bezier(.34,1.2,.64,1); }
+    .daily-notif-header { display:flex; align-items:center; justify-content:space-between; }
+    .daily-notif-title { font-family:'Orbitron',sans-serif; font-size:.7rem; font-weight:900;
+      letter-spacing:.15em; color:#f5c842; }
+    .daily-notif-close { background:none; border:none; color:rgba(200,160,40,.4);
+      cursor:pointer; font-size:.9rem; padding:2px 6px; }
+    .daily-notif-close:hover { color:#f5c842; }
+
+    /* Section défis journaliers dans l'écran challenges */
+    .daily-card { background:rgba(245,200,66,.04); border:1px solid rgba(245,200,66,.2);
+      border-radius:12px; padding:14px 14px 12px; display:flex; align-items:center; gap:12px;
+      position:relative; overflow:hidden; transition:all .25s; }
+    .daily-card.done { border-color:rgba(74,222,128,.3); background:rgba(74,222,128,.04); }
+    .daily-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,rgba(245,200,66,.5),transparent); }
+    .daily-card.done::before { background:linear-gradient(90deg,transparent,#4ade80,transparent); }
+    .daily-badge { position:absolute; top:8px; right:8px; font-size:.48rem; letter-spacing:.1em;
+      padding:2px 6px; border-radius:6px; background:rgba(245,200,66,.15);
+      color:#f5c842; font-family:'Orbitron',sans-serif; font-weight:700; }
   </style>
 </head>
 <body>
@@ -1267,6 +1293,15 @@
   </div>
 </div>
 
+
+<!-- Notification défis journaliers -->
+<div class="daily-notif" id="daily-notif">
+  <div class="daily-notif-header">
+    <div class="daily-notif-title">📅 DÉFIS DU JOUR</div>
+    <button class="daily-notif-close" onclick="closeDailyNotif()">✕</button>
+  </div>
+  <div id="daily-notif-list"></div>
+</div>
 <!-- Challenge completed notification -->
 <div class="challenge-notif" id="challenge-notif">
   <div class="challenge-notif-icon">🏅</div>
@@ -2482,6 +2517,35 @@ async function onLoggedIn(migrate) {
   if (currentUser && currentUser.stats) {
     // Les stats sont dans currentUser.stats — on les utilise directement
   }
+  // ── Tracker login streak ────────────────────────────────────
+  (function trackLoginStreak() {
+    const stats = loadStats();
+    const today = new Date().toDateString();
+    const lastLogin = stats._lastLoginDate;
+    if (lastLogin !== today) {
+      const yesterday = new Date(Date.now()-86400000).toDateString();
+      if (lastLogin === yesterday) {
+        stats._loginStreak = (stats._loginStreak||0) + 1;
+      } else if (!lastLogin) {
+        stats._loginStreak = 1;
+      } else {
+        stats._loginStreak = 1; // streak cassée
+      }
+      stats._loginBestStreak = Math.max(stats._loginBestStreak||0, stats._loginStreak||0);
+      stats._lastLoginDate = today;
+      // Weekend
+      const day = new Date().getDay();
+      if (day === 6) stats._playedSaturday = true;
+      if (day === 0) stats._playedSunday   = true;
+      // Matin
+      const h = new Date().getHours();
+      if (h < 7) stats._playedEarlyMorning = true;
+
+      saveStats(stats);
+      checkChallenges();
+    }
+  })();
+
   // Masquer l'écran auth, afficher le menu
   document.getElementById('auth-screen').classList.add('hidden');
   show('menu');
@@ -2490,6 +2554,8 @@ async function onLoggedIn(migrate) {
   renderMenuLogo();
   // Pré-remplir le pseudo dans les setups
   prefillUserName();
+  // Afficher les défis journaliers après connexion
+  setTimeout(showDailyNotifOnLogin, 1500);
 }
 
 function updateMenuUserBar() {
@@ -3891,8 +3957,27 @@ function recordResult(result) {
     all._comebackStreak = 0;
   }
 
+  // Tracker victoire nocturne
+  const h2 = new Date().getHours();
+  if (h2 >= 0 && h2 < 5 && result === 'win') all._wonAtNight = true;
+
+  // Tracker Rocky (battre bot difficile après l'avoir perdu)
+  if (!all._hardLossStreak) all._hardLossStreak = 0;
+  if (mode === 'bot' && difficulty === 'hard') {
+    if (result === 'loss') all._hardLossStreak++;
+    else if (result === 'win' && all._hardLossStreak >= 3) {
+      all._beatHardAfterLosing = true;
+      all._hardLossStreak = 0;
+    } else { all._hardLossStreak = 0; }
+  }
+
+  // Tracker sans indice (winsWithoutHint géré par showGameOver)
+
   saveStats(all);
   checkChallenges();
+
+  // Défis journaliers
+  updateDailyChallenges(result, mode, difficulty, gameLog.length, false);
 }
 
 let currentStatsTab = 'global';
@@ -4159,6 +4244,154 @@ var CHALLENGES = [
     check: (stats) => (stats._tournamentsLocal||0)>=1 && (stats._tournamentsBot||0)>=1 && (stats._tournamentsOnline||0)>=1,
     progress: (stats) => [((stats._tournamentsLocal||0)>=1?1:0)+((stats._tournamentsBot||0)>=1?1:0)+((stats._tournamentsOnline||0)>=1?1:0), 3]
   },
+
+  // ── Jours consécutifs ────────────────────────────────
+  {
+    id: 'login_1day',
+    icon: '📅', name: 'Premier jour', pts: 10,
+    desc: 'Joue 1 jour',
+    category: 'Assiduité',
+    check: (stats) => (stats._loginStreak||0) >= 1,
+    progress: (stats) => [Math.min(1, stats._loginStreak||0), 1]
+  },
+  {
+    id: 'login_3days',
+    icon: '🗓️', name: 'Habitué', pts: 30,
+    desc: 'Joue 3 jours de suite',
+    category: 'Assiduité',
+    check: (stats) => (stats._loginStreak||0) >= 3,
+    progress: (stats) => [Math.min(3, stats._loginStreak||0), 3]
+  },
+  {
+    id: 'login_7days',
+    icon: '🔥', name: 'Une semaine', pts: 70,
+    desc: 'Joue 7 jours de suite',
+    category: 'Assiduité',
+    check: (stats) => (stats._loginStreak||0) >= 7,
+    progress: (stats) => [Math.min(7, stats._loginStreak||0), 7]
+  },
+  {
+    id: 'login_30days',
+    icon: '🏆', name: 'Un mois !', pts: 200,
+    desc: 'Joue 30 jours de suite',
+    category: 'Assiduité',
+    check: (stats) => (stats._loginStreak||0) >= 30,
+    progress: (stats) => [Math.min(30, stats._loginStreak||0), 30]
+  },
+  {
+    id: 'login_best7',
+    icon: '📆', name: 'Meilleure série', pts: 50,
+    desc: 'Atteins une série de 7 jours (même non consécutifs)',
+    category: 'Assiduité',
+    check: (stats) => (stats._loginBestStreak||0) >= 7,
+    progress: (stats) => [Math.min(7, stats._loginBestStreak||0), 7]
+  },
+  {
+    id: 'play_weekend',
+    icon: '🛋️', name: 'Week-end gamer', pts: 20,
+    desc: 'Joue un samedi ET un dimanche',
+    category: 'Assiduité',
+    check: (stats) => !!(stats._playedSaturday && stats._playedSunday),
+    progress: (stats) => [(stats._playedSaturday?1:0)+(stats._playedSunday?1:0), 2]
+  },
+  {
+    id: 'early_bird',
+    icon: '🌅', name: 'Lève-tôt', pts: 25,
+    desc: 'Joue une partie avant 7h du matin',
+    category: 'Assiduité',
+    check: (stats) => !!(stats._playedEarlyMorning),
+    progress: (stats) => [stats._playedEarlyMorning ? 1 : 0, 1]
+  },
+
+  // ── Défis supplémentaires ────────────────────────────
+  {
+    id: 'win20_easy',
+    icon: '🤖', name: 'Exterminateur', pts: 80,
+    desc: 'Gagne 20 fois contre le bot Facile',
+    category: 'Bot',
+    check: (stats) => (stats['bot-easy']?.win||0) >= 20,
+    progress: (stats) => [Math.min(20, stats['bot-easy']?.win||0), 20]
+  },
+  {
+    id: 'win10_medium',
+    icon: '🧠', name: 'Stratège', pts: 120,
+    desc: 'Gagne 10 fois contre le bot Moyen',
+    category: 'Bot',
+    check: (stats) => (stats['bot-medium']?.win||0) >= 10,
+    progress: (stats) => [Math.min(10, stats['bot-medium']?.win||0), 10]
+  },
+  {
+    id: 'no_hint_win',
+    icon: '🙈', name: 'Sans filet', pts: 50,
+    desc: 'Gagne 5 parties sans utiliser un seul indice',
+    category: 'Style',
+    check: (stats) => (stats._winsWithoutHint||0) >= 5,
+    progress: (stats) => [Math.min(5, stats._winsWithoutHint||0), 5]
+  },
+  {
+    id: 'win_streak_online5',
+    icon: '👑', name: 'Roi en ligne', pts: 150,
+    desc: 'Enchaîne 5 victoires en ligne',
+    category: 'Streak',
+    check: (stats) => (stats.online?.bestStreak||0) >= 5,
+    progress: (stats) => [Math.min(5, stats.online?.bestStreak||0), 5]
+  },
+  {
+    id: 'play_all_themes',
+    icon: '🌈', name: 'Collectionneur', pts: 40,
+    desc: 'Joue avec 5 thèmes différents',
+    category: 'Insolite',
+    check: (stats) => (stats._uniqueThemes||0) >= 5,
+    progress: (stats) => [Math.min(5, stats._uniqueThemes||0), 5]
+  },
+  {
+    id: 'draw_online',
+    icon: '🤲', name: 'Match nul en ligne', pts: 45,
+    desc: 'Fais un match nul en ligne',
+    category: 'Insolite',
+    check: (stats) => (stats.online?.draw||0) >= 1,
+    progress: (stats) => [Math.min(1, stats.online?.draw||0), 1]
+  },
+  {
+    id: 'win200',
+    icon: '🎰', name: 'Deux cents victoires', pts: 250,
+    desc: 'Remporte 200 parties au total',
+    category: 'Style',
+    check: (stats) => (stats.global?.win||0) >= 200,
+    progress: (stats) => [Math.min(200, stats.global?.win||0), 200]
+  },
+  {
+    id: 'win50',
+    icon: '🥊', name: 'Cinquante victoires', pts: 100,
+    desc: 'Remporte 50 parties au total',
+    category: 'Style',
+    check: (stats) => (stats.global?.win||0) >= 50,
+    progress: (stats) => [Math.min(50, stats.global?.win||0), 50]
+  },
+  {
+    id: 'win_after_midnight',
+    icon: '🌙', name: 'Victoire nocturne', pts: 35,
+    desc: 'Gagne une partie après minuit',
+    category: 'Insolite',
+    check: (stats) => !!(stats._wonAtNight),
+    progress: (stats) => [stats._wonAtNight ? 1 : 0, 1]
+  },
+  {
+    id: 'tourney5',
+    icon: '🎖️', name: 'Guerrier de tournoi', pts: 80,
+    desc: 'Remporte 5 tournois au total',
+    category: 'Tournoi',
+    check: (stats) => (stats._tournamentsWon||0) >= 5,
+    progress: (stats) => [Math.min(5, stats._tournamentsWon||0), 5]
+  },
+  {
+    id: 'comeback_hard',
+    icon: '💪', name: 'Rocky', pts: 75,
+    desc: `Bats le bot Difficile après l'avoir perdu 3 fois contre lui`,
+    category: 'Insolite',
+    check: (stats) => !!(stats._beatHardAfterLosing),
+    progress: (stats) => [stats._beatHardAfterLosing ? 1 : 0, 1]
+  },
 ];
 
 // ── Bonus points challenges dans calcScore ────────────────────
@@ -4222,6 +4455,183 @@ function recordTournamentWin(mode, difficulty) {
   if (mode === 'online') stats._tournamentsOnline = (stats._tournamentsOnline||0) + 1;
   saveStats(stats);
   checkChallenges();
+  updateDailyChallenges('win', mode, difficulty, 0, true);
+}
+
+
+// ════════════════════════════════════════════════════════
+// DÉFIS JOURNALIERS
+// ════════════════════════════════════════════════════════
+
+// Pool de défis journaliers (tirés aléatoirement chaque jour)
+const DAILY_POOL = [
+  { id: 'd_win1',      icon: '🎯', name: 'Chasseur du jour',    desc: `Gagne 1 partie aujourd'hui`,             pts: 15, type: 'win',   target: 1 },
+  { id: 'd_win3',      icon: '🔥', name: 'Triple menace',       desc: `Gagne 3 parties aujourd'hui`,            pts: 35, type: 'win',   target: 3 },
+  { id: 'd_win5',      icon: '💥', name: 'Inarrêtable du jour', desc: `Gagne 5 parties aujourd'hui`,            pts: 60, type: 'win',   target: 5 },
+  { id: 'd_play3',     icon: '🎮', name: 'Joueur du jour',      desc: `Joue 3 parties aujourd'hui`,             pts: 20, type: 'play',  target: 3 },
+  { id: 'd_play5',     icon: '🕹️', name: 'Marathon du jour',    desc: `Joue 5 parties aujourd'hui`,             pts: 30, type: 'play',  target: 5 },
+  { id: 'd_bot_win',   icon: '🤖', name: 'Anti-bot du jour',    desc: `Bats le bot 2 fois aujourd'hui`,         pts: 25, type: 'bot_win', target: 2 },
+  { id: 'd_online_win',icon: '🌍', name: 'Duel en ligne',       desc: `Gagne 1 partie en ligne aujourd'hui`,   pts: 40, type: 'online_win', target: 1 },
+  { id: 'd_hard_win',  icon: '🔴', name: 'Défi Difficile',      desc: `Bats le bot Difficile aujourd'hui`,     pts: 50, type: 'hard_win', target: 1 },
+  { id: 'd_streak2',   icon: '⚡', name: 'Mini-série',          desc: `Enchaîne 2 victoires aujourd'hui`,      pts: 30, type: 'streak', target: 2 },
+  { id: 'd_nodraw',    icon: '🚫', name: 'Pas de pitié',        desc: 'Gagne 2 parties SANS match nul',         pts: 25, type: 'win_nodraw', target: 2 },
+  { id: 'd_speed',     icon: '💨', name: 'Sprinter du jour',    desc: 'Gagne une partie en moins de 15 coups',  pts: 45, type: 'speed_win', target: 15 },
+  { id: 'd_online2',   icon: '🌐', name: 'Compétiteur',         desc: `Joue 2 parties en ligne aujourd'hui`,   pts: 30, type: 'online_play', target: 2 },
+  { id: 'd_tournament',icon: '🏆', name: 'Tournoi du jour',     desc: `Remporte un tournoi aujourd'hui`,       pts: 55, type: 'tournament', target: 1 },
+  { id: 'd_comeback',  icon: '🔄', name: 'Revenant du jour',    desc: 'Gagne après avoir perdu',               pts: 20, type: 'comeback', target: 1 },
+  { id: 'd_play10',    icon: '🎰', name: 'Journée dédiée',      desc: `Joue 10 parties aujourd'hui`,           pts: 70, type: 'play',  target: 10 },
+];
+
+// Générer les 3 défis du jour (seed basé sur la date)
+function getDailyDate() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function getDailyChallenges() {
+  const seed = getDailyDate().split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const pool = [...DAILY_POOL];
+  // Pseudo-random shuffle avec seed
+  for (let i = pool.length-1; i > 0; i--) {
+    const j = (seed * (i+1) * 2654435761) % (i+1);
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 3);
+}
+
+function getDailyStats() {
+  try {
+    const saved = localStorage.getItem('ttt-daily');
+    if (!saved) return null;
+    const data = JSON.parse(saved);
+    if (data.date !== getDailyDate()) return null; // nouveau jour
+    return data;
+  } catch(e) { return null; }
+}
+
+function saveDailyStats(data) {
+  data.date = getDailyDate();
+  localStorage.setItem('ttt-daily', JSON.stringify(data));
+}
+
+function initDailyStats() {
+  let data = getDailyStats();
+  if (!data) {
+    data = { date: getDailyDate(), progress: {}, done: [] };
+    saveDailyStats(data);
+  }
+  return data;
+}
+
+// Mettre à jour les défis journaliers après une partie
+function updateDailyChallenges(result, mode, difficulty, moves, tournamentWon) {
+  const data = initDailyStats();
+  const dailies = getDailyChallenges();
+  let newlyDone = [];
+
+  dailies.forEach(d => {
+    if (data.done.includes(d.id)) return;
+    if (!data.progress[d.id]) data.progress[d.id] = 0;
+
+    let progress = false;
+    switch(d.type) {
+      case 'win':
+        if (result === 'win') { data.progress[d.id]++; progress = true; }
+        break;
+      case 'play':
+        data.progress[d.id]++; progress = true;
+        break;
+      case 'bot_win':
+        if (result === 'win' && mode === 'bot') { data.progress[d.id]++; progress = true; }
+        break;
+      case 'online_win':
+        if (result === 'win' && mode === 'online') { data.progress[d.id]++; progress = true; }
+        break;
+      case 'hard_win':
+        if (result === 'win' && mode === 'bot' && difficulty === 'hard') { data.progress[d.id]++; progress = true; }
+        break;
+      case 'online_play':
+        if (mode === 'online') { data.progress[d.id]++; progress = true; }
+        break;
+      case 'tournament':
+        if (tournamentWon) { data.progress[d.id]++; progress = true; }
+        break;
+      case 'speed_win':
+        if (result === 'win' && moves < d.target) { data.progress[d.id] = d.target; progress = true; }
+        break;
+      case 'streak':
+        if (result === 'win') { data.progress[d.id]++; progress = true; }
+        else data.progress[d.id] = 0;
+        break;
+      case 'win_nodraw':
+        if (result === 'win') { data.progress[d.id]++; progress = true; }
+        else if (result === 'draw') data.progress[d.id] = 0;
+        break;
+      case 'comeback':
+        if (result === 'win' && (data._lostToday)) { data.progress[d.id]++; progress = true; }
+        break;
+    }
+    if (result === 'loss') data._lostToday = true;
+
+    if (progress && data.progress[d.id] >= d.target) {
+      data.done.push(d.id);
+      newlyDone.push(d);
+    }
+  });
+
+  saveDailyStats(data);
+
+  // Bonus score pour chaque défi journalier complété
+  if (newlyDone.length > 0) {
+    let delay = 300;
+    newlyDone.forEach(d => {
+      setTimeout(() => showChallengeNotif({...d, daily: true}), delay);
+      delay += 2800;
+    });
+    // Ajouter un petit bonus de score
+    const stats = loadStats();
+    stats._dailyPts = (stats._dailyPts||0) + newlyDone.reduce((s,d)=>s+d.pts,0);
+    saveStats(stats);
+    renderRankBadge();
+  }
+}
+
+// Afficher la notification de défi journalier au démarrage
+function showDailyNotifOnLogin() {
+  const dailies = getDailyChallenges();
+  const data = getDailyStats() || { done: [], progress: {} };
+  const remaining = dailies.filter(d => !data.done.includes(d.id));
+  if (remaining.length === 0) return; // Tout fait
+
+  const notif = document.getElementById('daily-notif');
+  const list  = document.getElementById('daily-notif-list');
+  if (!notif || !list) return;
+
+  list.innerHTML = remaining.map(d => {
+    const cur = data.progress[d.id] || 0;
+    const pct = Math.min(100, Math.round((cur/d.target)*100));
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+      <span style="font-size:1.1rem;">${d.icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.65rem;font-weight:700;color:#fff;font-family:Orbitron,sans-serif;letter-spacing:.05em;">${d.name}</div>
+        <div style="font-size:.58rem;color:rgba(200,160,40,.6);">${d.desc}</div>
+        ${pct>0?`<div style="height:2px;background:rgba(200,160,40,.15);border-radius:1px;margin-top:3px;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#c8860a,#f5c842);border-radius:1px;"></div></div>`:''}
+      </div>
+      <span style="font-size:.6rem;color:#f5c842;font-family:Orbitron,sans-serif;font-weight:900;white-space:nowrap;">+${d.pts}</span>
+    </div>`;
+  }).join('');
+
+  notif.style.display = 'flex';
+  setTimeout(() => { notif.style.opacity = '1'; notif.style.transform = 'translateX(-50%) translateY(0)'; }, 100);
+  setTimeout(() => closeDailyNotif(), 6000);
+}
+
+function closeDailyNotif() {
+  const notif = document.getElementById('daily-notif');
+  if (!notif) return;
+  notif.style.opacity = '0';
+  notif.style.transform = 'translateX(-50%) translateY(-30px)';
+  setTimeout(() => { notif.style.display = 'none'; }, 400);
 }
 
 // ── Ouvrir l'écran challenges ─────────────────────────────────
@@ -4231,14 +4641,41 @@ function openChallenges() {
   const content = document.getElementById('challenges-content');
   if (!content) return;
 
-  // Grouper par catégorie
+  let html = '';
+
+  // ── Défis journaliers en premier ─────────────────────────
+  const dailies = getDailyChallenges();
+  const dailyData = getDailyStats() || { done: [], progress: {} };
+  const today = new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long'});
+  const dailyDoneCount = dailies.filter(d => dailyData.done.includes(d.id)).length;
+
+  html += `<div class="challenge-section-title">📅 Défis du jour — ${today} (${dailyDoneCount}/${dailies.length})</div>`;
+  html += '<div class="challenge-list">';
+  dailies.forEach(d => {
+    const isDone = dailyData.done.includes(d.id);
+    const cur = dailyData.progress[d.id] || 0;
+    const pct = Math.min(100, Math.round((cur / d.target) * 100));
+    html += `
+      <div class="daily-card${isDone?' done':''}">
+        <div class="challenge-icon">${isDone ? '✅' : d.icon}</div>
+        <div class="challenge-info">
+          <div class="challenge-name">${d.name}</div>
+          <div class="challenge-desc">${d.desc}</div>
+          ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
+        </div>
+        <div class="challenge-pts">${isDone ? '✓ +'+d.pts : '+'+d.pts+' pts'}</div>
+        <span class="daily-badge">JOUR</span>
+      </div>`;
+  });
+  html += '</div>';
+
+  // ── Défis permanents groupés par catégorie ────────────────
   const cats = {};
   CHALLENGES.forEach(c => {
     if (!cats[c.category]) cats[c.category] = [];
     cats[c.category].push(c);
   });
 
-  let html = '';
   Object.entries(cats).forEach(([cat, challenges]) => {
     const catDone = challenges.filter(c => done.includes(c.id)).length;
     html += `<div class="challenge-section-title">${cat} (${catDone}/${challenges.length})</div>`;
@@ -4559,9 +4996,14 @@ function setTheme(t) {
   localStorage.setItem('ttt-theme', t);
   renderMenuLogo();
   setTimeout(updateAmbientColors, 100);
-  // Tracker défi Caméléon
+  // Tracker défi Caméléon + Collectionneur
   const stats = loadStats();
   stats._themeChanges = (stats._themeChanges||0) + 1;
+  if (!stats._usedThemes) stats._usedThemes = [];
+  if (!stats._usedThemes.includes(t)) {
+    stats._usedThemes.push(t);
+    stats._uniqueThemes = stats._usedThemes.length;
+  }
   saveStats(stats);
   if (typeof checkChallenges === 'function') checkChallenges();
 }
