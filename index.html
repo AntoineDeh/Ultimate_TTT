@@ -1038,10 +1038,11 @@
     .menu-user-pseudo { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.78rem;
       color:#fff; }
     .menu-user-sub { font-size:.58rem; letter-spacing:.1em; opacity:.35; }
-    .menu-user-logout { font-family:'Orbitron',sans-serif; font-size:.52rem; font-weight:700;
-      padding:5px 10px; border-radius:8px; border:1px solid rgba(180,180,255,.2);
-      background:transparent; color:rgba(180,180,255,.4); cursor:pointer; transition:all .2s; }
-    .menu-user-logout:hover { border-color:rgba(255,68,68,.4); color:#ff6b6b; }
+    .menu-user-logout { font-family:'Orbitron',sans-serif; font-size:.7rem; font-weight:700;
+      width:32px; height:32px; border-radius:8px; border:1px solid rgba(180,180,255,.18);
+      background:transparent; color:rgba(180,180,255,.45); cursor:pointer; transition:all .2s;
+      display:flex; align-items:center; justify-content:center; letter-spacing:.1em; }
+    .menu-user-logout:hover { border-color:rgba(180,180,255,.45); color:#fff; background:rgba(180,180,255,.08); }
 
     /* ── Mot de passe oublié ── */
     .auth-forgot-link { font-size:.62rem; letter-spacing:.06em; color:rgba(0,229,255,.45);
@@ -1339,15 +1340,21 @@
   <!-- Main buttons -->
 
   <!-- Barre utilisateur connecté -->
-  <div class="menu-user-bar" id="menu-user-bar">
+  <div class="menu-user-bar" id="menu-user-bar" style="position:relative;">
     <div class="menu-user-avatar" id="menu-user-avatar">🎮</div>
     <div class="menu-user-info">
       <div class="menu-user-pseudo" id="menu-user-pseudo">Joueur</div>
       <div class="menu-user-sub">PROFIL CONNECTÉ</div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
-      <button class="menu-user-logout" onclick="logout()">DÉCO</button>
-      <button class="menu-user-logout" style="font-size:.44rem;opacity:.5;border-color:rgba(255,68,68,.2);color:rgba(255,100,100,.4);" onclick="deleteAccount()">SUPPR.</button>
+    <button class="menu-user-logout" onclick="toggleUserMenu()" id="user-menu-btn">⋯</button>
+    <div class="more-dropdown hidden" id="user-dropdown" style="top:calc(100% + 4px);right:0;min-width:160px;">
+      <button class="more-item" onclick="logout();closeUserMenu()">
+        <span class="more-item-icon">🚪</span><span class="more-item-label">Se déconnecter</span>
+      </button>
+      <div style="height:1px;background:rgba(180,180,255,.1);margin:4px 2px;"></div>
+      <button class="more-item" onclick="deleteAccount();closeUserMenu()" style="color:rgba(255,100,100,.7);">
+        <span class="more-item-icon" style="color:rgba(255,100,100,.7);">🗑️</span><span class="more-item-label">Supprimer le compte</span>
+      </button>
     </div>
   </div>
   <div class="menu-btns">
@@ -2354,6 +2361,25 @@ function prefillUserName() {
     const el = document.getElementById(id);
     if (el && !el.value) el.value = pseudo;
   });
+}
+
+function toggleUserMenu() {
+  const drop = document.getElementById('user-dropdown');
+  const isOpen = !drop.classList.contains('hidden');
+  if (isOpen) { closeUserMenu(); return; }
+  drop.classList.remove('hidden');
+  setTimeout(() => document.addEventListener('click', outsideUserMenuClick, {once:true}), 0);
+}
+
+function closeUserMenu() {
+  document.getElementById('user-dropdown')?.classList.add('hidden');
+}
+
+function outsideUserMenuClick(e) {
+  if (!document.getElementById('user-dropdown')?.contains(e.target) &&
+      e.target.id !== 'user-menu-btn') {
+    closeUserMenu();
+  }
 }
 
 function logout() {
