@@ -3883,6 +3883,235 @@ function recordResult(result) {
 let currentStatsTab = 'global';
 
 // ════════════════════════════════════════════════════════
+// SYSTÈME DE CHALLENGES
+// ════════════════════════════════════════════════════════
+var CHALLENGES = [
+  // ── Premiers pas ────────────────────────────────────
+  {
+    id: 'first_game',
+    icon: '🎮', name: 'Première partie', pts: 10,
+    desc: 'Lance ta première partie (tous modes)',
+    category: 'Premiers pas',
+    check: (stats) => (stats.global?.win||0) + (stats.global?.loss||0) + (stats.global?.draw||0) >= 1,
+    progress: (stats) => [Math.min(1,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 1]
+  },
+  {
+    id: 'first_win',
+    icon: '🥳', name: 'Première victoire', pts: 20,
+    desc: 'Remporte ta première partie',
+    category: 'Premiers pas',
+    check: (stats) => (stats.global?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats.global?.win||0), 1]
+  },
+  {
+    id: 'first_online',
+    icon: '🌐', name: 'Baptême du feu', pts: 30,
+    desc: 'Joue ta première partie en ligne',
+    category: 'Premiers pas',
+    check: (stats) => (stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0) >= 1,
+    progress: (stats) => [Math.min(1,(stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0)), 1]
+  },
+  // ── Bot ─────────────────────────────────────────────
+  {
+    id: 'beat_easy',
+    icon: '🟢', name: 'Trop facile', pts: 20,
+    desc: 'Bats le bot Facile',
+    category: 'Bot',
+    check: (stats) => (stats['bot-easy']?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats['bot-easy']?.win||0), 1]
+  },
+  {
+    id: 'beat_medium',
+    icon: '🟡', name: 'Niveau intermédiaire', pts: 40,
+    desc: 'Bats le bot Moyen',
+    category: 'Bot',
+    check: (stats) => (stats['bot-medium']?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats['bot-medium']?.win||0), 1]
+  },
+  {
+    id: 'beat_hard',
+    icon: '🔴', name: 'Machine brisée', pts: 80,
+    desc: 'Bats le bot Difficile',
+    category: 'Bot',
+    check: (stats) => (stats['bot-hard']?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats['bot-hard']?.win||0), 1]
+  },
+  {
+    id: 'sweep_bot',
+    icon: '🧹', name: 'Balayage', pts: 60,
+    desc: 'Bats les 3 niveaux de bot',
+    category: 'Bot',
+    check: (stats) => (stats['bot-easy']?.win||0)>=1 && (stats['bot-medium']?.win||0)>=1 && (stats['bot-hard']?.win||0)>=1,
+    progress: (stats) => [((stats['bot-easy']?.win||0)>=1?1:0)+((stats['bot-medium']?.win||0)>=1?1:0)+((stats['bot-hard']?.win||0)>=1?1:0), 3]
+  },
+  // ── Tournoi ─────────────────────────────────────────
+  {
+    id: 'tournament_first',
+    icon: '🏆', name: 'Champion local', pts: 30,
+    desc: 'Remporte un tournoi (tous modes)',
+    category: 'Tournoi',
+    check: (stats) => !!(stats._tournamentsWon >= 1),
+    progress: (stats) => [Math.min(1, stats._tournamentsWon||0), 1]
+  },
+  {
+    id: 'tournament_hard',
+    icon: '👑', name: 'Grand tournoi', pts: 100,
+    desc: 'Remporte un tournoi contre le bot Difficile',
+    category: 'Tournoi',
+    check: (stats) => !!(stats._tournamentsHardWon >= 1),
+    progress: (stats) => [Math.min(1, stats._tournamentsHardWon||0), 1]
+  },
+  // ── Streak ──────────────────────────────────────────
+  {
+    id: 'streak3',
+    icon: '🔥', name: 'En feu', pts: 25,
+    desc: `Enchaîne 3 victoires d'affilée`,
+    category: 'Streak',
+    check: (stats) => (stats.global?.bestStreak||0) >= 3,
+    progress: (stats) => [Math.min(3, stats.global?.bestStreak||0), 3]
+  },
+  {
+    id: 'streak5',
+    icon: '💥', name: 'Inarrêtable', pts: 60,
+    desc: `Enchaîne 5 victoires d'affilée`,
+    category: 'Streak',
+    check: (stats) => (stats.global?.bestStreak||0) >= 5,
+    progress: (stats) => [Math.min(5, stats.global?.bestStreak||0), 5]
+  },
+  {
+    id: 'streak10',
+    icon: '⚡', name: 'Légende vivante', pts: 150,
+    desc: `Enchaîne 10 victoires d'affilée`,
+    category: 'Streak',
+    check: (stats) => (stats.global?.bestStreak||0) >= 10,
+    progress: (stats) => [Math.min(10, stats.global?.bestStreak||0), 10]
+  },
+  // ── Style ───────────────────────────────────────────
+  {
+    id: 'speed_win',
+    icon: '⚡', name: 'Victoire express', pts: 40,
+    desc: 'Gagne une partie en moins de 20 coups',
+    category: 'Style',
+    check: (stats) => stats.global?.fastest !== null && stats.global?.fastest < 20,
+    progress: (stats) => {
+      const f = stats.global?.fastest;
+      if (f === null || f === undefined) return [0, 20];
+      return [Math.max(0, 20-f), 20];
+    }
+  },
+  {
+    id: 'veteran',
+    icon: '🎖️', name: 'Vétéran', pts: 50,
+    desc: 'Joue 50 parties au total',
+    category: 'Style',
+    check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 50,
+    progress: (stats) => [Math.min(50,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 50]
+  },
+];
+
+// ── Bonus points challenges dans calcScore ────────────────────
+function calcChallengeBonus() {
+  const stats = loadStats();
+  let bonus = 0;
+  const done = stats._challengesDone || [];
+  CHALLENGES.forEach(c => {
+    if (done.includes(c.id)) bonus += c.pts;
+  });
+  return bonus;
+}
+
+// ── Vérifier les challenges après chaque partie ───────────────
+function checkChallenges() {
+  const stats = loadStats();
+  if (!stats._challengesDone) stats._challengesDone = [];
+  const done = stats._challengesDone;
+  let newlyDone = [];
+
+  CHALLENGES.forEach(c => {
+    if (!done.includes(c.id) && c.check(stats)) {
+      done.push(c.id);
+      newlyDone.push(c);
+    }
+  });
+
+  if (newlyDone.length > 0) {
+    saveStats(stats);
+    // Afficher les notifications en séquence
+    let delay = 300;
+    newlyDone.forEach(c => {
+      setTimeout(() => showChallengeNotif(c), delay);
+      delay += 2800;
+    });
+    renderRankBadge();
+  }
+}
+
+function showChallengeNotif(challenge) {
+  const notif = document.getElementById('challenge-notif');
+  const title = document.getElementById('challenge-notif-title');
+  const sub   = document.getElementById('challenge-notif-sub');
+  if (!notif) return;
+  title.textContent = challenge.icon + ' ' + challenge.name;
+  sub.textContent   = 'Défi complété ! +' + challenge.pts + ' pts';
+  notif.className   = 'challenge-notif show';
+  SFX.tourwin?.();
+  setTimeout(() => { notif.className = 'challenge-notif'; }, 2500);
+}
+
+// ── Enregistrer victoire de tournoi ──────────────────────────
+function recordTournamentWin(mode, difficulty) {
+  const stats = loadStats();
+  stats._tournamentsWon = (stats._tournamentsWon || 0) + 1;
+  if (mode === 'bot' && difficulty === 'hard') {
+    stats._tournamentsHardWon = (stats._tournamentsHardWon || 0) + 1;
+  }
+  saveStats(stats);
+  checkChallenges();
+}
+
+// ── Ouvrir l'écran challenges ─────────────────────────────────
+function openChallenges() {
+  const stats = loadStats();
+  const done  = stats._challengesDone || [];
+  const content = document.getElementById('challenges-content');
+  if (!content) return;
+
+  // Grouper par catégorie
+  const cats = {};
+  CHALLENGES.forEach(c => {
+    if (!cats[c.category]) cats[c.category] = [];
+    cats[c.category].push(c);
+  });
+
+  let html = '';
+  Object.entries(cats).forEach(([cat, challenges]) => {
+    const catDone = challenges.filter(c => done.includes(c.id)).length;
+    html += `<div class="challenge-section-title">${cat} (${catDone}/${challenges.length})</div>`;
+    html += '<div class="challenge-list">';
+    challenges.forEach(c => {
+      const isDone = done.includes(c.id);
+      const [cur, max] = c.progress(stats);
+      const pct = Math.round((cur/max)*100);
+      html += `
+        <div class="challenge-card${isDone?' done':''}">
+          <div class="challenge-icon">${isDone ? '✅' : c.icon}</div>
+          <div class="challenge-info">
+            <div class="challenge-name">${c.name}</div>
+            <div class="challenge-desc">${c.desc}</div>
+            ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
+          </div>
+          <div class="challenge-pts">${isDone ? '✓' : '+'+c.pts+' pts'}</div>
+        </div>`;
+    });
+    html += '</div>';
+  });
+
+  content.innerHTML = html;
+  show('challenges-overlay');
+}
+
+
+// ════════════════════════════════════════════════════════
 // SYSTÈME DE SCORE (Rang TTT — calculé depuis les stats)
 // ════════════════════════════════════════════════════════
 const RANKS = [
@@ -4264,234 +4493,6 @@ function updateAmbientColors() {
     p.style.background = col;
     p.style.boxShadow = `0 0 6px ${col}`;
   });
-}
-
-// ════════════════════════════════════════════════════════
-// SYSTÈME DE CHALLENGES
-// ════════════════════════════════════════════════════════
-const CHALLENGES = [
-  // ── Premiers pas ────────────────────────────────────
-  {
-    id: 'first_game',
-    icon: '🎮', name: 'Première partie', pts: 10,
-    desc: 'Lance ta première partie (n'importe quel mode)',
-    category: 'Premiers pas',
-    check: (stats) => (stats.global?.win||0) + (stats.global?.loss||0) + (stats.global?.draw||0) >= 1,
-    progress: (stats) => [Math.min(1,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 1]
-  },
-  {
-    id: 'first_win',
-    icon: '🥳', name: 'Première victoire', pts: 20,
-    desc: 'Remporte ta première partie',
-    category: 'Premiers pas',
-    check: (stats) => (stats.global?.win||0) >= 1,
-    progress: (stats) => [Math.min(1, stats.global?.win||0), 1]
-  },
-  {
-    id: 'first_online',
-    icon: '🌐', name: 'Baptême du feu', pts: 30,
-    desc: 'Joue ta première partie en ligne',
-    category: 'Premiers pas',
-    check: (stats) => (stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0) >= 1,
-    progress: (stats) => [Math.min(1,(stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0)), 1]
-  },
-  // ── Bot ─────────────────────────────────────────────
-  {
-    id: 'beat_easy',
-    icon: '🟢', name: 'Trop facile', pts: 20,
-    desc: 'Bats le bot Facile',
-    category: 'Bot',
-    check: (stats) => (stats['bot-easy']?.win||0) >= 1,
-    progress: (stats) => [Math.min(1, stats['bot-easy']?.win||0), 1]
-  },
-  {
-    id: 'beat_medium',
-    icon: '🟡', name: 'Niveau intermédiaire', pts: 40,
-    desc: 'Bats le bot Moyen',
-    category: 'Bot',
-    check: (stats) => (stats['bot-medium']?.win||0) >= 1,
-    progress: (stats) => [Math.min(1, stats['bot-medium']?.win||0), 1]
-  },
-  {
-    id: 'beat_hard',
-    icon: '🔴', name: 'Machine brisée', pts: 80,
-    desc: 'Bats le bot Difficile',
-    category: 'Bot',
-    check: (stats) => (stats['bot-hard']?.win||0) >= 1,
-    progress: (stats) => [Math.min(1, stats['bot-hard']?.win||0), 1]
-  },
-  {
-    id: 'sweep_bot',
-    icon: '🧹', name: 'Balayage', pts: 60,
-    desc: 'Bats les 3 niveaux de bot',
-    category: 'Bot',
-    check: (stats) => (stats['bot-easy']?.win||0)>=1 && (stats['bot-medium']?.win||0)>=1 && (stats['bot-hard']?.win||0)>=1,
-    progress: (stats) => [((stats['bot-easy']?.win||0)>=1?1:0)+((stats['bot-medium']?.win||0)>=1?1:0)+((stats['bot-hard']?.win||0)>=1?1:0), 3]
-  },
-  // ── Tournoi ─────────────────────────────────────────
-  {
-    id: 'tournament_first',
-    icon: '🏆', name: 'Champion local', pts: 30,
-    desc: 'Remporte un tournoi (n'importe quel mode)',
-    category: 'Tournoi',
-    check: (stats) => !!(stats._tournamentsWon >= 1),
-    progress: (stats) => [Math.min(1, stats._tournamentsWon||0), 1]
-  },
-  {
-    id: 'tournament_hard',
-    icon: '👑', name: 'Grand tournoi', pts: 100,
-    desc: 'Remporte un tournoi contre le bot Difficile',
-    category: 'Tournoi',
-    check: (stats) => !!(stats._tournamentsHardWon >= 1),
-    progress: (stats) => [Math.min(1, stats._tournamentsHardWon||0), 1]
-  },
-  // ── Streak ──────────────────────────────────────────
-  {
-    id: 'streak3',
-    icon: '🔥', name: 'En feu', pts: 25,
-    desc: 'Enchaîne 3 victoires d'affilée',
-    category: 'Streak',
-    check: (stats) => (stats.global?.bestStreak||0) >= 3,
-    progress: (stats) => [Math.min(3, stats.global?.bestStreak||0), 3]
-  },
-  {
-    id: 'streak5',
-    icon: '💥', name: 'Inarrêtable', pts: 60,
-    desc: 'Enchaîne 5 victoires d'affilée',
-    category: 'Streak',
-    check: (stats) => (stats.global?.bestStreak||0) >= 5,
-    progress: (stats) => [Math.min(5, stats.global?.bestStreak||0), 5]
-  },
-  {
-    id: 'streak10',
-    icon: '⚡', name: 'Légende vivante', pts: 150,
-    desc: 'Enchaîne 10 victoires d'affilée',
-    category: 'Streak',
-    check: (stats) => (stats.global?.bestStreak||0) >= 10,
-    progress: (stats) => [Math.min(10, stats.global?.bestStreak||0), 10]
-  },
-  // ── Style ───────────────────────────────────────────
-  {
-    id: 'speed_win',
-    icon: '⚡', name: 'Victoire express', pts: 40,
-    desc: 'Gagne une partie en moins de 20 coups',
-    category: 'Style',
-    check: (stats) => stats.global?.fastest !== null && stats.global?.fastest < 20,
-    progress: (stats) => {
-      const f = stats.global?.fastest;
-      if (f === null || f === undefined) return [0, 20];
-      return [Math.max(0, 20-f), 20];
-    }
-  },
-  {
-    id: 'veteran',
-    icon: '🎖️', name: 'Vétéran', pts: 50,
-    desc: 'Joue 50 parties au total',
-    category: 'Style',
-    check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 50,
-    progress: (stats) => [Math.min(50,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 50]
-  },
-];
-
-// ── Bonus points challenges dans calcScore ────────────────────
-function calcChallengeBonus() {
-  const stats = loadStats();
-  let bonus = 0;
-  const done = stats._challengesDone || [];
-  CHALLENGES.forEach(c => {
-    if (done.includes(c.id)) bonus += c.pts;
-  });
-  return bonus;
-}
-
-// ── Vérifier les challenges après chaque partie ───────────────
-function checkChallenges() {
-  const stats = loadStats();
-  if (!stats._challengesDone) stats._challengesDone = [];
-  const done = stats._challengesDone;
-  let newlyDone = [];
-
-  CHALLENGES.forEach(c => {
-    if (!done.includes(c.id) && c.check(stats)) {
-      done.push(c.id);
-      newlyDone.push(c);
-    }
-  });
-
-  if (newlyDone.length > 0) {
-    saveStats(stats);
-    // Afficher les notifications en séquence
-    let delay = 300;
-    newlyDone.forEach(c => {
-      setTimeout(() => showChallengeNotif(c), delay);
-      delay += 2800;
-    });
-    renderRankBadge();
-  }
-}
-
-function showChallengeNotif(challenge) {
-  const notif = document.getElementById('challenge-notif');
-  const title = document.getElementById('challenge-notif-title');
-  const sub   = document.getElementById('challenge-notif-sub');
-  if (!notif) return;
-  title.textContent = challenge.icon + ' ' + challenge.name;
-  sub.textContent   = 'Défi complété ! +' + challenge.pts + ' pts';
-  notif.className   = 'challenge-notif show';
-  SFX.tourwin?.();
-  setTimeout(() => { notif.className = 'challenge-notif'; }, 2500);
-}
-
-// ── Enregistrer victoire de tournoi ──────────────────────────
-function recordTournamentWin(mode, difficulty) {
-  const stats = loadStats();
-  stats._tournamentsWon = (stats._tournamentsWon || 0) + 1;
-  if (mode === 'bot' && difficulty === 'hard') {
-    stats._tournamentsHardWon = (stats._tournamentsHardWon || 0) + 1;
-  }
-  saveStats(stats);
-  checkChallenges();
-}
-
-// ── Ouvrir l'écran challenges ─────────────────────────────────
-function openChallenges() {
-  const stats = loadStats();
-  const done  = stats._challengesDone || [];
-  const content = document.getElementById('challenges-content');
-  if (!content) return;
-
-  // Grouper par catégorie
-  const cats = {};
-  CHALLENGES.forEach(c => {
-    if (!cats[c.category]) cats[c.category] = [];
-    cats[c.category].push(c);
-  });
-
-  let html = '';
-  Object.entries(cats).forEach(([cat, challenges]) => {
-    const catDone = challenges.filter(c => done.includes(c.id)).length;
-    html += `<div class="challenge-section-title">${cat} (${catDone}/${challenges.length})</div>`;
-    html += '<div class="challenge-list">';
-    challenges.forEach(c => {
-      const isDone = done.includes(c.id);
-      const [cur, max] = c.progress(stats);
-      const pct = Math.round((cur/max)*100);
-      html += `
-        <div class="challenge-card${isDone?' done':''}">
-          <div class="challenge-icon">${isDone ? '✅' : c.icon}</div>
-          <div class="challenge-info">
-            <div class="challenge-name">${c.name}</div>
-            <div class="challenge-desc">${c.desc}</div>
-            ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
-          </div>
-          <div class="challenge-pts">${isDone ? '✓' : '+'+c.pts+' pts'}</div>
-        </div>`;
-    });
-    html += '</div>';
-  });
-
-  content.innerHTML = html;
-  show('challenges-overlay');
 }
 
 function spawnParticles(p) {
