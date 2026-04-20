@@ -271,7 +271,7 @@
 
     /* ── Turn banner — pill compact ── */
     .turn-banner { display:inline-flex; align-items:center; gap:5px; padding:3px 12px;
-      border-radius:16px; border:1px solid; transition:all .3s; max-width:min(260px,76vw); }
+      border-radius:16px; border:1px solid; transition:all .3s; max-width:min(280px,80vw); }
     .turn-banner.x { border-color:rgba(0,229,255,.3); background:rgba(0,229,255,.05); box-shadow:0 0 8px rgba(0,229,255,.08); }
     .turn-banner.o { border-color:rgba(255,31,122,.3); background:rgba(255,31,122,.05); box-shadow:0 0 8px rgba(255,31,122,.08); }
     .turn-dot { width:5px; height:5px; border-radius:50%; animation:blink 1.2s ease-in-out infinite; flex-shrink:0; }
@@ -1950,8 +1950,6 @@
     </svg>ULTIMATE <span>TTT</span>
   </div>
 
-  <div class="role-badge hidden" id="role-badge"></div>
-
   <div class="score-row">
     <div class="score-left">
       <div class="left-icons">
@@ -1961,7 +1959,7 @@
         </button>
       </div>
     </div>
-    <div class="score-center">
+    <div class="score-center" style="display:flex;flex-direction:column;align-items:center;gap:3px;">
       <div class="scoreboard">
         <div class="score-player" id="score-player-x">
           <div class="score-lbl" id="lbl-x">JOUEUR X</div>
@@ -1976,6 +1974,11 @@
           <div class="score-name o" id="sname-o">O</div>
           <div class="score-val o" id="so">0</div>
         </div>
+      </div>
+      <!-- Turn banner intégré sous le scoreboard -->
+      <div class="turn-banner x" id="turn-banner">
+        <div class="turn-dot x" id="turn-dot"></div>
+        <div class="turn-text x" id="turn-text">—</div>
       </div>
     </div>
     <div class="score-right">
@@ -1999,10 +2002,7 @@
       </div>
     </div>
   </div>
-  <div class="turn-banner x" id="turn-banner">
-    <div class="turn-dot x" id="turn-dot"></div>
-    <div class="turn-text x" id="turn-text">—</div>
-  </div>
+
   <!-- Timer bar (online mode) -->
   <div class="timer-bar-wrap hidden" id="timer-wrap">
     <div class="timer-bar" id="timer-bar" style="width:100%"></div>
@@ -3751,8 +3751,18 @@ function updateHUD() {
   const avO = mode==='online' ? (onlineAvatars.O||'') : '';
   document.getElementById('sname-x').textContent = (avX ? avX+' ' : '') + names.X;
   document.getElementById('sname-o').textContent = (avO ? avO+' ' : '') + names.O;
-  document.getElementById('lbl-x').textContent=getThemeMark('X');
-  document.getElementById('lbl-o').textContent=getThemeMark('O');
+  // Afficher le rang dans le label du joueur connecté
+  const score = calcScoreFromStats();
+  const rank  = getRank(score);
+  if (mode==='online' && myRole) {
+    const myLbl  = document.getElementById(`lbl-${myRole.toLowerCase()}`);
+    const oppLbl = document.getElementById(`lbl-${myRole==='X'?'o':'x'}`);
+    if (myLbl)  myLbl.textContent  = rank.emoji + ' ' + rank.label;
+    if (oppLbl) oppLbl.textContent = getThemeMark(myRole==='X'?'O':'X');
+  } else {
+    document.getElementById('lbl-x').textContent = getThemeMark('X');
+    document.getElementById('lbl-o').textContent = getThemeMark('O');
+  }
 
   const banner=document.getElementById('turn-banner');
   const dot=document.getElementById('turn-dot');
