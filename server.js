@@ -413,6 +413,8 @@ wss.on('connection', ws => {
 
       if (msg.type==='create_room') {
         const room=createRoom(makeRoomId()); room.private=true;
+        room.autoMode = !!msg.autoMode;
+        room.tournament = !!msg.tournament;
         joinRoom(room,ws,ws.playerName||'Joueur','X',ws.playerAvatar||'🎮');
         send(ws,{type:'room_created',roomId:room.id});
       }
@@ -423,6 +425,8 @@ wss.on('connection', ws => {
         if (!room) { send(ws,{type:'error',message:'Room introuvable.'}); return; }
         if (room.players.X&&room.players.O) { send(ws,{type:'error',message:'Room pleine.'}); return; }
         joinRoom(room,ws,ws.playerName||'Joueur',!room.players.X?'X':'O',ws.playerAvatar||'🎮');
+        // Envoyer les params du créateur au rejoignant
+        send(ws,{type:'automode', autoMode:room.autoMode, tournament:room.tournament});
       }
 
       if (msg.type==='matchmake') {
@@ -458,6 +462,16 @@ wss.on('connection', ws => {
             if (room.userIds.O) await recordResultForUser(room.userIds.O,'online',room.G.winner==='O'?'win':room.G.winner==='draw'?'draw':'loss',moves);
           }
         }
+      }
+
+      if (msg.type==='abandon') {
+        const winner = ws.role==='X' ? 'O' : 'X';
+        room.G.winner = winner;
+        room.G.scores[winner]++;
+        clearTurnTimer(room);
+        const opponent = ws.role==='X' ? room.players.O : room.players.X;
+        send(opponent, { type:'abandon' });
+        broadcastRoom(room, { type:'state', state:room.G });
       }
 
       if (msg.type==='chat') {

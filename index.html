@@ -11,7 +11,7 @@
     :root {
       --x: #00e5ff; --o: #ff1f7a; --active: #ffc107;
       --bg: #05050f; --surface: #0d0d20; --border-out: #1e1e45; --border-in: #111128;
-      --cs: clamp(36px, 9vmin, 68px); --ig: 2px; --og: 5px;
+      --cs: clamp(30px, 8vmin, 62px); --ig: 2px; --og: 5px;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -72,7 +72,7 @@
 
     /* Logo zone */
     .menu-logo-zone { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:20px 20px 16px; position:relative; }
-    .menu-logo-zone::after { content:''; position:absolute; bottom:0; left:10%; right:10%; height:1px; background:linear-gradient(to right,transparent,var(--x),var(--o),transparent); opacity:.3; }
+    .menu-logo-zone::after { display:none; }
 
     /* Animated logo */
     .menu-logo-svg { width:clamp(56px,16vw,76px); height:clamp(56px,16vw,76px); display:grid; grid-template-columns:repeat(3,1fr); gap:3px; animation:logoFloat 3s ease-in-out infinite; }
@@ -287,7 +287,10 @@
     .board { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--og);
       background:#1a1a3a; border:var(--og) solid #1a1a3a; border-radius:14px;
       box-shadow:0 0 0 1px rgba(120,120,220,.3), 0 0 50px rgba(20,20,100,.5),
-                 inset 0 0 0 1px rgba(80,80,160,.15); }
+                 inset 0 0 0 1px rgba(80,80,160,.15);
+      width:min(calc(100vw - 16px), calc(100dvh - 280px));
+      max-width:min(calc(100vw - 16px), calc(100dvh - 280px));
+      aspect-ratio:1/1; align-self:center; }
 
     /* Séparateurs macro plus visibles */
     .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--ig);
@@ -1074,10 +1077,14 @@
 
     /* ══ CHALLENGES ═══════════════════════════════════════════ */
     .challenges-overlay { background:linear-gradient(160deg,#0a0800 0%,#120c00 50%,#080600 100%);
-      gap:0; overflow-y:auto; padding:20px 12px 32px; z-index:600;
-      align-items:center; justify-content:flex-start; }
+      gap:0; overflow-y:hidden; padding:0; z-index:600;
+      align-items:center; justify-content:flex-start; flex-direction:column; }
     .challenges-header { display:flex; align-items:center; justify-content:space-between;
-      width:100%; max-width:420px; margin-bottom:16px; }
+      width:100%; max-width:420px; padding:16px 12px 12px; flex-shrink:0;
+      background:linear-gradient(160deg,#0a0800,#120c00);
+      border-bottom:1px solid rgba(200,160,40,.1); position:sticky; top:0; z-index:2; }
+    .challenges-scroll { overflow-y:auto; padding:12px 12px 32px; width:100%;
+      display:flex; flex-direction:column; align-items:center; flex:1; }
     .challenges-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1rem;
       letter-spacing:.2em; color:#f5c842; filter:drop-shadow(0 0 8px rgba(245,200,66,.4)); }
     .challenges-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.6rem;
@@ -1316,7 +1323,9 @@
     <div class="challenges-title">🏅 DÉFIS</div>
     <button class="challenges-close" onclick="hide('challenges-overlay')">✕ FERMER</button>
   </div>
-  <div id="challenges-content" style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:0;"></div>
+  <div class="challenges-scroll">
+    <div id="challenges-content" style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:0;"></div>
+  </div>
 </div>
 <div class="ambient-particles" id="ambient-pts"></div>
 <div class="particles" id="pts"></div>
@@ -1507,6 +1516,9 @@
     <div class="more-dropdown hidden" id="user-dropdown" style="top:calc(100% + 4px);right:0;min-width:160px;">
       <button class="more-item" onclick="openAvatarPicker();closeUserMenu()">
         <span class="more-item-icon">🎨</span><span class="more-item-label">Changer l'avatar</span>
+      </button>
+      <button class="more-item" onclick="openPseudoPicker();closeUserMenu()">
+        <span class="more-item-icon">✏️</span><span class="more-item-label">Changer le pseudo</span>
       </button>
       <div style="height:1px;background:rgba(180,180,255,.1);margin:4px 2px;"></div>
       <button class="more-item" onclick="logout();closeUserMenu()">
@@ -1991,6 +2003,9 @@
           <button class="more-item" id="more-sound-item" onclick="toggleSound()">
             <span class="more-item-icon" id="more-sound-icon">🔊</span><span class="more-item-label" id="more-sound-label">Son activé</span>
           </button>
+          <button class="more-item" id="more-filter-item" onclick="toggleChatFilter();closeMoreMenu()">
+            <span class="more-item-icon" id="more-filter-icon">🛡️</span><span class="more-item-label" id="more-filter-label">Filtre chat activé</span>
+          </button>
           <button class="more-item" onclick="openDesign();closeMoreMenu()">
             <span class="more-item-icon">🎨</span><span class="more-item-label">Thème</span>
           </button>
@@ -2003,11 +2018,13 @@
     </div>
   </div>
 
-  <!-- Timer bar (online mode) -->
-  <div class="timer-bar-wrap hidden" id="timer-wrap">
-    <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+  <!-- Timer bar avec chrono à droite -->
+  <div class="hidden" id="timer-wrap" style="display:flex;align-items:center;gap:6px;width:100%;">
+    <div class="timer-bar-wrap" style="flex:1;margin:0;">
+      <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+    </div>
+    <div class="timer-label" id="timer-label" style="font-size:.58rem;letter-spacing:.08em;opacity:.5;white-space:nowrap;min-width:28px;text-align:right;"></div>
   </div>
-  <div class="timer-label hidden" id="timer-label"></div>
   <!-- Tournament banner -->
   <div class="tournament-banner hidden" id="tournament-banner">
     <span id="t-banner-text">TOURNOI — 3 MANCHES</span>
@@ -2242,7 +2259,8 @@ function startTimer() {
   const wrap  = document.getElementById('timer-wrap');
   const label = document.getElementById('timer-label');
   wrap.classList.remove('hidden');
-  label.classList.remove('hidden');
+  wrap.style.display = 'flex';
+  if (label) label.classList.remove('hidden');
   updateTimerUI();
   timerInterval = setInterval(() => {
     timerLeft--;
@@ -2255,9 +2273,7 @@ function startTimer() {
 function stopTimer() {
   clearInterval(timerInterval); timerInterval = null;
   const wrap  = document.getElementById('timer-wrap');
-  const label = document.getElementById('timer-label');
-  if (wrap)  wrap.classList.add('hidden');
-  if (label) label.classList.add('hidden');
+  if (wrap) { wrap.classList.add('hidden'); wrap.style.display = ''; }
 }
 
 function updateTimerUI() {
@@ -2350,9 +2366,44 @@ function submitChatInput() {
   input.style.height = 'auto';
 }
 
+// ── Modération chat ──────────────────────────────────────────
+let chatFilterEnabled = localStorage.getItem('ttt-chat-filter') !== 'off';
+
+const FORBIDDEN_WORDS = [
+  'merde','putain','connard','enculé','salope','pute','con','conne','bâtard',
+  'batard','fdp','tg','nique','ntm','pd','bite','couille','cul','chier',
+  'shit','fuck','ass','bitch','damn','cunt','dick',
+];
+
+function filterChat(msg) {
+  if (!chatFilterEnabled) return msg;
+  let filtered = msg;
+  FORBIDDEN_WORDS.forEach(w => {
+    const re = new RegExp(w, 'gi');
+    filtered = filtered.replace(re, '*'.repeat(w.length));
+  });
+  return filtered;
+}
+
+function toggleChatFilter() {
+  chatFilterEnabled = !chatFilterEnabled;
+  localStorage.setItem('ttt-chat-filter', chatFilterEnabled ? 'on' : 'off');
+  const icon  = document.getElementById('more-filter-icon');
+  const label = document.getElementById('more-filter-label');
+  if (icon)  icon.textContent  = chatFilterEnabled ? '🛡️' : '💬';
+  if (label) label.textContent = chatFilterEnabled ? 'Filtre chat activé' : 'Filtre chat désactivé';
+}
+
+function updateFilterBtnState() {
+  const icon  = document.getElementById('more-filter-icon');
+  const label = document.getElementById('more-filter-label');
+  if (icon)  icon.textContent  = chatFilterEnabled ? '🛡️' : '💬';
+  if (label) label.textContent = chatFilterEnabled ? 'Filtre chat activé' : 'Filtre chat désactivé';
+}
+
 function sendChat(msg) {
   if (!ws || ws.readyState !== 1) return;
-  msg = msg.slice(0, 120);
+  msg = filterChat(msg.slice(0, 120));
   ws.send(JSON.stringify({type:'chat', msg}));
   addChatMsg(msg, true);
   updateChatBarPreview(msg, true);
@@ -2360,6 +2411,7 @@ function sendChat(msg) {
 }
 
 function receivedChat(msg) {
+  msg = filterChat(msg);
   addChatMsg(msg, false);
   updateChatBarPreview(msg, false);
   SFX.chat(); haptic([20,10,20]);
@@ -2551,6 +2603,7 @@ async function onLoggedIn(migrate) {
   updateMenuUserBar();
   renderRankBadge();
   renderMenuLogo();
+  updateFilterBtnState();
   // Pré-remplir le pseudo dans les setups
   prefillUserName();
   // Afficher les défis journaliers après connexion
@@ -2575,6 +2628,19 @@ function prefillUserName() {
 
 // ── Changement d'avatar depuis le menu ───────────────
 let pickedAvatar = null;
+
+function openPseudoPicker() {
+  const current = currentUser?.pseudo || '';
+  const newPseudo = prompt('Nouveau pseudo (2-20 caractères) :', current);
+  if (!newPseudo || newPseudo.trim().length < 2 || newPseudo.trim().length > 20) return;
+  authFetch('PUT', '/auth/profile', { pseudo: newPseudo.trim() }, authToken).then(({status, data}) => {
+    if (status === 200) {
+      currentUser.pseudo = data.user.pseudo;
+      updateMenuUserBar();
+      prefillUserName();
+    }
+  }).catch(() => {});
+}
 
 function openAvatarPicker() {
   pickedAvatar = currentUser?.avatar || '🎮';
@@ -2890,6 +2956,8 @@ function showGameIcons() {
   updateMoreSoundItem();
 }
 function backToMenu() {
+  hideChatBar();
+  hideChatDrawer();
   ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm'].forEach(hide);
   closeDesign();
   show('menu');
@@ -2925,6 +2993,7 @@ function setDiff(d) {
 // LOCAL MODE
 // ════════════════════════════════════════════════════════
 function startLocal() {
+  hideChatBar();
   const nx = document.getElementById('name-x').value.trim()||'Joueur X';
   const no = document.getElementById('name-o').value.trim()||'Joueur O';
   names = {X:nx, O:no};
@@ -2961,6 +3030,7 @@ function localClick(b,c) {
 // BOT MODE
 // ════════════════════════════════════════════════════════
 function startBot() {
+  hideChatBar();
   const nh = document.getElementById('name-human').value.trim()||'Joueur';
   humanSide = 'X';
   names = {X:nh, O:`Bot (${difficulty})`};
@@ -3442,6 +3512,10 @@ function confirmAbandon() {
   hide('abandon-confirm');
   const loser=G.player, winner=loser==='X'?'O':'X';
   G.winner=winner; scores[winner]++;
+  if (mode==='online' && ws) {
+    // Notifier le serveur et l'adversaire
+    ws.send(JSON.stringify({type:'abandon'}));
+  }
   render();
   showGameOver(true);
 }
@@ -3510,7 +3584,7 @@ function startCreateRoom() {
   const name = getOnlineName();
   initOnlineMode(name);
   connect(() => {
-    ws.send(JSON.stringify({type:'create_room', name}));
+    ws.send(JSON.stringify({type:'create_room', name, autoMode, tournament: document.getElementById('tournament-online').checked}));
     document.getElementById('wait-title').textContent = 'EN ATTENTE D\'UN JOUEUR';
     document.getElementById('wait-sub').innerHTML = 'Partagez le code ci-dessous<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
     show('waiting-screen');
@@ -3572,15 +3646,30 @@ function connect(onOpen) {
     // Authentifier le socket avec le JWT
     if (authToken) ws.send(JSON.stringify({ type: 'auth', token: authToken }));
     if (onOpen) onOpen();
-    ws.send(JSON.stringify({type:'automode', autoMode}));
+    ws.send(JSON.stringify({type:'automode', autoMode, tournament: tournamentMode}));
   };
 
   ws.onmessage = ({data}) => {
     const msg = JSON.parse(data);
 
-    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); }
-    if (msg.type === 'names') { names = msg.names; if (msg.avatars) onlineAvatars = msg.avatars; updateHUD(); }
-    if (msg.type === 'automode') { autoMode = msg.autoMode; }
+    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); updateHUD(); }
+    if (msg.type === 'names') {
+      names = msg.names;
+      if (msg.avatars) onlineAvatars = msg.avatars;
+      updateHUD();
+      // Mettre à jour le turn-banner avec les vrais pseudos
+      const snamex = document.getElementById('sname-x');
+      const snameo = document.getElementById('sname-o');
+      if (snamex) snamex.textContent = (onlineAvatars.X||'') + ' ' + (names.X||'?');
+      if (snameo) snameo.textContent = (onlineAvatars.O||'') + ' ' + (names.O||'?');
+    }
+    if (msg.type === 'automode') {
+      autoMode = msg.autoMode;
+      if (msg.tournament !== undefined) {
+        initTournament(msg.tournament);
+        renderTournamentBanner();
+      }
+    }
 
     // Room privée créée → afficher le code
     if (msg.type === 'room_created') {
@@ -3645,6 +3734,16 @@ function connect(onOpen) {
 
     if (msg.type === 'chat') {
       receivedChat(msg.msg);
+    }
+
+    if (msg.type === 'abandon') {
+      // L'adversaire a abandonné → je gagne
+      const winner = myRole;
+      G.winner = winner;
+      scores[winner]++;
+      render();
+      showGameOver(true);
+      return;
     }
 
     if (msg.type === 'waiting') {
@@ -4609,6 +4708,9 @@ function updateDailyChallenges(result, mode, difficulty, moves, tournamentWon) {
 function showDailyNotifOnLogin() {
   const dailies = getDailyChallenges();
   const data = getDailyStats() || { done: [], progress: {} };
+  // Afficher UNE seule fois par jour
+  if (localStorage.getItem('ttt-daily-shown') === getDailyDate()) return;
+  localStorage.setItem('ttt-daily-shown', getDailyDate());
   const remaining = dailies.filter(d => !data.done.includes(d.id));
   if (remaining.length === 0) return; // Tout fait
 
@@ -4701,7 +4803,7 @@ function openChallenges() {
             <div class="challenge-desc">${c.desc}</div>
             ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
           </div>
-          <div class="challenge-pts">${isDone ? '✓' : '+'+c.pts+' pts'}</div>
+          <div class="challenge-pts">${isDone ? '✅' : '+'+c.pts+' pts'}</div>
         </div>`;
     });
     html += '</div>';
@@ -4934,7 +5036,7 @@ const THEME_MARKS = {
   ocean:    { X:'🐙', O:'🦈' }, enfer:    { X:'😈', O:'💀' },
   espace:   { X:'👾', O:'🛸' }, candy:    { X:'🎸', O:'🌴' }, // Synthwave
   arctique: { X:'🐻‍❄️', O:'🦊' }, japon:    { X:'⛩️', O:'🌸' },
-  western:  { X:'⚡', O:'🌩️' }, // Storm labo:     { X:'⚗️', O:'🧬' },
+  western:  { X:'⚡', O:'🌩️' }, labo:     { X:'⚗️', O:'🧬' },
   halloween:{ X:'🎃', O:'👻' }, hawaii:   { X:'🌺', O:'🐠' },
   montagne: { X:'🦅', O:'🐺' }, theatre:  { X:'😂', O:'😢' },
   rouille:  { X:'🔩', O:'⚙️' }, cafe:     { X:'❄️', O:'💎' }, // Glace
@@ -5131,6 +5233,30 @@ function spawnParticles(p) {
 // ════════════════════════════════════════════════════════
 // UTILS
 // ════════════════════════════════════════════════════════
+// ── Bouton retour Android ────────────────────────────────────
+window.addEventListener('popstate', (e) => {
+  // Si un overlay est ouvert, le fermer
+  const overlays = ['rules-overlay','stats-overlay','challenges-overlay','design-panel','avatar-picker','analysis'];
+  for (const id of overlays) {
+    const el = document.getElementById(id);
+    if (el && !el.classList.contains('hidden') && el.style.display !== 'none') {
+      hide(id); return;
+    }
+  }
+  // Si en jeu, retour au menu
+  if (mode) { backToMenu(); return; }
+  // Si dans un setup, retour au menu
+  ['setup-local','setup-bot','setup-online'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.classList.contains('hidden')) { show('menu'); hide(id); }
+  });
+});
+
+// Pousser un état à chaque navigation importante
+function pushHistory() {
+  history.pushState({page: Date.now()}, '');
+}
+
 function show(id) { document.getElementById(id).classList.remove('hidden'); }
 function hide(id) { document.getElementById(id).classList.add('hidden'); }
 </script>
