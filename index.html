@@ -3876,6 +3876,21 @@ function recordResult(result) {
     // Longest game (most moves, any result)
     if (moves > s.longest) s.longest = moves;
   });
+  // Tracker : jouer après minuit
+  const h = new Date().getHours();
+  if (h >= 0 && h < 5) all._playedAtNight = true;
+
+  // Tracker comeback : perdre 3 fois puis gagner
+  if (!all._comebackStreak) all._comebackStreak = 0;
+  if (result === 'loss') {
+    all._comebackStreak++;
+  } else if (result === 'win') {
+    if (all._comebackStreak >= 3) all._cameBack = true;
+    all._comebackStreak = 0;
+  } else {
+    all._comebackStreak = 0;
+  }
+
   saveStats(all);
   checkChallenges();
 }
@@ -4007,6 +4022,143 @@ var CHALLENGES = [
     check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 50,
     progress: (stats) => [Math.min(50,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 50]
   },
+  // ── Insolites ───────────────────────────────────────
+  {
+    id: 'draw_master',
+    icon: '🤝', name: 'Pacifiste', pts: 35,
+    desc: 'Fais 5 matchs nuls',
+    category: 'Insolite',
+    check: (stats) => (stats.global?.draw||0) >= 5,
+    progress: (stats) => [Math.min(5, stats.global?.draw||0), 5]
+  },
+  {
+    id: 'lose10',
+    icon: '💀', name: 'Apprenti masochiste', pts: 25,
+    desc: 'Perds 10 parties (tout vient avec le temps...)',
+    category: 'Insolite',
+    check: (stats) => (stats.global?.loss||0) >= 10,
+    progress: (stats) => [Math.min(10, stats.global?.loss||0), 10]
+  },
+  {
+    id: 'beat_hard_3',
+    icon: '🤯', name: 'Dompteur de machines', pts: 120,
+    desc: 'Bats le bot Difficile 3 fois',
+    category: 'Insolite',
+    check: (stats) => (stats['bot-hard']?.win||0) >= 3,
+    progress: (stats) => [Math.min(3, stats['bot-hard']?.win||0), 3]
+  },
+  {
+    id: 'online_win5',
+    icon: '🌍', name: 'Conquistador', pts: 90,
+    desc: 'Gagne 5 parties en ligne',
+    category: 'Insolite',
+    check: (stats) => (stats.online?.win||0) >= 5,
+    progress: (stats) => [Math.min(5, stats.online?.win||0), 5]
+  },
+  {
+    id: 'online_loss',
+    icon: '🏳️', name: 'Connexion courageuse', pts: 15,
+    desc: 'Perds une partie en ligne (le courage de se connecter)',
+    category: 'Insolite',
+    check: (stats) => (stats.online?.loss||0) >= 1,
+    progress: (stats) => [Math.min(1, stats.online?.loss||0), 1]
+  },
+  {
+    id: 'marathon',
+    icon: '🏃', name: 'Marathon', pts: 75,
+    desc: 'Joue une partie de plus de 60 coups',
+    category: 'Insolite',
+    check: (stats) => (stats.global?.longest||0) >= 60,
+    progress: (stats) => [Math.min(60, stats.global?.longest||0), 60]
+  },
+  {
+    id: 'lightning',
+    icon: '⚡', name: 'Éclair', pts: 60,
+    desc: 'Gagne en moins de 10 coups',
+    category: 'Insolite',
+    check: (stats) => stats.global?.fastest !== null && stats.global?.fastest !== undefined && stats.global?.fastest < 10,
+    progress: (stats) => {
+      const f = stats.global?.fastest;
+      if (f === null || f === undefined) return [0, 10];
+      return [Math.max(0, 10-f), 10];
+    }
+  },
+  {
+    id: 'streak_online',
+    icon: '🔗', name: 'Enchaîneur en ligne', pts: 80,
+    desc: 'Gagne 3 parties en ligne sans perdre',
+    category: 'Insolite',
+    check: (stats) => (stats.online?.bestStreak||0) >= 3,
+    progress: (stats) => [Math.min(3, stats.online?.bestStreak||0), 3]
+  },
+  {
+    id: 'all_modes',
+    icon: '🎭', name: 'Touche-à-tout', pts: 40,
+    desc: 'Joue dans les 3 modes (local, bot, en ligne)',
+    category: 'Insolite',
+    check: (stats) => {
+      const local = (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 1;
+      const bot   = (stats['bot-easy']?.win||0)+(stats['bot-easy']?.loss||0)+(stats['bot-easy']?.draw||0) >= 1;
+      const online= (stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0) >= 1;
+      return local && bot && online;
+    },
+    progress: (stats) => {
+      let n = 0;
+      if ((stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 1) n++;
+      const botTotal = ['bot-easy','bot-medium','bot-hard'].reduce((s,k)=>(stats[k]?.win||0)+(stats[k]?.loss||0)+(stats[k]?.draw||0)+s,0);
+      if (botTotal >= 1) n++;
+      if ((stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0) >= 1) n++;
+      return [n, 3];
+    }
+  },
+  {
+    id: 'comeback',
+    icon: '🔄', name: 'Revenant', pts: 45,
+    desc: 'Gagne une partie après avoir perdu 3 fois de suite',
+    category: 'Insolite',
+    check: (stats) => !!(stats._cameBack),
+    progress: (stats) => [stats._cameBack ? 1 : 0, 1]
+  },
+  {
+    id: 'centurion',
+    icon: '💯', name: 'Centurion', pts: 100,
+    desc: 'Joue 100 parties au total',
+    category: 'Insolite',
+    check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 100,
+    progress: (stats) => [Math.min(100,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 100]
+  },
+  {
+    id: 'legend_rank',
+    icon: '🔥', name: 'Rang Légende', pts: 200,
+    desc: 'Atteins le rang Légende (950+ pts)',
+    category: 'Insolite',
+    check: (stats) => calcScoreFromStats() >= 950,
+    progress: (stats) => [Math.min(950, calcScoreFromStats()), 950]
+  },
+  {
+    id: 'theme_changer',
+    icon: '🎨', name: 'Caméléon', pts: 20,
+    desc: 'Change de thème 5 fois',
+    category: 'Insolite',
+    check: (stats) => (stats._themeChanges||0) >= 5,
+    progress: (stats) => [Math.min(5, stats._themeChanges||0), 5]
+  },
+  {
+    id: 'night_owl',
+    icon: '🦉', name: 'Chouette de nuit', pts: 30,
+    desc: 'Joue une partie après minuit',
+    category: 'Insolite',
+    check: (stats) => !!(stats._playedAtNight),
+    progress: (stats) => [stats._playedAtNight ? 1 : 0, 1]
+  },
+  {
+    id: 'grand_slam',
+    icon: '🏅', name: 'Grand Chelem', pts: 150,
+    desc: 'Gagne un tournoi dans chacun des 3 modes',
+    category: 'Insolite',
+    check: (stats) => (stats._tournamentsLocal||0)>=1 && (stats._tournamentsBot||0)>=1 && (stats._tournamentsOnline||0)>=1,
+    progress: (stats) => [((stats._tournamentsLocal||0)>=1?1:0)+((stats._tournamentsBot||0)>=1?1:0)+((stats._tournamentsOnline||0)>=1?1:0), 3]
+  },
 ];
 
 // ── Bonus points challenges dans calcScore ────────────────────
@@ -4065,6 +4217,9 @@ function recordTournamentWin(mode, difficulty) {
   if (mode === 'bot' && difficulty === 'hard') {
     stats._tournamentsHardWon = (stats._tournamentsHardWon || 0) + 1;
   }
+  if (mode === 'local')  stats._tournamentsLocal  = (stats._tournamentsLocal||0) + 1;
+  if (mode === 'bot')    stats._tournamentsBot    = (stats._tournamentsBot||0) + 1;
+  if (mode === 'online') stats._tournamentsOnline = (stats._tournamentsOnline||0) + 1;
   saveStats(stats);
   checkChallenges();
 }
@@ -4404,6 +4559,11 @@ function setTheme(t) {
   localStorage.setItem('ttt-theme', t);
   renderMenuLogo();
   setTimeout(updateAmbientColors, 100);
+  // Tracker défi Caméléon
+  const stats = loadStats();
+  stats._themeChanges = (stats._themeChanges||0) + 1;
+  saveStats(stats);
+  if (typeof checkChallenges === 'function') checkChallenges();
 }
 function openDesign() {
   const panel = document.getElementById('design-panel');
