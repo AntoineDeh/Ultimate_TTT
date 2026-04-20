@@ -14,7 +14,32 @@ const { WebSocketServer } = require('ws');
 
 const PORT       = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ttt_secret_change_me_in_prod';
-const USERS_FILE = path.join(__dirname, 'users.json');
+const USERS_FILE   = path.join(__dirname, 'users.json');
+const RESEND_KEY   = process.env.RESEND_API_KEY || '';  // à définir dans Railway
+const APP_URL      = process.env.APP_URL || 'https://ultimatettt-production.up.railway.app';
+const FROM_EMAIL   = 'Ultimate TTT <noreply@resend.dev>'; // domaine gratuit Resend
+
+// ── Email via Resend ──────────────────────────────────────────────────────────
+async function sendMail(to, subject, html) {
+  if (!RESEND_KEY) {
+    console.warn('[Mail] RESEND_API_KEY non défini — mail non envoyé');
+    return false;
+  }
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: FROM_EMAIL, to, subject, html })
+    });
+    const data = await res.json();
+    if (res.ok) { console.log(`[Mail] Envoyé à ${to}`); return true; }
+    console.error('[Mail] Erreur Resend:', data);
+    return false;
+  } catch(e) {
+    console.error('[Mail] Erreur réseau:', e.message);
+    return false;
+  }
+}
 
 // ── Persistance utilisateurs ──────────────────────────────────────────────────
 let users = {};
@@ -268,6 +293,59 @@ const server = http.createServer(async (req, res) => {
     return sendJSON(res, 200, { user: publicProfile(user) });
   }
 
+  // ── POST /auth/forgot ─────────────────────────────────────────────────────
+  if (req.method === 'POST' && url === '/auth/forgot') {
+    const { email } = await readBody(req);
+    if (!email) return sendJSON(res, 400, { error: 'Email manquant.' });
+
+    // Toujours répondre 200 (pas de fuite d'info sur l'existence du compte)
+    const user = findUserByEmail(email);
+    if (user) {
+      const token     = crypto.randomBytes(32).toString('hex');
+      const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+      user.resetToken   = token;
+      user.resetExpires = expiresAt;
+      saveUsers();
+
+      const link = `${APP_URL}?reset=${token}`;
+      await sendMail(
+        user.email,
+        'Réinitialisation de ton mot de passe — Ultimate TTT',
+        `
+        <div style="font-family:monospace;background:#05050f;color:#dde0ff;padding:32px;border-radius:12px;max-width:480px;margin:auto;">
+          <h2 style="color:#00e5ff;letter-spacing:.1em;font-size:1.1rem;">🎮 ULTIMATE TTT</h2>
+          <p style="margin-top:16px;">Tu as demandé à réinitialiser ton mot de passe.</p>
+          <p style="margin-top:8px;opacity:.6;font-size:.85rem;">Ce lien expire dans <strong>15 minutes</strong>.</p>
+          <a href="${link}" style="display:inline-block;margin-top:20px;padding:14px 28px;background:rgba(0,229,255,.15);color:#00e5ff;border:1px solid rgba(0,229,255,.4);border-radius:8px;text-decoration:none;font-weight:bold;letter-spacing:.1em;">
+            RÉINITIALISER MON MOT DE PASSE →
+          </a>
+          <p style="margin-top:20px;opacity:.4;font-size:.75rem;">Si tu n'as pas fait cette demande, ignore cet email.</p>
+        </div>
+        `
+      );
+      console.log(`[Auth] Reset demandé : ${user.email} | Token: ${token.slice(0,8)}...`);
+    }
+    return sendJSON(res, 200, { ok: true });
+  }
+
+  // ── POST /auth/reset ───────────────────────────────────────────────────────
+  if (req.method === 'POST' && url === '/auth/reset') {
+    const { token, password } = await readBody(req);
+    if (!token || !password) return sendJSON(res, 400, { error: 'Données manquantes.' });
+    if (password.length < 6)  return sendJSON(res, 400, { error: 'Mot de passe trop court.' });
+
+    const user = Object.values(users).find(u => u.resetToken === token);
+    if (!user)                          return sendJSON(res, 400, { error: 'Lien invalide ou déjà utilisé.' });
+    if (Date.now() > user.resetExpires) return sendJSON(res, 400, { error: 'Lien expiré. Refais une demande.' });
+
+    user.passwordHash  = await bcrypt.hash(password, 10);
+    user.resetToken    = null;
+    user.resetExpires  = null;
+    saveUsers();
+    console.log(`[Auth] Mot de passe réinitialisé : ${user.email}`);
+    return sendJSON(res, 200, { ok: true });
+  }
+
   if (req.method === 'PUT' && url === '/auth/profile') {
     const user = authMiddleware(req);
     if (!user) return sendJSON(res, 401, { error: 'Non authentifié.' });
@@ -276,6 +354,16 @@ const server = http.createServer(async (req, res) => {
     if (body.avatar) user.avatar = body.avatar;
     saveUsers();
     return sendJSON(res, 200, { user: publicProfile(user) });
+  }
+
+  // ── DELETE /auth/account ──────────────────────────────────────────────────
+  if (req.method === 'DELETE' && url === '/auth/account') {
+    const user = authMiddleware(req);
+    if (!user) return sendJSON(res, 401, { error: 'Non authentifié.' });
+    delete users[user.id];
+    saveUsers();
+    console.log(`[Auth] Compte supprimé : ${user.email}`);
+    return sendJSON(res, 200, { ok: true });
   }
 
   if (req.method === 'PUT' && url === '/auth/stats') {

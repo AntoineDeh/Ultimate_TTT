@@ -1042,6 +1042,21 @@
       padding:5px 10px; border-radius:8px; border:1px solid rgba(180,180,255,.2);
       background:transparent; color:rgba(180,180,255,.4); cursor:pointer; transition:all .2s; }
     .menu-user-logout:hover { border-color:rgba(255,68,68,.4); color:#ff6b6b; }
+
+    /* ── Mot de passe oublié ── */
+    .auth-forgot-link { font-size:.62rem; letter-spacing:.06em; color:rgba(0,229,255,.45);
+      text-align:right; cursor:pointer; margin-top:-4px; margin-bottom:12px;
+      transition:color .2s; display:block; }
+    .auth-forgot-link:hover { color:var(--x); }
+    .auth-back-link { font-size:.62rem; letter-spacing:.08em; color:rgba(180,180,255,.35);
+      cursor:pointer; text-align:center; margin-top:10px; transition:color .2s; display:block; }
+    .auth-back-link:hover { color:rgba(180,180,255,.65); }
+    .auth-view { display:none; flex-direction:column; gap:0; }
+    .auth-view.active { display:flex; }
+    .auth-view-title { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.75rem;
+      letter-spacing:.15em; color:#fff; text-align:center; margin-bottom:14px; }
+    .auth-view-sub { font-size:.68rem; letter-spacing:.04em; color:rgba(180,180,255,.4);
+      text-align:center; line-height:1.7; margin-bottom:14px; }
   </style>
 </head>
 <body>
@@ -1052,63 +1067,97 @@
   <div class="auth-subtitle">IDENTIFIEZ-VOUS POUR JOUER</div>
 
   <div class="auth-card">
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">CONNEXION</button>
-      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">INSCRIPTION</button>
-    </div>
 
-    <!-- Champ pseudo (inscription seulement) -->
-    <div class="auth-field" id="field-pseudo" style="display:none">
-      <div class="auth-label">Pseudo</div>
-      <input class="auth-input" id="auth-pseudo" type="text" placeholder="Ton pseudo (2–20 car.)" maxlength="20" autocomplete="username">
-    </div>
-
-    <!-- Email -->
-    <div class="auth-field">
-      <div class="auth-label">Email</div>
-      <input class="auth-input" id="auth-email" type="email" placeholder="ton@email.com" autocomplete="email">
-    </div>
-
-    <!-- Mot de passe -->
-    <div class="auth-field">
-      <div class="auth-label">Mot de passe</div>
-      <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password"
-        onkeydown="if(event.key==='Enter')submitAuth()">
-    </div>
-
-    <!-- Avatar (inscription seulement) -->
-    <div id="field-avatar" style="display:none">
-      <div class="auth-avatar-label">Ton avatar</div>
-      <div class="auth-avatar-grid">
-        <button class="auth-avatar-btn selected" onclick="selectAvatar('🎮')" data-av="🎮">🎮</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🦊')" data-av="🦊">🦊</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🐺')" data-av="🐺">🐺</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🦁')" data-av="🦁">🦁</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🐻')" data-av="🐻">🐻</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🐸')" data-av="🐸">🐸</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🦅')" data-av="🦅">🦅</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🐙')" data-av="🐙">🐙</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🦈')" data-av="🦈">🦈</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('👾')" data-av="👾">👾</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🤖')" data-av="🤖">🤖</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('💎')" data-av="💎">💎</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🔥')" data-av="🔥">🔥</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('⚡')" data-av="⚡">⚡</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🌸')" data-av="🌸">🌸</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🍄')" data-av="🍄">🍄</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('⭐')" data-av="⭐">⭐</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🏆')" data-av="🏆">🏆</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🎸')" data-av="🎸">🎸</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🎃')" data-av="🎃">🎃</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('👑')" data-av="👑">👑</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🧊')" data-av="🧊">🧊</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('🌊')" data-av="🌊">🌊</button>
-        <button class="auth-avatar-btn" onclick="selectAvatar('☕')" data-av="☕">☕</button>
+    <!-- ── VUE : CONNEXION / INSCRIPTION ── -->
+    <div class="auth-view active" id="view-main">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">CONNEXION</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">INSCRIPTION</button>
       </div>
+
+      <div class="auth-field" id="field-pseudo" style="display:none">
+        <div class="auth-label">Pseudo</div>
+        <input class="auth-input" id="auth-pseudo" type="text" placeholder="Ton pseudo (2–20 car.)" maxlength="20" autocomplete="username">
+      </div>
+
+      <div class="auth-field">
+        <div class="auth-label">Email</div>
+        <input class="auth-input" id="auth-email" type="email" placeholder="ton@email.com" autocomplete="email">
+      </div>
+
+      <div class="auth-field">
+        <div class="auth-label">Mot de passe</div>
+        <input class="auth-input" id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')submitAuth()">
+      </div>
+      <span class="auth-forgot-link" id="forgot-link" onclick="showForgotView()">Mot de passe oublié ?</span>
+
+      <div id="field-avatar" style="display:none">
+        <div class="auth-avatar-label">Ton avatar</div>
+        <div class="auth-avatar-grid">
+          <button class="auth-avatar-btn selected" onclick="selectAvatar('🎮')" data-av="🎮">🎮</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🦊')" data-av="🦊">🦊</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🐺')" data-av="🐺">🐺</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🦁')" data-av="🦁">🦁</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🐻')" data-av="🐻">🐻</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🐸')" data-av="🐸">🐸</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🦅')" data-av="🦅">🦅</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🐙')" data-av="🐙">🐙</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🦈')" data-av="🦈">🦈</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('👾')" data-av="👾">👾</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🤖')" data-av="🤖">🤖</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('💎')" data-av="💎">💎</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🔥')" data-av="🔥">🔥</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('⚡')" data-av="⚡">⚡</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🌸')" data-av="🌸">🌸</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🍄')" data-av="🍄">🍄</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('⭐')" data-av="⭐">⭐</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🏆')" data-av="🏆">🏆</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🎸')" data-av="🎸">🎸</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🎃')" data-av="🎃">🎃</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('👑')" data-av="👑">👑</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🧊')" data-av="🧊">🧊</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('🌊')" data-av="🌊">🌊</button>
+          <button class="auth-avatar-btn" onclick="selectAvatar('☕')" data-av="☕">☕</button>
+        </div>
+      </div>
+
+      <button class="auth-submit" id="auth-submit-btn" onclick="submitAuth()">SE CONNECTER</button>
+      <div class="auth-msg hidden" id="auth-msg"></div>
     </div>
 
-    <button class="auth-submit" id="auth-submit-btn" onclick="submitAuth()">SE CONNECTER</button>
-    <div class="auth-msg hidden" id="auth-msg"></div>
+    <!-- ── VUE : MOT DE PASSE OUBLIÉ ── -->
+    <div class="auth-view" id="view-forgot">
+      <div class="auth-view-title">🔑 MOT DE PASSE OUBLIÉ</div>
+      <div class="auth-view-sub">Entre ton email — tu recevras un lien pour créer un nouveau mot de passe.</div>
+      <div class="auth-field">
+        <div class="auth-label">Email</div>
+        <input class="auth-input" id="forgot-email" type="email" placeholder="ton@email.com"
+          onkeydown="if(event.key==='Enter')submitForgot()">
+      </div>
+      <button class="auth-submit" id="forgot-submit-btn" onclick="submitForgot()">ENVOYER LE LIEN</button>
+      <div class="auth-msg hidden" id="forgot-msg"></div>
+      <span class="auth-back-link" onclick="showMainView()">← Retour à la connexion</span>
+    </div>
+
+    <!-- ── VUE : NOUVEAU MOT DE PASSE (depuis le lien mail) ── -->
+    <div class="auth-view" id="view-reset">
+      <div class="auth-view-title">🔐 NOUVEAU MOT DE PASSE</div>
+      <div class="auth-view-sub">Choisis un nouveau mot de passe pour ton compte.</div>
+      <div class="auth-field">
+        <div class="auth-label">Nouveau mot de passe</div>
+        <input class="auth-input" id="reset-password" type="password" placeholder="6 caractères minimum"
+          onkeydown="if(event.key==='Enter')submitReset()">
+      </div>
+      <div class="auth-field">
+        <div class="auth-label">Confirmer</div>
+        <input class="auth-input" id="reset-password2" type="password" placeholder="Répète le mot de passe"
+          onkeydown="if(event.key==='Enter')submitReset()">
+      </div>
+      <button class="auth-submit" id="reset-submit-btn" onclick="submitReset()">VALIDER</button>
+      <div class="auth-msg hidden" id="reset-msg"></div>
+    </div>
+
   </div>
 </div>
 
@@ -1279,7 +1328,7 @@
 </div>
 
 <!-- Menu -->
-<div class="overlay menu" id="menu">
+<div class="overlay menu hidden" id="menu">
   <!-- Logo zone -->
   <div class="menu-logo-zone">
     <div id="menu-logo" class="menu-logo-svg" style="margin-bottom:20px;"></div>
@@ -1296,7 +1345,10 @@
       <div class="menu-user-pseudo" id="menu-user-pseudo">Joueur</div>
       <div class="menu-user-sub">PROFIL CONNECTÉ</div>
     </div>
-    <button class="menu-user-logout" onclick="logout()">DÉCO</button>
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+      <button class="menu-user-logout" onclick="logout()">DÉCO</button>
+      <button class="menu-user-logout" style="font-size:.44rem;opacity:.5;border-color:rgba(255,68,68,.2);color:rgba(255,100,100,.4);" onclick="deleteAccount()">SUPPR.</button>
+    </div>
   </div>
   <div class="menu-btns">
     <button class="menu-btn local" onclick="showSetup('local')">
@@ -2280,8 +2332,10 @@ async function onLoggedIn(migrate) {
   }
   // Masquer l'écran auth, afficher le menu
   document.getElementById('auth-screen').classList.add('hidden');
+  show('menu');
   updateMenuUserBar();
   renderRankBadge();
+  renderMenuLogo();
   // Pré-remplir le pseudo dans les setups
   prefillUserName();
 }
@@ -2306,11 +2360,125 @@ function logout() {
   localStorage.removeItem('ttt-token');
   authToken   = null;
   currentUser = null;
-  backToMenu();
+  // Nettoyer l'état du jeu
+  if (ws) { try { ws.send(JSON.stringify({type:'cancel_matchmake'})); } catch(e){} ws.onclose=null; ws.close(); ws=null; }
+  stopTimer(); hideChatBar();
+  G=null; mode=null; botThinking=false;
+  document.getElementById('board').innerHTML='';
+  // Cacher tout sauf l'auth
+  ['menu','gameover','waiting-screen','rules-overlay','abandon-confirm'].forEach(hide);
   document.getElementById('auth-screen').classList.remove('hidden');
-  // Remettre le menu en hidden
-  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('view-main').classList.add('active');
+  document.getElementById('view-forgot').classList.remove('active');
+  document.getElementById('view-reset').classList.remove('active');
+  switchAuthTab('login');
 }
+
+async function deleteAccount() {
+  if (!confirm('Supprimer définitivement ton compte et toutes tes statistiques ?')) return;
+  if (!confirm('Cette action est irréversible. Confirmes-tu ?')) return;
+  try {
+    const { status } = await authFetch('DELETE', '/auth/account', null, authToken);
+    if (status === 200) {
+      localStorage.removeItem('ttt-token');
+      authToken = null; currentUser = null;
+      ['menu','gameover','waiting-screen'].forEach(hide);
+      document.getElementById('auth-screen').classList.remove('hidden');
+      switchAuthTab('login');
+    }
+  } catch(e) { alert('Erreur lors de la suppression.'); }
+}
+
+
+// ── Mot de passe oublié ──────────────────────────────
+function showForgotView() {
+  document.getElementById('view-main').classList.remove('active');
+  document.getElementById('view-forgot').classList.add('active');
+  document.getElementById('view-reset').classList.remove('active');
+  document.getElementById('forgot-email').value =
+    document.getElementById('auth-email').value || '';
+  setForgotMsg('', '');
+}
+
+function showMainView() {
+  document.getElementById('view-main').classList.add('active');
+  document.getElementById('view-forgot').classList.remove('active');
+  document.getElementById('view-reset').classList.remove('active');
+}
+
+function setForgotMsg(text, type) {
+  const el = document.getElementById('forgot-msg');
+  el.textContent = text;
+  el.className = 'auth-msg' + (text ? ' ' + type : ' hidden');
+}
+
+function setResetMsg(text, type) {
+  const el = document.getElementById('reset-msg');
+  el.textContent = text;
+  el.className = 'auth-msg' + (text ? ' ' + type : ' hidden');
+}
+
+async function submitForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const btn   = document.getElementById('forgot-submit-btn');
+  if (!email) return setForgotMsg('Entre ton email.', 'error');
+
+  btn.disabled = true;
+  setForgotMsg('Envoi en cours…', '');
+
+  try {
+    const { status, data } = await authFetch('POST', '/auth/forgot', { email });
+    if (status === 200) {
+      setForgotMsg('✅ Email envoyé ! Vérifie ta boîte (et tes spams).', 'success');
+    } else {
+      setForgotMsg(data.error || 'Erreur serveur.', 'error');
+    }
+  } catch(e) {
+    setForgotMsg('Connexion impossible.', 'error');
+  }
+  btn.disabled = false;
+}
+
+async function submitReset() {
+  const password  = document.getElementById('reset-password').value;
+  const password2 = document.getElementById('reset-password2').value;
+  const btn       = document.getElementById('reset-submit-btn');
+
+  if (password.length < 6) return setResetMsg('6 caractères minimum.', 'error');
+  if (password !== password2) return setResetMsg('Les mots de passe ne correspondent pas.', 'error');
+
+  btn.disabled = true;
+  setResetMsg('Enregistrement…', '');
+
+  const token = new URLSearchParams(window.location.search).get('reset');
+  try {
+    const { status, data } = await authFetch('POST', '/auth/reset', { token, password });
+    if (status === 200) {
+      setResetMsg('✅ Mot de passe modifié ! Tu peux te connecter.', 'success');
+      setTimeout(() => {
+        // Nettoyer l'URL et revenir à la vue connexion
+        history.replaceState(null, '', '/');
+        showMainView();
+      }, 2500);
+    } else {
+      setResetMsg(data.error || 'Lien invalide ou expiré.', 'error');
+    }
+  } catch(e) {
+    setResetMsg('Connexion impossible.', 'error');
+  }
+  btn.disabled = false;
+}
+
+// ── Détection du lien reset au démarrage ─────────────
+(function checkResetToken() {
+  const token = new URLSearchParams(window.location.search).get('reset');
+  if (token) {
+    // Afficher directement la vue "nouveau mot de passe"
+    document.getElementById('auth-screen').classList.remove('hidden');
+    document.getElementById('view-main').classList.remove('active');
+    document.getElementById('view-reset').classList.add('active');
+  }
+})();
 
 // ── Surcharge loadStats / saveStats pour utiliser le serveur ─────────────────
 // Les stats locales restent en fallback si pas connecté
