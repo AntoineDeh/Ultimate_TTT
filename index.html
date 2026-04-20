@@ -22,14 +22,28 @@
     }
     body::before {
       content:''; position:fixed; inset:0;
-      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.025) 2px,rgba(0,229,255,.025) 4px);
       pointer-events:none; z-index:0;
+      animation: scanlines 15s linear infinite;
     }
+    @keyframes scanlines { from{background-position:0 0} to{background-position:0 200px} }
     body::after {
-      content:''; position:fixed; top:-30%; left:50%; transform:translateX(-50%);
-      width:800px; height:800px;
-      background: radial-gradient(ellipse,rgba(30,40,180,.09) 0%,transparent 65%);
+      content:''; position:fixed; top:-20%; left:50%; transform:translateX(-50%);
+      width:900px; height:900px;
+      background: radial-gradient(ellipse,rgba(0,100,255,.1) 0%,rgba(255,31,122,.04) 40%,transparent 65%);
       pointer-events:none; z-index:0;
+      animation: bgPulse 6s ease-in-out infinite alternate;
+    }
+    @keyframes bgPulse { from{opacity:.6;transform:translateX(-50%) scale(1)} to{opacity:1;transform:translateX(-50%) scale(1.08)} }
+
+    /* Particules ambiantes flottantes */
+    .ambient-particles { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+    .ap { position:absolute; border-radius:50%; animation:apFloat linear infinite; opacity:0; }
+    @keyframes apFloat {
+      0%   { transform:translateY(100vh) scale(0); opacity:0; }
+      10%  { opacity:.6; }
+      90%  { opacity:.3; }
+      100% { transform:translateY(-20px) scale(.5); opacity:0; }
     }
 
     .wrap { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; gap:6px; padding:16px 8px 24px; height:100dvh; justify-content:space-between; overflow:hidden; }
@@ -1058,6 +1072,56 @@
       letter-spacing:.15em; color:#fff; text-align:center; margin-bottom:14px; }
     .auth-view-sub { font-size:.68rem; letter-spacing:.04em; color:rgba(180,180,255,.4);
       text-align:center; line-height:1.7; margin-bottom:14px; }
+
+    /* ══ CHALLENGES ═══════════════════════════════════════════ */
+    .challenges-overlay { background:linear-gradient(160deg,#0a0800 0%,#120c00 50%,#080600 100%);
+      gap:0; overflow-y:auto; padding:20px 12px 32px; z-index:600;
+      align-items:center; justify-content:flex-start; }
+    .challenges-header { display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:420px; margin-bottom:16px; }
+    .challenges-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1rem;
+      letter-spacing:.2em; color:#f5c842; filter:drop-shadow(0 0 8px rgba(245,200,66,.4)); }
+    .challenges-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.6rem;
+      padding:8px 14px; background:rgba(200,134,10,.08); color:#c8860a;
+      border:1px solid rgba(200,134,10,.25); border-radius:8px; cursor:pointer; transition:all .2s; }
+    .challenges-close:hover { background:rgba(200,134,10,.18); }
+    .challenge-section-title { font-size:.56rem; letter-spacing:.2em; color:rgba(200,160,40,.45);
+      text-transform:uppercase; margin-bottom:10px; width:100%; max-width:420px;
+      display:flex; align-items:center; gap:8px; }
+    .challenge-section-title::before { content:'◆'; font-size:.45rem; color:rgba(200,160,40,.4); }
+    .challenge-section-title::after { content:''; flex:1; height:1px; background:linear-gradient(to right,rgba(200,160,40,.2),transparent); }
+    .challenge-list { display:flex; flex-direction:column; gap:8px; width:100%; max-width:420px; margin-bottom:18px; }
+    .challenge-card { background:rgba(255,220,100,.03); border:1px solid rgba(200,160,40,.12);
+      border-radius:12px; padding:14px 14px 12px; display:flex; align-items:center; gap:12px;
+      position:relative; overflow:hidden; transition:all .25s; cursor:default; }
+    .challenge-card.done { border-color:rgba(74,222,128,.3); background:rgba(74,222,128,.04); }
+    .challenge-card.done::before { content:''; position:absolute; top:0; left:0; right:0;
+      height:2px; background:linear-gradient(90deg,transparent,#4ade80,transparent); }
+    .challenge-icon { font-size:1.6rem; flex-shrink:0; }
+    .challenge-info { flex:1; min-width:0; }
+    .challenge-name { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700;
+      letter-spacing:.08em; color:#fff; margin-bottom:4px; }
+    .challenge-card.done .challenge-name { color:#4ade80; }
+    .challenge-desc { font-size:.62rem; color:rgba(200,160,40,.5); letter-spacing:.04em; line-height:1.4; }
+    .challenge-pts { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:900;
+      color:#f5c842; text-shadow:0 0 8px rgba(245,200,66,.4); white-space:nowrap; flex-shrink:0; }
+    .challenge-card.done .challenge-pts { color:#4ade80; text-shadow:0 0 8px rgba(74,222,128,.4); }
+    .challenge-progress-bar { margin-top:6px; height:3px; background:rgba(200,160,40,.15); border-radius:2px; overflow:hidden; }
+    .challenge-progress-fill { height:100%; background:linear-gradient(90deg,#c8860a,#f5c842);
+      border-radius:2px; transition:width .5s ease; }
+    .challenge-card.done .challenge-progress-fill { background:linear-gradient(90deg,#22c55e,#4ade80); }
+
+    /* Notification challenge complété */
+    .challenge-notif { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px);
+      background:rgba(10,10,28,.95); border:1px solid rgba(245,200,66,.4); border-radius:14px;
+      padding:12px 20px; display:flex; align-items:center; gap:10px; z-index:900;
+      box-shadow:0 8px 30px rgba(0,0,0,.6), 0 0 20px rgba(245,200,66,.15);
+      transition:transform .4s cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
+    .challenge-notif.show { transform:translateX(-50%) translateY(0); }
+    .challenge-notif-icon { font-size:1.4rem; }
+    .challenge-notif-text { display:flex; flex-direction:column; gap:2px; }
+    .challenge-notif-title { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700; color:#f5c842; letter-spacing:.1em; }
+    .challenge-notif-sub { font-size:.6rem; color:rgba(200,160,40,.6); }
   </style>
 </head>
 <body>
@@ -1202,6 +1266,25 @@
     <button onclick="closeAvatarPicker()" style="font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;padding:10px 24px;border-radius:10px;border:1px solid rgba(180,180,255,.2);background:transparent;color:rgba(180,180,255,.5);cursor:pointer;">ANNULER</button>
   </div>
 </div>
+
+<!-- Challenge completed notification -->
+<div class="challenge-notif" id="challenge-notif">
+  <div class="challenge-notif-icon">🏅</div>
+  <div class="challenge-notif-text">
+    <div class="challenge-notif-title" id="challenge-notif-title">DÉFI COMPLÉTÉ !</div>
+    <div class="challenge-notif-sub" id="challenge-notif-sub">+50 pts</div>
+  </div>
+</div>
+
+<!-- Challenges overlay -->
+<div class="overlay challenges-overlay hidden" id="challenges-overlay">
+  <div class="challenges-header">
+    <div class="challenges-title">🏅 DÉFIS</div>
+    <button class="challenges-close" onclick="hide('challenges-overlay')">✕ FERMER</button>
+  </div>
+  <div id="challenges-content" style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:0;"></div>
+</div>
+<div class="ambient-particles" id="ambient-pts"></div>
 <div class="particles" id="pts"></div>
 
 <!-- Chat bar (Plato-style, online only) -->
@@ -1440,6 +1523,7 @@
   <!-- Boutons secondaires -->
   <div class="menu-bottom-bar">
     <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);" onclick="openStats()"><span class="mbb-icon">📊</span>STATS</button>
+    <button class="menu-bottom-btn" style="border-color:rgba(245,200,66,.4);color:#f5c842;background:rgba(245,200,66,.07);" onclick="openChallenges()"><span class="mbb-icon">🏅</span>DÉFIS</button>
     <button class="menu-bottom-btn" style="border-color:rgba(180,180,255,.25);color:rgba(180,180,255,.7);" onclick="show('rules-overlay')"><span class="mbb-icon">📋</span>RÈGLES</button>
     <button class="menu-bottom-btn" style="border-color:rgba(0,229,255,.3);color:var(--x);background:rgba(0,229,255,.06);" onclick="openDesign()"><span class="mbb-icon">🎨</span>DESIGN</button>
   </div>
@@ -3716,6 +3800,7 @@ function showTournamentOver(champion) {
   title_el.className=`go-title ${champion.toLowerCase()}`;
   msg_el.textContent=`${tournamentWins[champion]}-${tournamentWins[champion==='X'?'O':'X']} — Série terminée !`;
   spawnParticles(champion);
+  recordTournamentWin(mode, difficulty);
   updateGoStats(null);
   renderRankBadge();
   show('gameover');
@@ -3792,6 +3877,7 @@ function recordResult(result) {
     if (moves > s.longest) s.longest = moves;
   });
   saveStats(all);
+  checkChallenges();
 }
 
 let currentStatsTab = 'global';
@@ -3845,6 +3931,9 @@ function calcScoreFromStats() {
 
   // Bonus victoire rapide (fastest win global)
   if (global.fastest !== null && global.fastest !== undefined && global.fastest < 20) score += 50;
+
+  // Bonus challenges complétés
+  score += calcChallengeBonus();
 
   return Math.max(0, Math.min(1000, score));
 }
@@ -4085,6 +4174,7 @@ function setTheme(t) {
   document.getElementById(`tc-${t}`)?.classList.add('active');
   localStorage.setItem('ttt-theme', t);
   renderMenuLogo();
+  setTimeout(updateAmbientColors, 100);
 }
 function openDesign() {
   const panel = document.getElementById('design-panel');
@@ -4137,16 +4227,293 @@ function toggleRules() { document.getElementById('rules-overlay').classList.togg
 // ════════════════════════════════════════════════════════
 // PARTICLES
 // ════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════
+// PARTICULES AMBIANTES (fond immersif)
+// ════════════════════════════════════════════════════════
+(function initAmbientParticles() {
+  const container = document.getElementById('ambient-pts');
+  if (!container) return;
+  const colors = ['rgba(0,229,255,.35)','rgba(255,31,122,.25)','rgba(167,139,250,.3)','rgba(255,193,7,.2)'];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'ap';
+    const sz = 2 + Math.random() * 4;
+    const col = colors[Math.floor(Math.random() * colors.length)];
+    const dur = 12 + Math.random() * 20;
+    const delay = -Math.random() * dur;
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      width:${sz}px; height:${sz}px;
+      background:${col};
+      box-shadow:0 0 ${sz*2}px ${col};
+      animation-duration:${dur}s;
+      animation-delay:${delay}s;
+    `;
+    container.appendChild(p);
+  }
+})();
+
+// Mettre à jour les couleurs des particules selon le thème
+function updateAmbientColors() {
+  const x = getComputedStyle(document.documentElement).getPropertyValue('--x').trim() || '#00e5ff';
+  const o = getComputedStyle(document.documentElement).getPropertyValue('--o').trim() || '#ff1f7a';
+  const particles = document.querySelectorAll('.ap');
+  particles.forEach((p, i) => {
+    const col = i % 2 === 0 ? x + '55' : o + '44';
+    p.style.background = col;
+    p.style.boxShadow = `0 0 6px ${col}`;
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// SYSTÈME DE CHALLENGES
+// ════════════════════════════════════════════════════════
+const CHALLENGES = [
+  // ── Premiers pas ────────────────────────────────────
+  {
+    id: 'first_game',
+    icon: '🎮', name: 'Première partie', pts: 10,
+    desc: 'Lance ta première partie (n'importe quel mode)',
+    category: 'Premiers pas',
+    check: (stats) => (stats.global?.win||0) + (stats.global?.loss||0) + (stats.global?.draw||0) >= 1,
+    progress: (stats) => [Math.min(1,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 1]
+  },
+  {
+    id: 'first_win',
+    icon: '🥳', name: 'Première victoire', pts: 20,
+    desc: 'Remporte ta première partie',
+    category: 'Premiers pas',
+    check: (stats) => (stats.global?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats.global?.win||0), 1]
+  },
+  {
+    id: 'first_online',
+    icon: '🌐', name: 'Baptême du feu', pts: 30,
+    desc: 'Joue ta première partie en ligne',
+    category: 'Premiers pas',
+    check: (stats) => (stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0) >= 1,
+    progress: (stats) => [Math.min(1,(stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0)), 1]
+  },
+  // ── Bot ─────────────────────────────────────────────
+  {
+    id: 'beat_easy',
+    icon: '🟢', name: 'Trop facile', pts: 20,
+    desc: 'Bats le bot Facile',
+    category: 'Bot',
+    check: (stats) => (stats['bot-easy']?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats['bot-easy']?.win||0), 1]
+  },
+  {
+    id: 'beat_medium',
+    icon: '🟡', name: 'Niveau intermédiaire', pts: 40,
+    desc: 'Bats le bot Moyen',
+    category: 'Bot',
+    check: (stats) => (stats['bot-medium']?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats['bot-medium']?.win||0), 1]
+  },
+  {
+    id: 'beat_hard',
+    icon: '🔴', name: 'Machine brisée', pts: 80,
+    desc: 'Bats le bot Difficile',
+    category: 'Bot',
+    check: (stats) => (stats['bot-hard']?.win||0) >= 1,
+    progress: (stats) => [Math.min(1, stats['bot-hard']?.win||0), 1]
+  },
+  {
+    id: 'sweep_bot',
+    icon: '🧹', name: 'Balayage', pts: 60,
+    desc: 'Bats les 3 niveaux de bot',
+    category: 'Bot',
+    check: (stats) => (stats['bot-easy']?.win||0)>=1 && (stats['bot-medium']?.win||0)>=1 && (stats['bot-hard']?.win||0)>=1,
+    progress: (stats) => [((stats['bot-easy']?.win||0)>=1?1:0)+((stats['bot-medium']?.win||0)>=1?1:0)+((stats['bot-hard']?.win||0)>=1?1:0), 3]
+  },
+  // ── Tournoi ─────────────────────────────────────────
+  {
+    id: 'tournament_first',
+    icon: '🏆', name: 'Champion local', pts: 30,
+    desc: 'Remporte un tournoi (n'importe quel mode)',
+    category: 'Tournoi',
+    check: (stats) => !!(stats._tournamentsWon >= 1),
+    progress: (stats) => [Math.min(1, stats._tournamentsWon||0), 1]
+  },
+  {
+    id: 'tournament_hard',
+    icon: '👑', name: 'Grand tournoi', pts: 100,
+    desc: 'Remporte un tournoi contre le bot Difficile',
+    category: 'Tournoi',
+    check: (stats) => !!(stats._tournamentsHardWon >= 1),
+    progress: (stats) => [Math.min(1, stats._tournamentsHardWon||0), 1]
+  },
+  // ── Streak ──────────────────────────────────────────
+  {
+    id: 'streak3',
+    icon: '🔥', name: 'En feu', pts: 25,
+    desc: 'Enchaîne 3 victoires d'affilée',
+    category: 'Streak',
+    check: (stats) => (stats.global?.bestStreak||0) >= 3,
+    progress: (stats) => [Math.min(3, stats.global?.bestStreak||0), 3]
+  },
+  {
+    id: 'streak5',
+    icon: '💥', name: 'Inarrêtable', pts: 60,
+    desc: 'Enchaîne 5 victoires d'affilée',
+    category: 'Streak',
+    check: (stats) => (stats.global?.bestStreak||0) >= 5,
+    progress: (stats) => [Math.min(5, stats.global?.bestStreak||0), 5]
+  },
+  {
+    id: 'streak10',
+    icon: '⚡', name: 'Légende vivante', pts: 150,
+    desc: 'Enchaîne 10 victoires d'affilée',
+    category: 'Streak',
+    check: (stats) => (stats.global?.bestStreak||0) >= 10,
+    progress: (stats) => [Math.min(10, stats.global?.bestStreak||0), 10]
+  },
+  // ── Style ───────────────────────────────────────────
+  {
+    id: 'speed_win',
+    icon: '⚡', name: 'Victoire express', pts: 40,
+    desc: 'Gagne une partie en moins de 20 coups',
+    category: 'Style',
+    check: (stats) => stats.global?.fastest !== null && stats.global?.fastest < 20,
+    progress: (stats) => {
+      const f = stats.global?.fastest;
+      if (f === null || f === undefined) return [0, 20];
+      return [Math.max(0, 20-f), 20];
+    }
+  },
+  {
+    id: 'veteran',
+    icon: '🎖️', name: 'Vétéran', pts: 50,
+    desc: 'Joue 50 parties au total',
+    category: 'Style',
+    check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 50,
+    progress: (stats) => [Math.min(50,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 50]
+  },
+];
+
+// ── Bonus points challenges dans calcScore ────────────────────
+function calcChallengeBonus() {
+  const stats = loadStats();
+  let bonus = 0;
+  const done = stats._challengesDone || [];
+  CHALLENGES.forEach(c => {
+    if (done.includes(c.id)) bonus += c.pts;
+  });
+  return bonus;
+}
+
+// ── Vérifier les challenges après chaque partie ───────────────
+function checkChallenges() {
+  const stats = loadStats();
+  if (!stats._challengesDone) stats._challengesDone = [];
+  const done = stats._challengesDone;
+  let newlyDone = [];
+
+  CHALLENGES.forEach(c => {
+    if (!done.includes(c.id) && c.check(stats)) {
+      done.push(c.id);
+      newlyDone.push(c);
+    }
+  });
+
+  if (newlyDone.length > 0) {
+    saveStats(stats);
+    // Afficher les notifications en séquence
+    let delay = 300;
+    newlyDone.forEach(c => {
+      setTimeout(() => showChallengeNotif(c), delay);
+      delay += 2800;
+    });
+    renderRankBadge();
+  }
+}
+
+function showChallengeNotif(challenge) {
+  const notif = document.getElementById('challenge-notif');
+  const title = document.getElementById('challenge-notif-title');
+  const sub   = document.getElementById('challenge-notif-sub');
+  if (!notif) return;
+  title.textContent = challenge.icon + ' ' + challenge.name;
+  sub.textContent   = 'Défi complété ! +' + challenge.pts + ' pts';
+  notif.className   = 'challenge-notif show';
+  SFX.tourwin?.();
+  setTimeout(() => { notif.className = 'challenge-notif'; }, 2500);
+}
+
+// ── Enregistrer victoire de tournoi ──────────────────────────
+function recordTournamentWin(mode, difficulty) {
+  const stats = loadStats();
+  stats._tournamentsWon = (stats._tournamentsWon || 0) + 1;
+  if (mode === 'bot' && difficulty === 'hard') {
+    stats._tournamentsHardWon = (stats._tournamentsHardWon || 0) + 1;
+  }
+  saveStats(stats);
+  checkChallenges();
+}
+
+// ── Ouvrir l'écran challenges ─────────────────────────────────
+function openChallenges() {
+  const stats = loadStats();
+  const done  = stats._challengesDone || [];
+  const content = document.getElementById('challenges-content');
+  if (!content) return;
+
+  // Grouper par catégorie
+  const cats = {};
+  CHALLENGES.forEach(c => {
+    if (!cats[c.category]) cats[c.category] = [];
+    cats[c.category].push(c);
+  });
+
+  let html = '';
+  Object.entries(cats).forEach(([cat, challenges]) => {
+    const catDone = challenges.filter(c => done.includes(c.id)).length;
+    html += `<div class="challenge-section-title">${cat} (${catDone}/${challenges.length})</div>`;
+    html += '<div class="challenge-list">';
+    challenges.forEach(c => {
+      const isDone = done.includes(c.id);
+      const [cur, max] = c.progress(stats);
+      const pct = Math.round((cur/max)*100);
+      html += `
+        <div class="challenge-card${isDone?' done':''}">
+          <div class="challenge-icon">${isDone ? '✅' : c.icon}</div>
+          <div class="challenge-info">
+            <div class="challenge-name">${c.name}</div>
+            <div class="challenge-desc">${c.desc}</div>
+            ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
+          </div>
+          <div class="challenge-pts">${isDone ? '✓' : '+'+c.pts+' pts'}</div>
+        </div>`;
+    });
+    html += '</div>';
+  });
+
+  content.innerHTML = html;
+  show('challenges-overlay');
+}
+
 function spawnParticles(p) {
   const ct=document.getElementById('pts'); ct.innerHTML='';
   const col=p==='X'?'#00e5ff':'#ff1f7a';
-  for (let i=0;i<70;i++) {
-    const d=document.createElement('div'), sz=3+Math.random()*7;
+  const col2=p==='X'?'#a78bfa':'#ffc107';
+  const emojis = p==='X' ? ['✨','💫','⭐'] : ['✨','💥','🌟'];
+  for (let i=0;i<80;i++) {
+    const d=document.createElement('div'), sz=3+Math.random()*8;
     d.className='pt';
-    d.style.cssText=`left:${Math.random()*100}%;bottom:${-sz}px;width:${sz}px;height:${sz}px;background:${col};box-shadow:0 0 8px ${col};animation-duration:${1.4+Math.random()*2.2}s;animation-delay:${Math.random()*.9}s;`;
+    const c = i%3===0 ? col2 : col;
+    // Certaines particules sont des étoiles
+    if (i%8===0) {
+      d.style.cssText=`left:${Math.random()*100}%;bottom:${-sz}px;width:${sz+4}px;height:${sz+4}px;background:transparent;font-size:${sz+4}px;line-height:1;border-radius:0;animation-duration:${1.8+Math.random()*2}s;animation-delay:${Math.random()*.7}s;`;
+      d.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    } else {
+      const br = Math.random()>0.5 ? '50%' : '3px';
+      d.style.cssText=`left:${Math.random()*100}%;bottom:${-sz}px;width:${sz}px;height:${sz}px;background:${c};box-shadow:0 0 ${sz*2}px ${c};border-radius:${br};animation-duration:${1.4+Math.random()*2.2}s;animation-delay:${Math.random()*.9}s;`;
+    }
     ct.appendChild(d);
   }
-  setTimeout(()=>ct.innerHTML='',4500);
+  setTimeout(()=>ct.innerHTML='',5000);
 }
 
 // ════════════════════════════════════════════════════════
