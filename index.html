@@ -4076,6 +4076,8 @@ function showAbandonWin() {
 }
 
 function replayOnlineAfterAbandon() {
+  // Couper le WebSocket immédiatement pour stopper tout message entrant
+  if (ws) { ws.onmessage = null; ws.onclose = null; ws.close(); ws = null; }
   backToMenu();
   setTimeout(() => { showSetup('online'); }, 150);
 }
