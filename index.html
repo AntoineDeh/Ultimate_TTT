@@ -11,7 +11,7 @@
     :root {
       --x: #00e5ff; --o: #ff1f7a; --active: #ffc107;
       --bg: #05050f; --surface: #0d0d20; --border-out: #1e1e45; --border-in: #111128;
-      --cs: clamp(30px, 8vmin, 62px); --ig: 2px; --og: 6px;
+      --cs: clamp(30px, 8vmin, 62px); --ig: 2px; --og: 5px;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -285,17 +285,18 @@
 
     /* ── Board ── */
     .board { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--og);
-      background:rgba(0,0,0,1); border:var(--og) solid rgba(0,0,0,1); border-radius:12px;
-      box-shadow:0 0 0 1.5px rgba(100,100,200,.2), 0 0 40px rgba(10,10,80,.4);
-      width:min(calc(100vw - 12px), calc(100dvh - 190px));
-      max-width:min(calc(100vw - 12px), calc(100dvh - 190px));
+      background:#1a1a3a; border:var(--og) solid #1a1a3a; border-radius:14px;
+      box-shadow:0 0 0 1px rgba(120,120,220,.3), 0 0 50px rgba(20,20,100,.5),
+                 inset 0 0 0 1px rgba(80,80,160,.15);
+      width:min(calc(100vw - 16px), calc(100dvh - 190px));
+      max-width:min(calc(100vw - 16px), calc(100dvh - 190px));
       aspect-ratio:1/1; align-self:center; }
 
     .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--ig);
-      background:rgba(30,30,50,1); position:relative;
+      background:var(--border-in); position:relative;
       transition:background .3s, box-shadow .3s, transform .2s;
       border-radius:6px; overflow:hidden;
-      border:none; }
+      border:1.5px solid rgba(80,80,160,.35); }
 
     /* Active — pulse animé */
     .sb.active { background:rgba(255,193,7,.07);
@@ -310,12 +311,11 @@
     .sb.wo { background:rgba(255,31,122,.07); border-color:rgba(255,31,122,.3); }
     .sb.wd { background:rgba(120,120,180,.06); border-color:rgba(120,120,180,.2); }
 
-    .cell { width:var(--cs); height:var(--cs); background:rgba(22,22,45,1);
-      border:1px solid rgba(80,80,140,.4);
+    .cell { width:var(--cs); height:var(--cs); background:var(--surface);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer; font-family:'Share Tech Mono',monospace; font-weight:400;
       font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s; }
-    .cell:hover:not(.taken):not(.locked) { background:rgba(80,80,160,.3); transform:scale(1.04); }
+    .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.08); transform:scale(1.06); }
     .cell:active:not(.taken):not(.locked) { transform:scale(.94); }
     .cell.taken,.cell.locked { cursor:default; }
     .cell.auto { animation:autopop .4s cubic-bezier(.34,1.56,.64,1); }
