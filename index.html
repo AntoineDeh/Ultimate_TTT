@@ -4076,10 +4076,8 @@ function showAbandonWin() {
 }
 
 function replayOnlineAfterAbandon() {
-  // Toujours retourner au menu online, pas recréer une room
   backToMenu();
-  // Ouvrir le setup online directement
-  setTimeout(() => { hide('menu'); show('setup-online'); }, 100);
+  setTimeout(() => { showSetup('online'); }, 150);
 }
 function showGameOver(abandon=false) {
   hintCell = null;
