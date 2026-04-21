@@ -4852,6 +4852,11 @@ function closeDailyNotif() {
 function updateChallengesBadge() {
   const stats = loadStats();
   const done   = stats._challengesDone || [];
+  // Migration : si _challengesClaimed n'existe pas encore, marquer tout comme réclamé
+  if (!stats._challengesClaimed) {
+    stats._challengesClaimed = [...done];
+    saveStats(stats);
+  }
   const claimed = stats._challengesClaimed || [];
   // Défis permanents complétés mais non réclamés
   const unclaimed = CHALLENGES.filter(c => done.includes(c.id) && !claimed.includes(c.id));
