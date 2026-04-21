@@ -285,14 +285,14 @@
 
     /* ── Board ── */
     .board { display:grid; grid-template-columns:repeat(3,1fr); gap:3px;
-      background:rgba(255,255,255,.12); border:3px solid rgba(255,255,255,.12); border-radius:12px;
-      box-shadow:0 0 30px rgba(0,0,80,.6);
+      background:rgba(255,255,255,.15); border:3px solid rgba(255,255,255,.15); border-radius:12px;
+      box-shadow:0 0 30px rgba(0,0,80,.4);
       width:min(calc(100vw - 16px), calc(100dvh - 190px));
       max-width:min(calc(100vw - 16px), calc(100dvh - 190px));
       aspect-ratio:1/1; align-self:center; }
 
     .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-      background:rgba(255,255,255,.18); position:relative;
+      background:rgba(255,255,255,.2); position:relative;
       transition:box-shadow .3s, transform .2s;
       border-radius:3px; overflow:hidden; border:none; }
 
@@ -303,15 +303,15 @@
       from { box-shadow:0 0 0 2px var(--active), 0 0 8px rgba(255,193,7,.2); }
       to   { box-shadow:0 0 0 2px var(--active), 0 0 22px rgba(255,193,7,.5); }
     }
-    .sb.wx { box-shadow:0 0 0 2px var(--x); background:rgba(0,229,255,.15); }
-    .sb.wo { box-shadow:0 0 0 2px var(--o); background:rgba(255,31,122,.15); }
-    .sb.wd { background:rgba(180,180,180,.1); }
+    .sb.wx { box-shadow:0 0 0 2px var(--x); background:rgba(255,255,255,.2); }
+    .sb.wo { box-shadow:0 0 0 2px var(--o); background:rgba(255,255,255,.2); }
+    .sb.wd { background:rgba(255,255,255,.2); }
 
-    .cell { width:var(--cs); height:var(--cs); background:rgba(30,30,55,1);
+    .cell { width:var(--cs); height:var(--cs); background:transparent;
       display:flex; align-items:center; justify-content:center;
       cursor:pointer; font-family:'Share Tech Mono',monospace; font-weight:400;
       font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s; }
-    .cell:hover:not(.taken):not(.locked) { background:rgba(60,60,100,1); transform:scale(1.06); }
+    .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.06); transform:scale(1.06); }
     .cell:active:not(.taken):not(.locked) { transform:scale(.94); }
     .cell.taken,.cell.locked { cursor:default; }
     .cell.auto { animation:autopop .4s cubic-bezier(.34,1.56,.64,1); }
