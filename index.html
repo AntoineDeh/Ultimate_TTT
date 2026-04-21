@@ -3597,6 +3597,7 @@ let myRole=null, ws=null, myName='Joueur';
 let onlineAvatars = {X:'🎮', O:'🎮'};
 
 let currentRoomId = null;
+let isPrivateRoom = false; // true si room privée créée/rejointe
 
 function getOnlineName() {
   return document.getElementById('name-online').value.trim() || 'Joueur';
@@ -3611,6 +3612,7 @@ function initOnlineMode(name) {
   initTournament(document.getElementById('tournament-online').checked);
   hints = 3;
   currentRoomId = null;
+  isPrivateRoom = false;
   document.getElementById('room-code-display').style.display = 'none';
   document.getElementById('wait-title').textContent = 'CONNEXION…';
   document.getElementById('wait-sub').innerHTML = '<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
@@ -3637,6 +3639,7 @@ function startCreateRoom() {
   const name = getOnlineName();
   initOnlineMode(name);
   connect(() => {
+    isPrivateRoom = true;
     ws.send(JSON.stringify({type:'create_room', name, autoMode, tournament: document.getElementById('tournament-online').checked}));
     document.getElementById('wait-title').textContent = 'EN ATTENTE D\'UN JOUEUR';
     document.getElementById('wait-sub').innerHTML = 'Partagez le code ci-dessous<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
@@ -3655,6 +3658,7 @@ function startJoinRoom() {
   }
   initOnlineMode(name);
   connect(() => {
+    isPrivateRoom = true;
     ws.send(JSON.stringify({type:'join_room', roomId: code, name}));
   });
 }
@@ -4051,11 +4055,10 @@ function showAbandonWin() {
   msg_el.textContent    = 'Félicitations, tu gagnes cette partie.';
   // Remplacer les boutons
   const btns = document.getElementById('go-btns');
-  const wasRoom = !!currentRoomId;
   btns.innerHTML = `
-    <button class="btn btn-primary" onclick="replayOnlineAfterAbandon(${wasRoom})"
+    <button class="btn btn-primary" onclick="replayOnlineAfterAbandon()"
       style="color:#4ade80;border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1);">
-      🔍 NOUVELLE PARTIE
+      🌐 JOUER EN LIGNE
     </button>
     <div class="go-btns-secondary">
       <button class="btn" onclick="backToMenu()"
@@ -4072,43 +4075,11 @@ function showAbandonWin() {
   show('gameover');
 }
 
-function replayOnlineAfterAbandon(wasRoom) {
-  hide('gameover');
-  // Fermer la connexion proprement
-  if (ws) { ws.onclose = null; ws.close(); ws = null; }
-  currentRoomId = null;
-  G = null; scores = {X:0,O:0};
-  // Remettre les boutons gameover normaux
-  const btns = document.getElementById('go-btns');
-  btns.innerHTML = `
-    <button class="btn btn-primary" id="go-replay-btn" onclick="resetGame()"
-      style="color:#4ade80;border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1);box-shadow:0 0 14px rgba(74,222,128,.2);">▶ REJOUER</button>
-    <div class="go-btns-secondary">
-      <button class="btn" id="analyse-btn" onclick="startAnalysis()"
-        style="color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08);">🔍 ANALYSER</button>
-      <button class="btn" onclick="backToMenu()"
-        style="color:rgba(180,180,255,.6);border-color:rgba(180,180,255,.2);">⌂ MENU</button>
-    </div>`;
-  if (wasRoom) {
-    // Recréer une room privée
-    show('setup-online');
-    show('waiting-screen');
-    hide('setup-online');
-    const name = myName || 'Joueur';
-    initOnlineMode(name);
-    connect(() => {
-      ws.send(JSON.stringify({type:'create_room', name, autoMode, tournament: tournamentMode}));
-      document.getElementById('wait-title').textContent = "EN ATTENTE D'UN JOUEUR";
-    });
-  } else {
-    // Relancer le matchmaking
-    const name = myName || 'Joueur';
-    initOnlineMode(name);
-    connect(() => {
-      ws.send(JSON.stringify({type:'matchmake', name, autoMode}));
-      document.getElementById('wait-title').textContent = '🔍 RECHERCHE EN COURS';
-    });
-  }
+function replayOnlineAfterAbandon() {
+  // Toujours retourner au menu online, pas recréer une room
+  backToMenu();
+  // Ouvrir le setup online directement
+  setTimeout(() => { hide('menu'); show('setup-online'); }, 100);
 }
 function showGameOver(abandon=false) {
   hintCell = null;
