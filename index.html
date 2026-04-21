@@ -3705,7 +3705,19 @@ function connect(onOpen) {
   ws.onmessage = ({data}) => {
     const msg = JSON.parse(data);
 
-    if (msg.type === 'role') { myRole = msg.player; updateRoleBadge(); updateHUD(); }
+    if (msg.type === 'role') {
+      myRole = msg.player;
+      updateRoleBadge();
+      updateHUD();
+      // Re-appliquer les noms/avatars si déjà reçus
+      if (onlineAvatars && names) {
+        const ex = document.getElementById('avatar-emoji-x');
+        const eo = document.getElementById('avatar-emoji-o');
+        if (ex) ex.textContent = onlineAvatars.X || getThemeMark('X');
+        if (eo) eo.textContent = onlineAvatars.O || getThemeMark('O');
+        updateHUD();
+      }
+    }
     if (msg.type === 'names') {
       names = msg.names;
       if (msg.avatars) onlineAvatars = msg.avatars;

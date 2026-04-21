@@ -214,9 +214,11 @@ function joinRoom(room,ws,name,role,avatar) {
   else { room.spectators.push(ws); }
   send(ws,{type:'role',player:role});
   send(ws,{type:'state',state:room.G});
-  send(ws,{type:'names',names:room.names,avatars:room.avatars});
   send(ws,{type:'roomId',roomId:room.id});
+  // Envoyer names APRES role pour que le client connaisse son rôle
+  send(ws,{type:'names',names:room.names,avatars:room.avatars});
   if (connectedCount(room)===2) {
+    // Broadcast complet avec les deux noms/avatars
     broadcastRoom(room,{type:'names',names:room.names,avatars:room.avatars});
     broadcastRoom(room,{type:'ready'}); startTurnTimer(room);
   } else if (role!=='spectator') { send(ws,{type:'waiting'}); }
