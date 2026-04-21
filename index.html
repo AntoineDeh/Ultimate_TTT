@@ -300,13 +300,13 @@
       transition:box-shadow .3s; border:none; overflow:visible; }
 
     .sb.active {
-      background:rgba(255,193,7,.08);
-      box-shadow:0 0 0 2px var(--active), 0 0 18px rgba(255,193,7,.4);
-      border-radius:4px;
-      animation:sbActivePulse 2s ease-in-out infinite alternate; z-index:2; }
+      background:transparent;
+      box-shadow:0 0 0 2.5px var(--active), 0 0 20px rgba(255,193,7,.5);
+      border-radius:4px; z-index:2;
+      animation:sbActivePulse 2s ease-in-out infinite alternate; }
     @keyframes sbActivePulse {
-      from { background:rgba(255,193,7,.06); box-shadow:0 0 0 2px var(--active), 0 0 10px rgba(255,193,7,.25); }
-      to   { background:rgba(255,193,7,.12); box-shadow:0 0 0 2.5px var(--active), 0 0 26px rgba(255,193,7,.55); }
+      from { box-shadow:0 0 0 2px var(--active), 0 0 10px rgba(255,193,7,.3); }
+      to   { box-shadow:0 0 0 3px var(--active), 0 0 28px rgba(255,193,7,.65); }
     }
     .sb.wx { box-shadow:0 0 0 2px var(--x); border-radius:4px; background:rgba(0,229,255,.06); z-index:2; }
     .sb.wo { box-shadow:0 0 0 2px var(--o); border-radius:4px; background:rgba(255,31,122,.06); z-index:2; }
@@ -317,7 +317,7 @@
       cursor:pointer; font-family:'Share Tech Mono',monospace; font-weight:400;
       font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s;
       position:relative; z-index:1; }
-    .cell:hover:not(.taken):not(.locked) { background:rgba(255,193,7,.18); transform:scale(1.06); }
+    .cell:hover:not(.taken):not(.locked) { background:rgba(255,193,7,.22); transform:scale(1); }
     .cell:active:not(.taken):not(.locked) { transform:scale(.94); }
     .cell.taken,.cell.locked { cursor:default; }
     .cell.auto { animation:autopop .4s cubic-bezier(.34,1.56,.64,1); }
