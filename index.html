@@ -3785,10 +3785,8 @@ function connect(onOpen) {
     if (msg.type === 'abandon') {
       // L'adversaire a abandonné → je gagne
       const winner = myRole;
-      G.winner = winner;
-      scores[winner]++;
-      render();
-      showGameOver(true);
+      if (G) { G.winner = winner; scores[winner]++; render(); }
+      showAbandonWin();
       return;
     }
 
@@ -4001,6 +3999,79 @@ function updateAvatarTimer(player, pct) {
 // ════════════════════════════════════════════════════════
 // GAME OVER
 // ════════════════════════════════════════════════════════
+
+function showAbandonWin() {
+  stopTimer();
+  spawnParticles(myRole);
+  // Afficher le gameover avec message spécial
+  const winner_el = document.getElementById('go-winner');
+  const title_el  = document.getElementById('go-title');
+  const msg_el    = document.getElementById('go-msg');
+  winner_el.textContent = '🏆 VICTOIRE';
+  title_el.textContent  = 'L'adversaire a abandonné !';
+  title_el.className    = `go-title ${myRole ? myRole.toLowerCase() : 'x'}`;
+  msg_el.textContent    = 'Félicitations, tu gagnes cette partie.';
+  // Remplacer les boutons
+  const btns = document.getElementById('go-btns');
+  const wasRoom = !!currentRoomId;
+  btns.innerHTML = `
+    <button class="btn btn-primary" onclick="replayOnlineAfterAbandon(${wasRoom})"
+      style="color:#4ade80;border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1);">
+      🔍 NOUVELLE PARTIE
+    </button>
+    <div class="go-btns-secondary">
+      <button class="btn" onclick="backToMenu()"
+        style="color:rgba(180,180,255,.6);border-color:rgba(180,180,255,.2);">⌂ MENU</button>
+    </div>`;
+  // Enregistrer la victoire
+  if (myRole) {
+    const scoreBefore = calcScoreFromStats();
+    recordResult('win');
+    const scoreAfter = calcScoreFromStats();
+    updateGoStats({ old: scoreBefore, newScore: scoreAfter, delta: scoreAfter - scoreBefore });
+  }
+  renderRankBadge();
+  show('gameover');
+}
+
+function replayOnlineAfterAbandon(wasRoom) {
+  hide('gameover');
+  // Fermer la connexion proprement
+  if (ws) { ws.onclose = null; ws.close(); ws = null; }
+  currentRoomId = null;
+  G = null; scores = {X:0,O:0};
+  // Remettre les boutons gameover normaux
+  const btns = document.getElementById('go-btns');
+  btns.innerHTML = `
+    <button class="btn btn-primary" id="go-replay-btn" onclick="resetGame()"
+      style="color:#4ade80;border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.1);box-shadow:0 0 14px rgba(74,222,128,.2);">▶ REJOUER</button>
+    <div class="go-btns-secondary">
+      <button class="btn" id="analyse-btn" onclick="startAnalysis()"
+        style="color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08);">🔍 ANALYSER</button>
+      <button class="btn" onclick="backToMenu()"
+        style="color:rgba(180,180,255,.6);border-color:rgba(180,180,255,.2);">⌂ MENU</button>
+    </div>`;
+  if (wasRoom) {
+    // Recréer une room privée
+    show('setup-online');
+    show('waiting-screen');
+    hide('setup-online');
+    const name = myName || 'Joueur';
+    initOnlineMode(name);
+    connect(() => {
+      ws.send(JSON.stringify({type:'create_room', name, autoMode, tournament: tournamentMode}));
+      document.getElementById('wait-title').textContent = 'EN ATTENTE D'UN JOUEUR';
+    });
+  } else {
+    // Relancer le matchmaking
+    const name = myName || 'Joueur';
+    initOnlineMode(name);
+    connect(() => {
+      ws.send(JSON.stringify({type:'matchmake', name, autoMode}));
+      document.getElementById('wait-title').textContent = '🔍 RECHERCHE EN COURS';
+    });
+  }
+}
 function showGameOver(abandon=false) {
   hintCell = null;
   stopTimer();
