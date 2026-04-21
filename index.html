@@ -301,12 +301,14 @@
 
     .sb.active {
       background:transparent;
-      box-shadow:0 0 0 2.5px var(--active), 0 0 20px rgba(255,193,7,.5);
-      border-radius:4px; z-index:2;
-      animation:sbActivePulse 2s ease-in-out infinite alternate; }
+      outline: 3px solid var(--active) !important;
+      outline-offset: 0px;
+      box-shadow:0 0 24px rgba(255,193,7,.7), inset 0 0 12px rgba(255,193,7,.15) !important;
+      border-radius:4px; z-index:10 !important;
+      animation:sbActivePulse 1.5s ease-in-out infinite alternate; }
     @keyframes sbActivePulse {
-      from { box-shadow:0 0 0 2px var(--active), 0 0 10px rgba(255,193,7,.3); }
-      to   { box-shadow:0 0 0 3px var(--active), 0 0 28px rgba(255,193,7,.65); }
+      from { outline-color: var(--active); box-shadow:0 0 14px rgba(255,193,7,.5), inset 0 0 6px rgba(255,193,7,.1); }
+      to   { outline-color: #ffe066; box-shadow:0 0 32px rgba(255,220,0,.85), inset 0 0 16px rgba(255,193,7,.2); }
     }
     .sb.wx { box-shadow:0 0 0 2px var(--x); border-radius:4px; background:rgba(0,229,255,.06); z-index:2; }
     .sb.wo { box-shadow:0 0 0 2px var(--o); border-radius:4px; background:rgba(255,31,122,.06); z-index:2; }
