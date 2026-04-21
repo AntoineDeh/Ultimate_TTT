@@ -255,10 +255,10 @@
       border:1px solid var(--border-out); border-radius:12px; padding:0;
       box-shadow:0 2px 16px rgba(0,0,0,.4); overflow:hidden; min-width:0; }
     .score-player { display:flex; flex-direction:column; align-items:center; gap:1px;
-      padding:5px 10px; flex:1; transition:background .3s; min-width:0; }
+      padding:6px 10px; flex:1; transition:background .3s; min-width:0; min-height:90px; justify-content:center; }
     .score-player.active-x { background:rgba(0,229,255,.07); }
     .score-player.active-o { background:rgba(255,31,122,.07); }
-    .score-lbl { font-size:.42rem; letter-spacing:.12em; opacity:.3; text-transform:uppercase; }
+    .score-lbl { font-size:.4rem; letter-spacing:.1em; opacity:.5; text-transform:uppercase; min-height:.6rem; }
     .score-name { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.6rem;
       max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .score-name.x { color:var(--x); text-shadow:0 0 6px rgba(0,229,255,.4); }
@@ -1138,7 +1138,8 @@
 
     /* ── Timer circulaire autour de l'avatar joueur ── */
     .player-avatar-wrap {
-      position:relative; width:36px; height:36px; flex-shrink:0; margin-bottom:2px;
+      position:relative; width:38px; height:38px; flex-shrink:0; margin-bottom:2px;
+      display:flex; align-items:center; justify-content:center;
     }
     .avatar-svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); pointer-events:none; }
     .avatar-track { fill:none; stroke:rgba(255,255,255,.08); stroke-width:2.5; }
@@ -1971,16 +1972,14 @@
     </svg>ULTIMATE <span>TTT</span>
   </div>
 
-  <div class="score-row">
-    <div class="score-left">
-      <div class="left-icons">
-        <button class="icon-btn home hidden" id="home-btn" onclick="confirmBackToMenu()" title="Menu">⌂</button>
-        <button class="hint-btn hidden" id="hint-btn" onclick="useHint()" title="Indice">
-          💡<span class="hint-count" id="hint-count">3</span>
-        </button>
-      </div>
+  <div class="score-row" style="gap:8px;">
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">
+      <button class="icon-btn home hidden" id="home-btn" onclick="confirmBackToMenu()" title="Menu">⌂</button>
+      <button class="hint-btn hidden" id="hint-btn" onclick="useHint()" title="Indice">
+        💡<span class="hint-count" id="hint-count">3</span>
+      </button>
     </div>
-    <div class="score-center" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+    <div class="score-center" style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;">
       <div class="scoreboard">
         <div class="score-player" id="score-player-x">
           <div class="player-avatar-wrap" id="avatar-wrap-x">
@@ -1989,7 +1988,7 @@
               <circle class="avatar-progress" id="avatar-progress-x" cx="18" cy="18" r="15.9" stroke="var(--x)"/>
             </svg>
             <div class="avatar-emoji" id="avatar-emoji-x">🎮</div>
-            <div id="avatar-timer-x" style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:.42rem;font-family:'Orbitron',sans-serif;font-weight:700;opacity:.9;color:#4ade80;white-space:nowrap;line-height:1;pointer-events:none;"></div>
+
           </div>
           <div class="score-lbl" id="lbl-x">JOUEUR X</div>
           <div class="score-name x" id="sname-x">X</div>
@@ -2005,7 +2004,7 @@
               <circle class="avatar-progress" id="avatar-progress-o" cx="18" cy="18" r="15.9" stroke="var(--o)"/>
             </svg>
             <div class="avatar-emoji" id="avatar-emoji-o">🎮</div>
-            <div id="avatar-timer-o" style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:.42rem;font-family:'Orbitron',sans-serif;font-weight:700;opacity:.9;color:#4ade80;white-space:nowrap;line-height:1;pointer-events:none;"></div>
+
           </div>
           <div class="score-lbl" id="lbl-o">JOUEUR O</div>
           <div class="score-name o" id="sname-o">O</div>
@@ -2018,8 +2017,7 @@
         <div class="turn-text x" id="turn-text">—</div>
       </div>
     </div>
-    <div class="score-right">
-      <div class="side-icons">
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">
         <button class="more-btn hidden" id="more-btn" onclick="toggleMoreMenu()">⋯</button>
         <div class="more-dropdown hidden" id="more-dropdown">
           <button class="more-item" onclick="toggleRules();closeMoreMenu()">
@@ -2039,7 +2037,6 @@
             <span class="more-item-icon">⚑</span><span class="more-item-label" style="color:#ff6464">Abandonner</span>
           </button>
         </div>
-      </div>
     </div>
   </div>
 
