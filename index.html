@@ -1112,17 +1112,7 @@
       border-radius:2px; transition:width .5s ease; }
     .challenge-card.done .challenge-progress-fill { background:linear-gradient(90deg,#22c55e,#4ade80); }
 
-    /* Notification challenge complété */
-    .challenge-notif { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px);
-      background:rgba(10,10,28,.95); border:1px solid rgba(245,200,66,.4); border-radius:14px;
-      padding:12px 20px; display:flex; align-items:center; gap:10px; z-index:900;
-      box-shadow:0 8px 30px rgba(0,0,0,.6), 0 0 20px rgba(245,200,66,.15);
-      transition:transform .4s cubic-bezier(.34,1.2,.64,1); pointer-events:none; }
-    .challenge-notif.show { transform:translateX(-50%) translateY(0); }
-    .challenge-notif-icon { font-size:1.4rem; }
-    .challenge-notif-text { display:flex; flex-direction:column; gap:2px; }
-    .challenge-notif-title { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700; color:#f5c842; letter-spacing:.1em; }
-    .challenge-notif-sub { font-size:.6rem; color:rgba(200,160,40,.6); }
+
 
 
     /* Section défis journaliers dans l'écran challenges */
@@ -1155,6 +1145,18 @@
     }
     /* cacher le turn-banner quand on a les avatars */
     .turn-banner { display:none !important; }
+
+    /* Badge rouge sur bouton DÉFIS */
+    .menu-bottom-btn { position:relative; }
+    .challenge-badge { position:absolute; top:4px; right:4px; width:9px; height:9px;
+      background:#ef4444; border-radius:50%; border:1.5px solid rgba(5,5,15,1);
+      display:none; }
+    /* Bouton PRENDRE dans la carte de défi */
+    .challenge-claim-btn { font-family:'Orbitron',sans-serif; font-size:.55rem; font-weight:700;
+      letter-spacing:.08em; padding:5px 12px; border-radius:8px; cursor:pointer;
+      background:rgba(245,200,66,.15); color:#f5c842;
+      border:1px solid rgba(245,200,66,.4); transition:all .2s; white-space:nowrap; flex-shrink:0; }
+    .challenge-claim-btn:hover { background:rgba(245,200,66,.3); }
   </style>
 </head>
 <body>
@@ -1302,13 +1304,7 @@
 
 
 <!-- Challenge completed notification -->
-<div class="challenge-notif" id="challenge-notif">
-  <div class="challenge-notif-icon">🏅</div>
-  <div class="challenge-notif-text">
-    <div class="challenge-notif-title" id="challenge-notif-title">DÉFI COMPLÉTÉ !</div>
-    <div class="challenge-notif-sub" id="challenge-notif-sub">+50 pts</div>
-  </div>
-</div>
+
 
 <!-- Challenges overlay -->
 <div class="overlay challenges-overlay hidden" id="challenges-overlay">
@@ -1562,7 +1558,7 @@
   <!-- Boutons secondaires -->
   <div class="menu-bottom-bar">
     <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);" onclick="openStats()"><span class="mbb-icon">📊</span>STATS</button>
-    <button class="menu-bottom-btn" style="border-color:rgba(245,200,66,.4);color:#f5c842;background:rgba(245,200,66,.07);" onclick="openChallenges()"><span class="mbb-icon">🏅</span>DÉFIS</button>
+    <button class="menu-bottom-btn" style="border-color:rgba(245,200,66,.4);color:#f5c842;background:rgba(245,200,66,.07);" onclick="openChallenges()"><span class="mbb-icon">🏅</span>DÉFIS<span class="challenge-badge" id="challenges-badge"></span></button>
     <button class="menu-bottom-btn" style="border-color:rgba(180,180,255,.25);color:rgba(180,180,255,.7);" onclick="show('rules-overlay')"><span class="mbb-icon">📋</span>RÈGLES</button>
     <button class="menu-bottom-btn" style="border-color:rgba(0,229,255,.3);color:var(--x);background:rgba(0,229,255,.06);" onclick="openDesign()"><span class="mbb-icon">🎨</span>DESIGN</button>
   </div>
@@ -2630,6 +2626,7 @@ async function onLoggedIn(migrate) {
   // Pré-remplir le pseudo dans les setups
   prefillUserName();
   // Défis journaliers : notif uniquement quand complété
+  updateChallengesBadge();
 }
 
 function updateMenuUserBar() {
@@ -4619,15 +4616,8 @@ function checkChallenges() {
 }
 
 function showChallengeNotif(challenge) {
-  const notif = document.getElementById('challenge-notif');
-  const title = document.getElementById('challenge-notif-title');
-  const sub   = document.getElementById('challenge-notif-sub');
-  if (!notif) return;
-  title.textContent = challenge.icon + ' ' + challenge.name;
-  sub.textContent   = 'Défi complété ! +' + challenge.pts + ' pts';
-  notif.className   = 'challenge-notif show';
-  SFX.tourwin?.();
-  setTimeout(() => { notif.className = 'challenge-notif'; }, 2500);
+  // Plus de popup — juste mettre à jour le badge rouge sur le bouton DÉFIS
+  updateChallengesBadge();
 }
 
 // ── Enregistrer victoire de tournoi ──────────────────────────
@@ -4824,6 +4814,51 @@ function closeDailyNotif() {
   setTimeout(() => { notif.style.display = 'none'; }, 400);
 }
 
+
+// ── Badge rouge et système de réclamation ─────────────────────
+function updateChallengesBadge() {
+  const stats = loadStats();
+  const done   = stats._challengesDone || [];
+  const claimed = stats._challengesClaimed || [];
+  // Défis permanents complétés mais non réclamés
+  const unclaimed = CHALLENGES.filter(c => done.includes(c.id) && !claimed.includes(c.id));
+  // Défis journaliers complétés mais non réclamés
+  const dailyData = getDailyStats() || { done: [], claimed: [] };
+  const dailyClaimed = dailyData.claimed || [];
+  const dailies = getDailyChallenges();
+  const unclaimedDaily = dailies.filter(d => dailyData.done.includes(d.id) && !dailyClaimed.includes(d.id));
+
+  const total = unclaimed.length + unclaimedDaily.length;
+  const badge = document.getElementById('challenges-badge');
+  if (badge) badge.style.display = total > 0 ? 'block' : 'none';
+}
+
+function claimChallenge(id, isDaily) {
+  const stats = loadStats();
+  if (isDaily) {
+    const dailyData = getDailyStats() || { done: [], claimed: [], progress: {} };
+    if (!dailyData.claimed) dailyData.claimed = [];
+    if (dailyData.claimed.includes(id)) return;
+    const d = getDailyChallenges().find(x => x.id === id);
+    if (!d) return;
+    dailyData.claimed.push(id);
+    saveDailyStats(dailyData);
+    // Ajouter les pts au score
+    stats._dailyPts = (stats._dailyPts||0) + d.pts;
+    saveStats(stats);
+  } else {
+    if (!stats._challengesClaimed) stats._challengesClaimed = [];
+    if (stats._challengesClaimed.includes(id)) return;
+    const c = CHALLENGES.find(x => x.id === id);
+    if (!c) return;
+    stats._challengesClaimed.push(id);
+    // Les pts sont déjà dans calcChallengeBonus via _challengesDone
+    saveStats(stats);
+  }
+  updateChallengesBadge();
+  renderRankBadge();
+  openChallenges(); // Rafraîchir l'affichage
+}
 // ── Ouvrir l'écran challenges ─────────────────────────────────
 function openChallenges() {
   const stats = loadStats();
@@ -4843,6 +4878,8 @@ function openChallenges() {
   html += '<div class="challenge-list">';
   dailies.forEach(d => {
     const isDone = dailyData.done.includes(d.id);
+    const dailyClaimed = dailyData.claimed || [];
+    const isClaimed = dailyClaimed.includes(d.id);
     const cur = dailyData.progress[d.id] || 0;
     const pct = Math.min(100, Math.round((cur / d.target) * 100));
     html += `
@@ -4853,7 +4890,10 @@ function openChallenges() {
           <div class="challenge-desc">${d.desc}</div>
           ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
         </div>
-        <div class="challenge-pts">${isDone ? '✓ +'+d.pts : '+'+d.pts+' pts'}</div>
+        ${isDone && !isClaimed
+          ? `<button class="challenge-claim-btn" onclick="claimChallenge('${d.id}',true)">+${d.pts} pts</button>`
+          : `<div class="challenge-pts">${isClaimed ? '✅' : '+'+d.pts+' pts'}</div>`
+        }
         <span class="daily-badge">JOUR</span>
       </div>`;
   });
@@ -4872,6 +4912,8 @@ function openChallenges() {
     html += '<div class="challenge-list">';
     challenges.forEach(c => {
       const isDone = done.includes(c.id);
+      const claimed = stats._challengesClaimed || [];
+      const isClaimed = claimed.includes(c.id);
       const [cur, max] = c.progress(stats);
       const pct = Math.round((cur/max)*100);
       html += `
@@ -4882,7 +4924,10 @@ function openChallenges() {
             <div class="challenge-desc">${c.desc}</div>
             ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
           </div>
-          <div class="challenge-pts">${isDone ? '✅' : '+'+c.pts+' pts'}</div>
+          ${isDone && !isClaimed
+            ? `<button class="challenge-claim-btn" onclick="claimChallenge('${c.id}',false)">+${c.pts} pts</button>`
+            : `<div class="challenge-pts">${isClaimed ? '✅' : '+'+c.pts+' pts'}</div>`
+          }
         </div>`;
     });
     html += '</div>';
