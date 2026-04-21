@@ -4274,7 +4274,7 @@ var CHALLENGES = [
   // ── Premiers pas ────────────────────────────────────
   {
     id: 'first_game',
-    icon: '🎮', name: 'Première partie', pts: 10,
+    icon: '🎮', name: 'Première partie', pts: 5,
     desc: 'Lance ta première partie (tous modes)',
     category: 'Premiers pas',
     check: (stats) => (stats.global?.win||0) + (stats.global?.loss||0) + (stats.global?.draw||0) >= 1,
@@ -4282,7 +4282,7 @@ var CHALLENGES = [
   },
   {
     id: 'first_win',
-    icon: '🥳', name: 'Première victoire', pts: 20,
+    icon: '🥳', name: 'Première victoire', pts: 10,
     desc: 'Remporte ta première partie',
     category: 'Premiers pas',
     check: (stats) => (stats.global?.win||0) >= 1,
@@ -4290,7 +4290,7 @@ var CHALLENGES = [
   },
   {
     id: 'first_online',
-    icon: '🌐', name: 'Baptême du feu', pts: 30,
+    icon: '🌐', name: 'Baptême du feu', pts: 15,
     desc: 'Joue ta première partie en ligne',
     category: 'Premiers pas',
     check: (stats) => (stats.online?.win||0)+(stats.online?.loss||0)+(stats.online?.draw||0) >= 1,
@@ -4299,7 +4299,7 @@ var CHALLENGES = [
   // ── Bot ─────────────────────────────────────────────
   {
     id: 'beat_easy',
-    icon: '🟢', name: 'Trop facile', pts: 20,
+    icon: '🟢', name: 'Trop facile', pts: 10,
     desc: 'Bats le bot Facile',
     category: 'Bot',
     check: (stats) => (stats['bot-easy']?.win||0) >= 1,
@@ -4307,7 +4307,7 @@ var CHALLENGES = [
   },
   {
     id: 'beat_medium',
-    icon: '🟡', name: 'Niveau intermédiaire', pts: 40,
+    icon: '🟡', name: 'Niveau intermédiaire', pts: 20,
     desc: 'Bats le bot Moyen',
     category: 'Bot',
     check: (stats) => (stats['bot-medium']?.win||0) >= 1,
@@ -4315,7 +4315,7 @@ var CHALLENGES = [
   },
   {
     id: 'beat_hard',
-    icon: '🔴', name: 'Machine brisée', pts: 80,
+    icon: '🔴', name: 'Machine brisée', pts: 40,
     desc: 'Bats le bot Difficile',
     category: 'Bot',
     check: (stats) => (stats['bot-hard']?.win||0) >= 1,
@@ -4323,7 +4323,7 @@ var CHALLENGES = [
   },
   {
     id: 'sweep_bot',
-    icon: '🧹', name: 'Balayage', pts: 60,
+    icon: '🧹', name: 'Balayage', pts: 30,
     desc: 'Bats les 3 niveaux de bot',
     category: 'Bot',
     check: (stats) => (stats['bot-easy']?.win||0)>=1 && (stats['bot-medium']?.win||0)>=1 && (stats['bot-hard']?.win||0)>=1,
@@ -4332,7 +4332,7 @@ var CHALLENGES = [
   // ── Tournoi ─────────────────────────────────────────
   {
     id: 'tournament_first',
-    icon: '🏆', name: 'Champion local', pts: 30,
+    icon: '🏆', name: 'Champion local', pts: 15,
     desc: 'Remporte un tournoi (tous modes)',
     category: 'Tournoi',
     check: (stats) => !!(stats._tournamentsWon >= 1),
@@ -4340,7 +4340,7 @@ var CHALLENGES = [
   },
   {
     id: 'tournament_hard',
-    icon: '👑', name: 'Grand tournoi', pts: 100,
+    icon: '👑', name: 'Grand tournoi', pts: 50,
     desc: 'Remporte un tournoi contre le bot Difficile',
     category: 'Tournoi',
     check: (stats) => !!(stats._tournamentsHardWon >= 1),
@@ -4349,7 +4349,7 @@ var CHALLENGES = [
   // ── Streak ──────────────────────────────────────────
   {
     id: 'streak3',
-    icon: '🔥', name: 'En feu', pts: 25,
+    icon: '🔥', name: 'En feu', pts: 15,
     desc: `Enchaîne 3 victoires d'affilée`,
     category: 'Streak',
     check: (stats) => (stats.global?.bestStreak||0) >= 3,
@@ -4357,7 +4357,7 @@ var CHALLENGES = [
   },
   {
     id: 'streak5',
-    icon: '💥', name: 'Inarrêtable', pts: 60,
+    icon: '💥', name: 'Inarrêtable', pts: 30,
     desc: `Enchaîne 5 victoires d'affilée`,
     category: 'Streak',
     check: (stats) => (stats.global?.bestStreak||0) >= 5,
@@ -4365,7 +4365,7 @@ var CHALLENGES = [
   },
   {
     id: 'streak10',
-    icon: '⚡', name: 'Légende vivante', pts: 150,
+    icon: '⚡', name: 'Légende vivante', pts: 75,
     desc: `Enchaîne 10 victoires d'affilée`,
     category: 'Streak',
     check: (stats) => (stats.global?.bestStreak||0) >= 10,
@@ -4374,7 +4374,7 @@ var CHALLENGES = [
   // ── Style ───────────────────────────────────────────
   {
     id: 'speed_win',
-    icon: '⚡', name: 'Victoire express', pts: 40,
+    icon: '⚡', name: 'Victoire express', pts: 20,
     desc: 'Gagne une partie en moins de 20 coups',
     category: 'Style',
     check: (stats) => stats.global?.fastest !== null && stats.global?.fastest < 20,
@@ -4386,7 +4386,7 @@ var CHALLENGES = [
   },
   {
     id: 'veteran',
-    icon: '🎖️', name: 'Vétéran', pts: 50,
+    icon: '🎖️', name: 'Vétéran', pts: 25,
     desc: 'Joue 50 parties au total',
     category: 'Style',
     check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 50,
@@ -4395,7 +4395,7 @@ var CHALLENGES = [
   // ── Insolites ───────────────────────────────────────
   {
     id: 'draw_master',
-    icon: '🤝', name: 'Pacifiste', pts: 35,
+    icon: '🤝', name: 'Pacifiste', pts: 20,
     desc: 'Fais 5 matchs nuls',
     category: 'Insolite',
     check: (stats) => (stats.global?.draw||0) >= 5,
@@ -4403,7 +4403,7 @@ var CHALLENGES = [
   },
   {
     id: 'lose10',
-    icon: '💀', name: 'Apprenti masochiste', pts: 25,
+    icon: '💀', name: 'Apprenti masochiste', pts: 10,
     desc: 'Perds 10 parties (tout vient avec le temps...)',
     category: 'Insolite',
     check: (stats) => (stats.global?.loss||0) >= 10,
@@ -4411,7 +4411,7 @@ var CHALLENGES = [
   },
   {
     id: 'beat_hard_3',
-    icon: '🤯', name: 'Dompteur de machines', pts: 120,
+    icon: '🤯', name: 'Dompteur de machines', pts: 60,
     desc: 'Bats le bot Difficile 3 fois',
     category: 'Insolite',
     check: (stats) => (stats['bot-hard']?.win||0) >= 3,
@@ -4419,7 +4419,7 @@ var CHALLENGES = [
   },
   {
     id: 'online_win5',
-    icon: '🌍', name: 'Conquistador', pts: 90,
+    icon: '🌍', name: 'Conquistador', pts: 45,
     desc: 'Gagne 5 parties en ligne',
     category: 'Insolite',
     check: (stats) => (stats.online?.win||0) >= 5,
@@ -4427,7 +4427,7 @@ var CHALLENGES = [
   },
   {
     id: 'online_loss',
-    icon: '🏳️', name: 'Connexion courageuse', pts: 15,
+    icon: '🏳️', name: 'Connexion courageuse', pts: 5,
     desc: 'Perds une partie en ligne (le courage de se connecter)',
     category: 'Insolite',
     check: (stats) => (stats.online?.loss||0) >= 1,
@@ -4435,7 +4435,7 @@ var CHALLENGES = [
   },
   {
     id: 'marathon',
-    icon: '🏃', name: 'Marathon', pts: 75,
+    icon: '🏃', name: 'Marathon', pts: 40,
     desc: 'Joue une partie de plus de 60 coups',
     category: 'Insolite',
     check: (stats) => (stats.global?.longest||0) >= 60,
@@ -4443,7 +4443,7 @@ var CHALLENGES = [
   },
   {
     id: 'lightning',
-    icon: '⚡', name: 'Éclair', pts: 60,
+    icon: '⚡', name: 'Éclair', pts: 30,
     desc: 'Gagne en moins de 10 coups',
     category: 'Insolite',
     check: (stats) => stats.global?.fastest !== null && stats.global?.fastest !== undefined && stats.global?.fastest < 10,
@@ -4455,7 +4455,7 @@ var CHALLENGES = [
   },
   {
     id: 'streak_online',
-    icon: '🔗', name: 'Enchaîneur en ligne', pts: 80,
+    icon: '🔗', name: 'Enchaîneur en ligne', pts: 40,
     desc: 'Gagne 3 parties en ligne sans perdre',
     category: 'Insolite',
     check: (stats) => (stats.online?.bestStreak||0) >= 3,
@@ -4463,7 +4463,7 @@ var CHALLENGES = [
   },
   {
     id: 'all_modes',
-    icon: '🎭', name: 'Touche-à-tout', pts: 40,
+    icon: '🎭', name: 'Touche-à-tout', pts: 20,
     desc: 'Joue dans les 3 modes (local, bot, en ligne)',
     category: 'Insolite',
     check: (stats) => {
@@ -4483,7 +4483,7 @@ var CHALLENGES = [
   },
   {
     id: 'comeback',
-    icon: '🔄', name: 'Revenant', pts: 45,
+    icon: '🔄', name: 'Revenant', pts: 25,
     desc: 'Gagne une partie après avoir perdu 3 fois de suite',
     category: 'Insolite',
     check: (stats) => !!(stats._cameBack),
@@ -4491,7 +4491,7 @@ var CHALLENGES = [
   },
   {
     id: 'centurion',
-    icon: '💯', name: 'Centurion', pts: 100,
+    icon: '💯', name: 'Centurion', pts: 50,
     desc: 'Joue 100 parties au total',
     category: 'Insolite',
     check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 100,
@@ -4499,15 +4499,15 @@ var CHALLENGES = [
   },
   {
     id: 'legend_rank',
-    icon: '🔥', name: 'Rang Légende', pts: 200,
+    icon: '🔥', name: 'Rang Légende', pts: 100,
     desc: 'Atteins le rang Légende (950+ pts)',
     category: 'Insolite',
-    check: (stats) => calcScoreFromStats() >= 950,
-    progress: (stats) => [Math.min(950, calcScoreFromStats()), 950]
+    check: (stats) => calcScoreFromStats() >= 5000,
+    progress: (stats) => [Math.min(5000, calcScoreFromStats()), 5000]
   },
   {
     id: 'theme_changer',
-    icon: '🎨', name: 'Caméléon', pts: 20,
+    icon: '🎨', name: 'Caméléon', pts: 10,
     desc: 'Change de thème 5 fois',
     category: 'Insolite',
     check: (stats) => (stats._themeChanges||0) >= 5,
@@ -4515,7 +4515,7 @@ var CHALLENGES = [
   },
   {
     id: 'night_owl',
-    icon: '🦉', name: 'Chouette de nuit', pts: 30,
+    icon: '🦉', name: 'Chouette de nuit', pts: 15,
     desc: 'Joue une partie après minuit',
     category: 'Insolite',
     check: (stats) => !!(stats._playedAtNight),
@@ -4523,7 +4523,7 @@ var CHALLENGES = [
   },
   {
     id: 'grand_slam',
-    icon: '🏅', name: 'Grand Chelem', pts: 150,
+    icon: '🏅', name: 'Grand Chelem', pts: 75,
     desc: 'Gagne un tournoi dans chacun des 3 modes',
     category: 'Insolite',
     check: (stats) => (stats._tournamentsLocal||0)>=1 && (stats._tournamentsBot||0)>=1 && (stats._tournamentsOnline||0)>=1,
@@ -4533,7 +4533,7 @@ var CHALLENGES = [
   // ── Jours consécutifs ────────────────────────────────
   {
     id: 'login_1day',
-    icon: '📅', name: 'Premier jour', pts: 10,
+    icon: '📅', name: 'Premier jour', pts: 5,
     desc: 'Joue 1 jour',
     category: 'Assiduité',
     check: (stats) => (stats._loginStreak||0) >= 1,
@@ -4541,7 +4541,7 @@ var CHALLENGES = [
   },
   {
     id: 'login_3days',
-    icon: '🗓️', name: 'Habitué', pts: 30,
+    icon: '🗓️', name: 'Habitué', pts: 15,
     desc: 'Joue 3 jours de suite',
     category: 'Assiduité',
     check: (stats) => (stats._loginStreak||0) >= 3,
@@ -4549,7 +4549,7 @@ var CHALLENGES = [
   },
   {
     id: 'login_7days',
-    icon: '🔥', name: 'Une semaine', pts: 70,
+    icon: '🔥', name: 'Une semaine', pts: 35,
     desc: 'Joue 7 jours de suite',
     category: 'Assiduité',
     check: (stats) => (stats._loginStreak||0) >= 7,
@@ -4557,7 +4557,7 @@ var CHALLENGES = [
   },
   {
     id: 'login_30days',
-    icon: '🏆', name: 'Un mois !', pts: 200,
+    icon: '🏆', name: 'Un mois !', pts: 100,
     desc: 'Joue 30 jours de suite',
     category: 'Assiduité',
     check: (stats) => (stats._loginStreak||0) >= 30,
@@ -4565,7 +4565,7 @@ var CHALLENGES = [
   },
   {
     id: 'login_best7',
-    icon: '📆', name: 'Meilleure série', pts: 50,
+    icon: '📆', name: 'Meilleure série', pts: 25,
     desc: 'Atteins une série de 7 jours (même non consécutifs)',
     category: 'Assiduité',
     check: (stats) => (stats._loginBestStreak||0) >= 7,
@@ -4573,7 +4573,7 @@ var CHALLENGES = [
   },
   {
     id: 'play_weekend',
-    icon: '🛋️', name: 'Week-end gamer', pts: 20,
+    icon: '🛋️', name: 'Week-end gamer', pts: 10,
     desc: 'Joue un samedi ET un dimanche',
     category: 'Assiduité',
     check: (stats) => !!(stats._playedSaturday && stats._playedSunday),
@@ -4581,7 +4581,7 @@ var CHALLENGES = [
   },
   {
     id: 'early_bird',
-    icon: '🌅', name: 'Lève-tôt', pts: 25,
+    icon: '🌅', name: 'Lève-tôt', pts: 15,
     desc: 'Joue une partie avant 7h du matin',
     category: 'Assiduité',
     check: (stats) => !!(stats._playedEarlyMorning),
@@ -4591,7 +4591,7 @@ var CHALLENGES = [
   // ── Défis supplémentaires ────────────────────────────
   {
     id: 'win20_easy',
-    icon: '🤖', name: 'Exterminateur', pts: 80,
+    icon: '🤖', name: 'Exterminateur', pts: 40,
     desc: 'Gagne 20 fois contre le bot Facile',
     category: 'Bot',
     check: (stats) => (stats['bot-easy']?.win||0) >= 20,
@@ -4599,7 +4599,7 @@ var CHALLENGES = [
   },
   {
     id: 'win10_medium',
-    icon: '🧠', name: 'Stratège', pts: 120,
+    icon: '🧠', name: 'Stratège', pts: 60,
     desc: 'Gagne 10 fois contre le bot Moyen',
     category: 'Bot',
     check: (stats) => (stats['bot-medium']?.win||0) >= 10,
@@ -4607,7 +4607,7 @@ var CHALLENGES = [
   },
   {
     id: 'no_hint_win',
-    icon: '🙈', name: 'Sans filet', pts: 50,
+    icon: '🙈', name: 'Sans filet', pts: 25,
     desc: 'Gagne 5 parties sans utiliser un seul indice',
     category: 'Style',
     check: (stats) => (stats._winsWithoutHint||0) >= 5,
@@ -4615,7 +4615,7 @@ var CHALLENGES = [
   },
   {
     id: 'win_streak_online5',
-    icon: '👑', name: 'Roi en ligne', pts: 150,
+    icon: '👑', name: 'Roi en ligne', pts: 75,
     desc: 'Enchaîne 5 victoires en ligne',
     category: 'Streak',
     check: (stats) => (stats.online?.bestStreak||0) >= 5,
@@ -4623,7 +4623,7 @@ var CHALLENGES = [
   },
   {
     id: 'play_all_themes',
-    icon: '🌈', name: 'Collectionneur', pts: 40,
+    icon: '🌈', name: 'Collectionneur', pts: 20,
     desc: 'Joue avec 5 thèmes différents',
     category: 'Insolite',
     check: (stats) => (stats._uniqueThemes||0) >= 5,
@@ -4631,7 +4631,7 @@ var CHALLENGES = [
   },
   {
     id: 'draw_online',
-    icon: '🤲', name: 'Match nul en ligne', pts: 45,
+    icon: '🤲', name: 'Match nul en ligne', pts: 25,
     desc: 'Fais un match nul en ligne',
     category: 'Insolite',
     check: (stats) => (stats.online?.draw||0) >= 1,
@@ -4639,7 +4639,7 @@ var CHALLENGES = [
   },
   {
     id: 'win200',
-    icon: '🎰', name: 'Deux cents victoires', pts: 250,
+    icon: '🎰', name: 'Deux cents victoires', pts: 125,
     desc: 'Remporte 200 parties au total',
     category: 'Style',
     check: (stats) => (stats.global?.win||0) >= 200,
@@ -4647,7 +4647,7 @@ var CHALLENGES = [
   },
   {
     id: 'win50',
-    icon: '🥊', name: 'Cinquante victoires', pts: 100,
+    icon: '🥊', name: 'Cinquante victoires', pts: 50,
     desc: 'Remporte 50 parties au total',
     category: 'Style',
     check: (stats) => (stats.global?.win||0) >= 50,
@@ -4655,7 +4655,7 @@ var CHALLENGES = [
   },
   {
     id: 'win_after_midnight',
-    icon: '🌙', name: 'Victoire nocturne', pts: 35,
+    icon: '🌙', name: 'Victoire nocturne', pts: 20,
     desc: 'Gagne une partie après minuit',
     category: 'Insolite',
     check: (stats) => !!(stats._wonAtNight),
@@ -4663,7 +4663,7 @@ var CHALLENGES = [
   },
   {
     id: 'tourney5',
-    icon: '🎖️', name: 'Guerrier de tournoi', pts: 80,
+    icon: '🎖️', name: 'Guerrier de tournoi', pts: 40,
     desc: 'Remporte 5 tournois au total',
     category: 'Tournoi',
     check: (stats) => (stats._tournamentsWon||0) >= 5,
@@ -4671,11 +4671,93 @@ var CHALLENGES = [
   },
   {
     id: 'comeback_hard',
-    icon: '💪', name: 'Rocky', pts: 75,
+    icon: '💪', name: 'Rocky', pts: 40,
     desc: `Bats le bot Difficile après l'avoir perdu 3 fois contre lui`,
     category: 'Insolite',
     check: (stats) => !!(stats._beatHardAfterLosing),
     progress: (stats) => [stats._beatHardAfterLosing ? 1 : 0, 1]
+  },
+,
+  // ── Grands défis ────────────────────────────────────
+  {
+    id: 'win100_online',
+    icon: '🌐', name: 'Conquérant en ligne', pts: 150,
+    desc: 'Gagne 100 parties en ligne',
+    category: 'Style',
+    check: (stats) => (stats.online?.win||0) >= 100,
+    progress: (stats) => [Math.min(100, stats.online?.win||0), 100]
+  },
+  {
+    id: 'win500',
+    icon: '👑', name: 'Demi-millénaire', pts: 200,
+    desc: 'Remporte 500 parties au total',
+    category: 'Style',
+    check: (stats) => (stats.global?.win||0) >= 500,
+    progress: (stats) => [Math.min(500, stats.global?.win||0), 500]
+  },
+  {
+    id: 'streak20',
+    icon: '🚀', name: 'Inarrêtable absolu', pts: 150,
+    desc: 'Enchaîne 20 victoires de suite',
+    category: 'Streak',
+    check: (stats) => (stats.global?.bestStreak||0) >= 20,
+    progress: (stats) => [Math.min(20, stats.global?.bestStreak||0), 20]
+  },
+  {
+    id: 'tourney20',
+    icon: '🏰', name: 'Seigneur des tournois', pts: 125,
+    desc: 'Remporte 20 tournois au total',
+    category: 'Tournoi',
+    check: (stats) => (stats._tournamentsWon||0) >= 20,
+    progress: (stats) => [Math.min(20, stats._tournamentsWon||0), 20]
+  },
+  {
+    id: 'login_100days',
+    icon: '🗓️', name: 'Centenaire', pts: 175,
+    desc: 'Atteins une meilleure série de 100 jours',
+    category: 'Assiduité',
+    check: (stats) => (stats._loginBestStreak||0) >= 100,
+    progress: (stats) => [Math.min(100, stats._loginBestStreak||0), 100]
+  },
+  {
+    id: 'play1000',
+    icon: '🎰', name: 'Millénaire', pts: 175,
+    desc: 'Joue 1000 parties au total',
+    category: 'Style',
+    check: (stats) => (stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0) >= 1000,
+    progress: (stats) => [Math.min(1000,(stats.global?.win||0)+(stats.global?.loss||0)+(stats.global?.draw||0)), 1000]
+  },
+  {
+    id: 'win50_hard',
+    icon: '🤖', name: 'Exterminateur élite', pts: 280,
+    desc: 'Gagne 50 fois contre le bot Difficile',
+    category: 'Bot',
+    check: (stats) => (stats['bot-hard']?.win||0) >= 50,
+    progress: (stats) => [Math.min(50, stats['bot-hard']?.win||0), 50]
+  },
+  {
+    id: 'grandmaster_rank',
+    icon: '👑', name: 'Grand Maître confirmé', pts: 100,
+    desc: 'Atteins le rang Grand Maître (3600+ pts)',
+    category: 'Insolite',
+    check: (stats) => calcScoreFromStats() >= 4000,
+    progress: (stats) => [Math.min(4000, calcScoreFromStats()), 4000]
+  },
+  {
+    id: 'all_themes',
+    icon: '🌈', name: 'Maître du design', pts: 30,
+    desc: 'Joue avec tous les thèmes disponibles',
+    category: 'Insolite',
+    check: (stats) => (stats._uniqueThemes||0) >= 18,
+    progress: (stats) => [Math.min(18, stats._uniqueThemes||0), 18]
+  },
+  {
+    id: 'streak_online10',
+    icon: '⚡', name: 'Dieu en ligne', pts: 125,
+    desc: 'Enchaîne 10 victoires en ligne',
+    category: 'Streak',
+    check: (stats) => (stats.online?.bestStreak||0) >= 10,
+    progress: (stats) => [Math.min(10, stats.online?.bestStreak||0), 10]
   },
 ];
 
@@ -5048,13 +5130,16 @@ function openChallenges() {
 // SYSTÈME DE SCORE (Rang TTT — calculé depuis les stats)
 // ════════════════════════════════════════════════════════
 const RANKS = [
-  { min:950, label:'Légende',      emoji:'🔥' },
-  { min:800, label:'Grand Maître', emoji:'👑' },
-  { min:600, label:'Maître',       emoji:'💎' },
-  { min:400, label:'Expert',       emoji:'🥇' },
-  { min:200, label:'Challenger',   emoji:'🥈' },
-  { min:0,   label:'Recrue',       emoji:'🥉' },
+  { min:5000, label:'Légende',      emoji:'🔥' },
+  { min:4000, label:'Grand Maître', emoji:'👑' },
+  { min:3000, label:'Maître',       emoji:'💎' },
+  { min:2000, label:'Expert',       emoji:'🔵' },
+  { min:1500, label:'Vétéran',      emoji:'💜' },
+  { min:1000, label:'Combattant',   emoji:'🥇' },
+  { min:500,  label:'Apprenti',     emoji:'🥈' },
+  { min:0,    label:'Recrue',       emoji:'🥉' },
 ];
+const SCORE_MAX = 5000;
 
 function calcScoreFromStats() {
   const all = loadStats();
@@ -5067,37 +5152,38 @@ function calcScoreFromStats() {
   const global    = all['global']     || {};
 
   // Points par victoire (local exclu)
-  score += (botEasy.win  || 0) * 20;
-  score += (botMed.win   || 0) * 35;
-  score += (botHard.win  || 0) * 60;
-  score += (online.win   || 0) * 75;
+  score += (botEasy.win  || 0) * 5;
+  score += (botMed.win   || 0) * 10;
+  score += (botHard.win  || 0) * 20;
+  score += (online.win   || 0) * 30;
 
-  // Malus défaites — protégé sous 100 pts
-  const rawWins = (botEasy.win||0)*20 + (botMed.win||0)*35 + (botHard.win||0)*60 + (online.win||0)*75;
+  // Malus défaites — protégé sous 150 pts
+  const rawWins = (botEasy.win||0)*5 + (botMed.win||0)*10 + (botHard.win||0)*20 + (online.win||0)*30;
   const losses = global.loss || 0;
   let lossTotal = 0;
   let tempScore = rawWins;
   for (let i = 0; i < losses; i++) {
-    if (tempScore >= 100) { lossTotal += 25; tempScore -= 25; }
+    if (tempScore >= 150) { lossTotal += 10; tempScore -= 10; }
   }
   score -= lossTotal;
 
   // Bonus égalités
-  score += (global.draw  || 0) * 5;
+  score += (global.draw || 0) * 3;
 
   // Bonus meilleur streak
   const best = global.bestStreak || 0;
-  if (best >= 10) score += 150;
-  else if (best >= 5) score += 80;
-  else if (best >= 3) score += 30;
+  if (best >= 20) score += 300;
+  else if (best >= 10) score += 150;
+  else if (best >= 5)  score += 75;
+  else if (best >= 3)  score += 30;
 
-  // Bonus victoire rapide (fastest win global)
-  if (global.fastest !== null && global.fastest !== undefined && global.fastest < 20) score += 50;
+  // Bonus victoire rapide
+  if (global.fastest !== null && global.fastest !== undefined && global.fastest < 20) score += 30;
 
-  // Bonus challenges complétés
+  // Bonus challenges complétés et réclamés
   score += calcChallengeBonus();
 
-  return Math.max(0, Math.min(1000, score));
+  return Math.max(0, Math.min(SCORE_MAX, score));
 }
 
 function loadScore() { return calcScoreFromStats(); }
@@ -5113,18 +5199,18 @@ function calcScoreDelta(result, moves) {
   const globalStreak = (all['global'] || {}).streak || 0;
 
   if (result === 'win') {
-    if (mode === 'online')                              delta = 75;
-    else if (mode === 'bot' && difficulty === 'hard')   delta = 60;
-    else if (mode === 'bot' && difficulty === 'medium') delta = 35;
-    else if (mode === 'bot' && difficulty === 'easy')   delta = 20;
-    if (moves < 20) delta += 20;
+    if (mode === 'online')                              delta = 30;
+    else if (mode === 'bot' && difficulty === 'hard')   delta = 20;
+    else if (mode === 'bot' && difficulty === 'medium') delta = 10;
+    else if (mode === 'bot' && difficulty === 'easy')   delta = 5;
+    if (moves < 20) delta += 10;
     const streak = globalStreak + 1;
     if (streak >= 5)      delta = Math.round(delta * 1.5);
     else if (streak >= 3) delta = Math.round(delta * 1.2);
   } else if (result === 'loss') {
-    delta = -25;
+    delta = -10;
   } else {
-    delta = 5;
+    delta = 3;
   }
   return delta;
 }
@@ -5156,7 +5242,7 @@ function renderMenuLogo() {
 function openScoreInfo() {
   const score = loadScore();
   const rank = getRank(score);
-  const pct = score / 1000 * 100;
+  const pct = score / SCORE_MAX * 100;
   const nextRank = RANKS.slice().reverse().find(r => r.min > score);
   const nextInfo = nextRank ? `Prochain : ${nextRank.emoji} ${nextRank.label} à ${nextRank.min} pts` : '🔥 Rang maximum !';
   const card = document.getElementById('si-rank-card');
@@ -5165,7 +5251,7 @@ function openScoreInfo() {
       <div class="stats-rank-big-emoji">${rank.emoji}</div>
       <div class="stats-rank-info">
         <div class="stats-rank-name">${rank.label}</div>
-        <div class="stats-rank-pts">${score} / 1000 points</div>
+        <div class="stats-rank-pts">${score} / 5000 points</div>
         <div class="stats-rank-bar-bg"><div class="stats-rank-bar-fill" style="width:${pct}%"></div></div>
         <div class="stats-rank-next">${nextInfo}</div>
       </div>
@@ -5178,19 +5264,19 @@ function renderRankBadge() {
   const rank = getRank(score);
   // Menu badge
   const el = document.getElementById('rank-badge');
-  if (el) el.innerHTML = `<span class="rank-emoji">${rank.emoji}</span><span class="rank-label">${rank.label}</span><span class="rank-score">${score}<span class="rank-max">/1000</span></span>`;
+  if (el) el.innerHTML = `<span class="rank-emoji">${rank.emoji}</span><span class="rank-label">${rank.label}</span><span class="rank-score">${score}<span class="rank-max">/5000</span></span>`;
   renderMenuLogo();
   // Stats rank card
   const card = document.getElementById('stats-rank-card');
   if (card) {
     const nextRank = RANKS.slice().reverse().find(r => r.min > score);
-    const pct = score / 1000 * 100;
+    const pct = score / SCORE_MAX * 100;
     const nextInfo = nextRank ? `Prochain palier : ${nextRank.emoji} ${nextRank.label} à ${nextRank.min} pts` : '🔥 Rang maximum atteint !';
     card.innerHTML = `
       <div class="stats-rank-big-emoji">${rank.emoji}</div>
       <div class="stats-rank-info">
         <div class="stats-rank-name">${rank.label}</div>
-        <div class="stats-rank-pts">${score} / 1000 points</div>
+        <div class="stats-rank-pts">${score} / 5000 points</div>
         <div class="stats-rank-bar-bg"><div class="stats-rank-bar-fill" style="width:${pct}%"></div></div>
         <div class="stats-rank-next">${nextInfo}</div>
       </div>`;
@@ -5257,7 +5343,7 @@ function updateGoStats(scoreResult) {
     (s.streak > 1 ? `<span class="go-stat streak">🔥 ${s.streak} streak</span>` : '') +
     `<span class="go-stat win" style="color:var(--x);border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.06)">${rate}% win</span>` +
     deltaStr +
-    `<span class="go-stat streak">${rank.emoji} ${loadScore()}/1000</span>`;
+    `<span class="go-stat streak">${rank.emoji} ${loadScore()}/5000</span>`;
 }
 // ════════════════════════════════════════════════════════
 const THEME_MARKS = {
