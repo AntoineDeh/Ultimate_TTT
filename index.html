@@ -203,7 +203,7 @@
     .icon-btn.hidden { display:none; }
 
     /* ── More menu (⋯) ── */
-    .more-btn { width:32px; height:32px; border-radius:9px; border:1.5px solid rgba(180,180,255,.22); background:rgba(180,180,255,.05); color:rgba(180,180,255,.6); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; letter-spacing:.05em; flex-shrink:0; }
+    .more-btn { width:32px; height:32px; border-radius:9px; border:1.5px solid rgba(180,180,255,.4); background:rgba(180,180,255,.1); color:rgba(180,180,255,.8); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; letter-spacing:.05em; flex-shrink:0; }
     .more-btn:hover, .more-btn.open { color:#fff; border-color:rgba(180,180,255,.55); background:rgba(180,180,255,.14); }
     .more-btn.hidden { display:none; }
     .more-dropdown { position:absolute; top:calc(100% + 6px); right:0; z-index:600; background:var(--surface); border:1px solid var(--border-out); border-radius:12px; padding:6px; display:flex; flex-direction:column; gap:2px; min-width:150px; box-shadow:0 8px 32px rgba(0,0,0,.6); animation:fadein .15s ease; }
@@ -284,38 +284,34 @@
     @keyframes blink { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.4} }
 
     /* ── Board ── */
-    .board { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--og);
-      background:#1a1a3a; border:var(--og) solid #1a1a3a; border-radius:14px;
-      box-shadow:0 0 0 1px rgba(120,120,220,.3), 0 0 50px rgba(20,20,100,.5),
-                 inset 0 0 0 1px rgba(80,80,160,.15);
+    .board { display:grid; grid-template-columns:repeat(3,1fr); gap:3px;
+      background:rgba(255,255,255,.12); border:3px solid rgba(255,255,255,.12); border-radius:12px;
+      box-shadow:0 0 30px rgba(0,0,80,.6);
       width:min(calc(100vw - 16px), calc(100dvh - 190px));
       max-width:min(calc(100vw - 16px), calc(100dvh - 190px));
       aspect-ratio:1/1; align-self:center; }
 
     .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-      background:rgba(255,255,255,.15); position:relative;
-      transition:background .3s, box-shadow .3s, transform .2s;
-      border-radius:6px; overflow:hidden;
-      border:1px solid rgba(255,255,255,.12); }
+      background:rgba(255,255,255,.18); position:relative;
+      transition:box-shadow .3s, transform .2s;
+      border-radius:3px; overflow:hidden; border:none; }
 
-    /* Active — pulse animé */
-    .sb.active { background:rgba(255,193,7,.6);
-      box-shadow:0 0 0 2.5px var(--active), 0 0 20px rgba(255,193,7,.35);
-      border-color:rgba(255,193,7,.7);
+    .sb.active {
+      box-shadow:0 0 0 2px var(--active), 0 0 16px rgba(255,193,7,.4);
       animation:sbActivePulse 2s ease-in-out infinite alternate; }
     @keyframes sbActivePulse {
-      from { box-shadow:0 0 0 2px var(--active), 0 0 12px rgba(255,193,7,.2); }
-      to   { box-shadow:0 0 0 2.5px var(--active), 0 0 28px rgba(255,193,7,.5); }
+      from { box-shadow:0 0 0 2px var(--active), 0 0 8px rgba(255,193,7,.2); }
+      to   { box-shadow:0 0 0 2px var(--active), 0 0 22px rgba(255,193,7,.5); }
     }
-    .sb.wx { background:rgba(0,229,255,.4); border-color:rgba(0,229,255,.3); }
-    .sb.wo { background:rgba(255,31,122,.4); border-color:rgba(255,31,122,.3); }
-    .sb.wd { background:rgba(180,180,180,.2); border-color:rgba(120,120,180,.2); }
+    .sb.wx { box-shadow:0 0 0 2px var(--x); background:rgba(0,229,255,.15); }
+    .sb.wo { box-shadow:0 0 0 2px var(--o); background:rgba(255,31,122,.15); }
+    .sb.wd { background:rgba(180,180,180,.1); }
 
-    .cell { width:var(--cs); height:var(--cs); background:#05050f;
+    .cell { width:var(--cs); height:var(--cs); background:rgba(30,30,55,1);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer; font-family:'Share Tech Mono',monospace; font-weight:400;
       font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s; }
-    .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.07); transform:scale(1.06); }
+    .cell:hover:not(.taken):not(.locked) { background:rgba(60,60,100,1); transform:scale(1.06); }
     .cell:active:not(.taken):not(.locked) { transform:scale(.94); }
     .cell.taken,.cell.locked { cursor:default; }
     .cell.auto { animation:autopop .4s cubic-bezier(.34,1.56,.64,1); }
@@ -1845,6 +1841,17 @@
   </div>
 </div>
 
+<div class="overlay abandon-confirm hidden" id="back-confirm">
+  <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;padding:28px 24px;background:rgba(10,10,28,.97);border:1px solid rgba(180,180,255,.15);border-radius:20px;width:min(300px,88vw);">
+    <div style="font-family:'Orbitron',sans-serif;font-weight:900;font-size:.9rem;letter-spacing:.15em;color:#fff;">QUITTER ?</div>
+    <div style="font-size:.72rem;color:rgba(180,180,255,.5);letter-spacing:.05em;">La partie en cours sera perdue.</div>
+    <div style="display:flex;gap:10px;width:100%;">
+      <button onclick="hide('back-confirm')" style="flex:1;font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.1em;padding:12px;background:transparent;color:rgba(180,180,255,.5);border:1px solid rgba(180,180,255,.2);border-radius:10px;cursor:pointer;">ANNULER</button>
+      <button onclick="doBackToMenu()" style="flex:1;font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.1em;padding:12px;background:rgba(255,31,122,.12);color:var(--o);border:1px solid rgba(255,31,122,.35);border-radius:10px;cursor:pointer;">QUITTER</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay abandon-confirm hidden" id="abandon-confirm">
   <div class="abandon-title">⚠ ABANDONNER ?</div>
   <div class="abandon-sub">Le point sera attribué à l'adversaire.</div>
@@ -1983,7 +1990,7 @@
   <div class="score-row">
     <div class="score-left">
       <div class="left-icons">
-        <button class="icon-btn home hidden" id="home-btn" onclick="backToMenu()" title="Menu">⌂</button>
+        <button class="icon-btn home hidden" id="home-btn" onclick="confirmBackToMenu()" title="Menu">⌂</button>
         <button class="hint-btn hidden" id="hint-btn" onclick="useHint()" title="Indice">
           💡<span class="hint-count" id="hint-count">3</span>
         </button>
@@ -1998,7 +2005,7 @@
               <circle class="avatar-progress" id="avatar-progress-x" cx="18" cy="18" r="15.9" stroke="var(--x)"/>
             </svg>
             <div class="avatar-emoji" id="avatar-emoji-x">🎮</div>
-            <div id="avatar-timer-x" style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font-size:.48rem;font-family:'Orbitron',sans-serif;opacity:.7;color:#4ade80;white-space:nowrap;"></div>
+            <div id="avatar-timer-x" style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:.42rem;font-family:'Orbitron',sans-serif;font-weight:700;opacity:.9;color:#4ade80;white-space:nowrap;line-height:1;pointer-events:none;"></div>
           </div>
           <div class="score-lbl" id="lbl-x">JOUEUR X</div>
           <div class="score-name x" id="sname-x">X</div>
@@ -2014,7 +2021,7 @@
               <circle class="avatar-progress" id="avatar-progress-o" cx="18" cy="18" r="15.9" stroke="var(--o)"/>
             </svg>
             <div class="avatar-emoji" id="avatar-emoji-o">🎮</div>
-            <div id="avatar-timer-o" style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font-size:.48rem;font-family:'Orbitron',sans-serif;opacity:.7;color:#4ade80;white-space:nowrap;"></div>
+            <div id="avatar-timer-o" style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:.42rem;font-family:'Orbitron',sans-serif;font-weight:700;opacity:.9;color:#4ade80;white-space:nowrap;line-height:1;pointer-events:none;"></div>
           </div>
           <div class="score-lbl" id="lbl-o">JOUEUR O</div>
           <div class="score-name o" id="sname-o">O</div>
@@ -2992,10 +2999,28 @@ function showGameIcons() {
   updateHintBtn();
   updateMoreSoundItem();
 }
+
+function confirmBackToMenu() {
+  // Pas en jeu → retour direct
+  if (!G || G.winner || !mode) { backToMenu(); return; }
+  // En jeu → demander confirmation
+  show('back-confirm');
+}
+function doBackToMenu() {
+  hide('back-confirm');
+  backToMenu();
+}
+
 function backToMenu() {
+  // Stopper tout immédiatement
+  stopTimer();
+  timerEnabled = false;
+  botThinking = false;
+  // Couper les sons en cours
+  try { if (typeof audioCtx !== 'undefined' && audioCtx) audioCtx.suspend(); } catch(e) {}
   hideChatBar();
   hideChatDrawer();
-  ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm'].forEach(hide);
+  ['setup-local','setup-bot','setup-online','gameover','waiting-screen','rules-overlay','abandon-confirm','back-confirm'].forEach(hide);
   closeDesign();
   show('menu');
   ['home-btn','undo-btn','hint-btn','reset-btn','more-btn'].forEach(hide);
@@ -3003,21 +3028,21 @@ function backToMenu() {
   closeMoreMenu();
   const abandonItem = document.getElementById('more-abandon-item');
   if (abandonItem) abandonItem.style.display = 'none';
-  stopTimer();
-  timerEnabled = false;
   hide('tournament-banner');
   hideChatBar();
   document.getElementById('chat-msgs').innerHTML = '';
   unreadCount = 0;
   chatOpen = false;
   tournamentMode = false; tournamentWins = {X:0,O:0}; tournamentOver = false;
-  if (ws) { ws.send(JSON.stringify({type:'cancel_matchmake'})); ws.onclose=null; ws.close(); ws=null; }
+  if (ws) { try { ws.send(JSON.stringify({type:'cancel_matchmake'})); } catch(e){} ws.onclose=null; ws.close(); ws=null; }
   currentRoomId = null;
   scores={X:0,O:0}; G=null; mode=null; botThinking=false; history=[]; undoUsed=false; hintCell=null; hints=3; gameLog=[]; analysisCache={}; analysisReady=false;
   document.getElementById('undo-btn').style.opacity='';
   document.getElementById('undo-btn').style.pointerEvents='';
   document.getElementById('board').innerHTML='';
   document.getElementById('turn-text').textContent='—';
+  // Relancer l'audio context pour la prochaine partie
+  try { if (typeof audioCtx !== 'undefined' && audioCtx) audioCtx.resume(); } catch(e) {}
   renderRankBadge();
 }
 function setDiff(d) {
@@ -3087,11 +3112,14 @@ function botMove() {
   botThinking=true;
   const delay = difficulty==='hard'?300:150;
   setTimeout(()=>{
+    // Vérifier que la partie est toujours active (l'utilisateur n'a pas quitté)
+    if (!G || mode !== 'bot' || !botThinking) return;
     let move;
     if (difficulty==='easy') move=botEasy(G);
     else if (difficulty==='medium') move=botMedium(G);
     else move=botHard(G);
     botThinking=false;
+    if (!G || mode !== 'bot') return; // double vérif après calcul long
     if (move) {
       const prevBw = [...G.bw];
       const prevState = JSON.parse(JSON.stringify(G));
@@ -3101,7 +3129,7 @@ function botMove() {
       if (subWon) { SFX.subwin(); haptic([20,10,40]); } else { SFX.move(); haptic(15); }
       runAutoAndRender();
     }
-    if (G.winner) setTimeout(showGameOver,600);
+    if (G && G.winner) setTimeout(showGameOver,600);
   }, delay);
 }
 
