@@ -1124,19 +1124,6 @@
     .challenge-notif-title { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700; color:#f5c842; letter-spacing:.1em; }
     .challenge-notif-sub { font-size:.6rem; color:rgba(200,160,40,.6); }
 
-    /* ── Notification défis journaliers ── */
-    .daily-notif { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
-      background:rgba(10,8,0,.96); border:1px solid rgba(245,200,66,.35); border-radius:16px;
-      padding:14px 16px; width:min(320px,88vw); z-index:850;
-      box-shadow:0 8px 40px rgba(0,0,0,.7), 0 0 20px rgba(245,200,66,.1);
-      display:none; flex-direction:column; gap:8px;
-      opacity:0; transition:opacity .4s ease, transform .4s cubic-bezier(.34,1.2,.64,1); }
-    .daily-notif-header { display:flex; align-items:center; justify-content:space-between; }
-    .daily-notif-title { font-family:'Orbitron',sans-serif; font-size:.7rem; font-weight:900;
-      letter-spacing:.15em; color:#f5c842; }
-    .daily-notif-close { background:none; border:none; color:rgba(200,160,40,.4);
-      cursor:pointer; font-size:.9rem; padding:2px 6px; }
-    .daily-notif-close:hover { color:#f5c842; }
 
     /* Section défis journaliers dans l'écran challenges */
     .daily-card { background:rgba(245,200,66,.04); border:1px solid rgba(245,200,66,.2);
@@ -1314,14 +1301,6 @@
 </div>
 
 
-<!-- Notification défis journaliers -->
-<div class="daily-notif" id="daily-notif">
-  <div class="daily-notif-header">
-    <div class="daily-notif-title">📅 DÉFIS DU JOUR</div>
-    <button class="daily-notif-close" onclick="closeDailyNotif()">✕</button>
-  </div>
-  <div id="daily-notif-list"></div>
-</div>
 <!-- Challenge completed notification -->
 <div class="challenge-notif" id="challenge-notif">
   <div class="challenge-notif-icon">🏅</div>
@@ -2650,8 +2629,7 @@ async function onLoggedIn(migrate) {
   updateFilterBtnState();
   // Pré-remplir le pseudo dans les setups
   prefillUserName();
-  // Afficher les défis journaliers après connexion
-  setTimeout(showDailyNotifOnLogin, 1500);
+  // Défis journaliers : notif uniquement quand complété
 }
 
 function updateMenuUserBar() {
