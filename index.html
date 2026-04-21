@@ -46,7 +46,7 @@
       100% { transform:translateY(-20px) scale(.5); opacity:0; }
     }
 
-    .wrap { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; gap:6px; padding:6px 8px 8px; height:100dvh; justify-content:flex-start; overflow:hidden; }
+    .wrap { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 8px 8px; height:100dvh; justify-content:space-between; overflow:hidden; }
 
     .settings-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .settings-lbl { font-size:.78rem; letter-spacing:.06em; opacity:.75; }
@@ -2017,7 +2017,7 @@
         <div class="turn-text x" id="turn-text">—</div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;align-self:center;">
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;align-self:center;position:relative;">
         <button class="more-btn hidden" id="more-btn" onclick="toggleMoreMenu()">⋯</button>
         <div class="more-dropdown hidden" id="more-dropdown">
           <button class="more-item" onclick="toggleRules();closeMoreMenu()">
@@ -2052,7 +2052,7 @@
     <span id="t-banner-text">TOURNOI — 3 MANCHES</span>
     <div class="tournament-pip-row" id="t-pips"></div>
   </div>
-  <div class="board" id="board"></div>
+  <div class="board" id="board" style="margin-top:12px;"></div>
   <div class="action-row">
     <button class="btn reset hidden" id="reset-btn" onclick="resetGame()">↺ REJOUER</button>
     <button class="btn undo hidden" id="undo-btn" onclick="undoMove()">↩</button>
