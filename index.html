@@ -2989,10 +2989,10 @@ function confirmBackToMenu() {
 }
 function doBackToMenu() {
   hide('back-confirm');
-  // En ligne et partie en cours → envoyer abandon avant de fermer
   if (mode === 'online' && ws && G && !G.winner) {
+    // Couper onmessage immédiatement pour ignorer les messages de retour
+    ws.onmessage = null;
     try { ws.send(JSON.stringify({type:'abandon'})); } catch(e) {}
-    // Petit délai pour que le message parte avant de fermer le socket
     setTimeout(backToMenu, 100);
   } else {
     backToMenu();
