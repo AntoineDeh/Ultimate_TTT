@@ -1972,7 +1972,7 @@
     </svg>ULTIMATE <span>TTT</span>
   </div>
 
-  <div class="score-row" style="gap:8px;align-items:center;width:100%;">
+  <div class="score-row" style="gap:8px;align-items:center;width:100%;max-width:400px;align-self:center;">
     <div style="display:flex;flex-direction:column;gap:5px;align-items:center;flex-shrink:0;align-self:center;">
       <button class="icon-btn home hidden" id="home-btn" onclick="confirmBackToMenu()" title="Menu">⌂</button>
       <button class="hint-btn hidden" id="hint-btn" onclick="useHint()" title="Indice">
@@ -2989,7 +2989,14 @@ function confirmBackToMenu() {
 }
 function doBackToMenu() {
   hide('back-confirm');
-  backToMenu();
+  // En ligne et partie en cours → envoyer abandon avant de fermer
+  if (mode === 'online' && ws && G && !G.winner) {
+    try { ws.send(JSON.stringify({type:'abandon'})); } catch(e) {}
+    // Petit délai pour que le message parte avant de fermer le socket
+    setTimeout(backToMenu, 100);
+  } else {
+    backToMenu();
+  }
 }
 
 function backToMenu() {
