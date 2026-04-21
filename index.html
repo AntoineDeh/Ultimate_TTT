@@ -284,34 +284,39 @@
     @keyframes blink { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.4} }
 
     /* ── Board ── */
-    .board { display:grid; grid-template-columns:repeat(3,1fr); gap:3px;
-      background:rgba(255,255,255,.15); border:3px solid rgba(255,255,255,.15); border-radius:12px;
-      box-shadow:0 0 30px rgba(0,0,80,.4);
+    .board { display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+      background:transparent; border:none; border-radius:12px;
+      box-shadow:none;
       width:min(calc(100vw - 16px), calc(100dvh - 190px));
       max-width:min(calc(100vw - 16px), calc(100dvh - 190px));
-      aspect-ratio:1/1; align-self:center; }
+      aspect-ratio:1/1; align-self:center;
+      position:relative; }
 
-    .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-      background:rgba(255,255,255,.2); position:relative;
-      transition:box-shadow .3s, transform .2s;
-      border-radius:3px; overflow:hidden; border:none; }
+    /* Overlay SVG des lignes de grille */
+    .board-grid-overlay { position:absolute; inset:0; pointer-events:none; z-index:5; }
+
+    .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+      background:transparent; position:relative;
+      transition:box-shadow .3s; border:none; overflow:visible; }
 
     .sb.active {
-      box-shadow:0 0 0 2px var(--active), 0 0 16px rgba(255,193,7,.4);
-      animation:sbActivePulse 2s ease-in-out infinite alternate; }
+      box-shadow:0 0 0 2px var(--active), 0 0 16px rgba(255,193,7,.35);
+      border-radius:4px;
+      animation:sbActivePulse 2s ease-in-out infinite alternate; z-index:2; }
     @keyframes sbActivePulse {
       from { box-shadow:0 0 0 2px var(--active), 0 0 8px rgba(255,193,7,.2); }
       to   { box-shadow:0 0 0 2px var(--active), 0 0 22px rgba(255,193,7,.5); }
     }
-    .sb.wx { box-shadow:0 0 0 2px var(--x); background:rgba(255,255,255,.2); }
-    .sb.wo { box-shadow:0 0 0 2px var(--o); background:rgba(255,255,255,.2); }
-    .sb.wd { background:rgba(255,255,255,.2); }
+    .sb.wx { box-shadow:0 0 0 2px var(--x); border-radius:4px; background:rgba(0,229,255,.06); z-index:2; }
+    .sb.wo { box-shadow:0 0 0 2px var(--o); border-radius:4px; background:rgba(255,31,122,.06); z-index:2; }
+    .sb.wd { border-radius:4px; background:rgba(180,180,180,.05); z-index:2; }
 
     .cell { width:var(--cs); height:var(--cs); background:transparent;
       display:flex; align-items:center; justify-content:center;
       cursor:pointer; font-family:'Share Tech Mono',monospace; font-weight:400;
-      font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s; }
-    .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.06); transform:scale(1.06); }
+      font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s;
+      position:relative; z-index:1; }
+    .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.07); transform:scale(1.06); }
     .cell:active:not(.taken):not(.locked) { transform:scale(.94); }
     .cell.taken,.cell.locked { cursor:default; }
     .cell.auto { animation:autopop .4s cubic-bezier(.34,1.56,.64,1); }
@@ -3879,7 +3884,31 @@ function render() {
     boardEl.appendChild(sb);
   }
   if (G._lastAuto) delete G._lastAuto;
+  injectGridOverlay(boardEl);
   updateHUD();
+}
+
+function injectGridOverlay(boardEl) {
+  const old = boardEl.querySelector('.board-grid-overlay');
+  if (old) old.remove();
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('class','board-grid-overlay');
+  svg.setAttribute('viewBox','0 0 100 100');
+  svg.setAttribute('preserveAspectRatio','none');
+  svg.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;';
+  const thin='rgba(255,255,255,0.18)', thick='rgba(255,255,255,0.45)';
+  for(let i=1;i<9;i++){
+    const pos=(i*100/9).toFixed(3);
+    const macro=i%3===0;
+    const col=macro?thick:thin, w=macro?'0.7':'0.3';
+    const lv=document.createElementNS('http://www.w3.org/2000/svg','line');
+    lv.setAttribute('x1',pos);lv.setAttribute('y1','0');lv.setAttribute('x2',pos);lv.setAttribute('y2','100');
+    lv.setAttribute('stroke',col);lv.setAttribute('stroke-width',w);svg.appendChild(lv);
+    const lh=document.createElementNS('http://www.w3.org/2000/svg','line');
+    lh.setAttribute('x1','0');lh.setAttribute('y1',pos);lh.setAttribute('x2','100');lh.setAttribute('y2',pos);
+    lh.setAttribute('stroke',col);lh.setAttribute('stroke-width',w);svg.appendChild(lh);
+  }
+  boardEl.appendChild(svg);
 }
 
 function updateHUD() {
