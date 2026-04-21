@@ -46,7 +46,7 @@
       100% { transform:translateY(-20px) scale(.5); opacity:0; }
     }
 
-    .wrap { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 8px 12px; height:100dvh; justify-content:space-between; overflow:hidden; }
+    .wrap { position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; gap:6px; padding:6px 8px 8px; height:100dvh; justify-content:flex-start; overflow:hidden; }
 
     .settings-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .settings-lbl { font-size:.78rem; letter-spacing:.06em; opacity:.75; }
@@ -1955,7 +1955,7 @@
 
 <!-- Game UI -->
 <div class="wrap">
-  <div class="title" id="main-title" onclick="cheatClick()" style="cursor:default;user-select:none">
+  <div class="title" id="main-title" onclick="cheatClick()" style="cursor:default;user-select:none;margin-bottom:2px;">
     <svg width="22" height="22" viewBox="0 0 28 28" style="vertical-align:middle;margin-right:5px;filter:drop-shadow(0 0 5px var(--x))" fill="none">
       <rect x="1" y="1" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
       <rect x="10" y="1" width="8" height="8" rx="1.5" stroke="var(--x)" stroke-width="1.5"/>
@@ -1972,8 +1972,8 @@
     </svg>ULTIMATE <span>TTT</span>
   </div>
 
-  <div class="score-row" style="gap:8px;">
-    <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">
+  <div class="score-row" style="gap:8px;align-items:center;width:100%;">
+    <div style="display:flex;flex-direction:column;gap:5px;align-items:center;flex-shrink:0;align-self:center;">
       <button class="icon-btn home hidden" id="home-btn" onclick="confirmBackToMenu()" title="Menu">⌂</button>
       <button class="hint-btn hidden" id="hint-btn" onclick="useHint()" title="Indice">
         💡<span class="hint-count" id="hint-count">3</span>
@@ -2017,7 +2017,7 @@
         <div class="turn-text x" id="turn-text">—</div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;">
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;align-self:center;">
         <button class="more-btn hidden" id="more-btn" onclick="toggleMoreMenu()">⋯</button>
         <div class="more-dropdown hidden" id="more-dropdown">
           <button class="more-item" onclick="toggleRules();closeMoreMenu()">
