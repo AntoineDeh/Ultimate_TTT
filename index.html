@@ -11,7 +11,7 @@
     :root {
       --x: #00e5ff; --o: #ff1f7a; --active: #ffc107;
       --bg: #05050f; --surface: #0d0d20; --border-out: #1e1e45; --border-in: #111128;
-      --cs: clamp(30px, 8vmin, 62px); --ig: 2px; --og: 5px;
+      --cs: clamp(30px, 8vmin, 62px); --ig: 1px; --og: 4px;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -285,19 +285,17 @@
 
     /* ── Board ── */
     .board { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--og);
-      background:#1a1a3a; border:var(--og) solid #1a1a3a; border-radius:14px;
-      box-shadow:0 0 0 1px rgba(120,120,220,.3), 0 0 50px rgba(20,20,100,.5),
-                 inset 0 0 0 1px rgba(80,80,160,.15);
-      width:min(calc(100vw - 16px), calc(100dvh - 210px));
-      max-width:min(calc(100vw - 16px), calc(100dvh - 210px));
+      background:rgba(18,18,40,.6); border:var(--og) solid rgba(18,18,40,.6); border-radius:12px;
+      box-shadow:0 0 0 1px rgba(100,100,200,.2), 0 0 40px rgba(10,10,80,.4);
+      width:min(calc(100vw - 12px), calc(100dvh - 190px));
+      max-width:min(calc(100vw - 12px), calc(100dvh - 190px));
       aspect-ratio:1/1; align-self:center; }
 
-    /* Séparateurs macro plus visibles */
     .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--ig);
-      background:var(--border-in); position:relative;
+      background:rgba(40,40,80,.3); position:relative;
       transition:background .3s, box-shadow .3s, transform .2s;
-      border-radius:6px; overflow:hidden;
-      border:1.5px solid rgba(80,80,160,.35); }
+      border-radius:5px; overflow:hidden;
+      border:1px solid rgba(80,80,160,.2); }
 
     /* Active — pulse animé */
     .sb.active { background:rgba(255,193,7,.07);
@@ -312,10 +310,11 @@
     .sb.wo { background:rgba(255,31,122,.07); border-color:rgba(255,31,122,.3); }
     .sb.wd { background:rgba(120,120,180,.06); border-color:rgba(120,120,180,.2); }
 
-    .cell { width:var(--cs); height:var(--cs); background:var(--surface);
+    .cell { width:var(--cs); height:var(--cs); background:rgba(8,8,24,.85);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer; font-family:'Share Tech Mono',monospace; font-weight:400;
-      font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s; }
+      font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s;
+      border-radius:2px; }
     .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.08); transform:scale(1.06); }
     .cell:active:not(.taken):not(.locked) { transform:scale(.94); }
     .cell.taken,.cell.locked { cursor:default; }
@@ -1999,6 +1998,7 @@
               <circle class="avatar-progress" id="avatar-progress-x" cx="18" cy="18" r="15.9" stroke="var(--x)"/>
             </svg>
             <div class="avatar-emoji" id="avatar-emoji-x">🎮</div>
+            <div id="avatar-timer-x" style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font-size:.48rem;font-family:'Orbitron',sans-serif;opacity:.7;color:#4ade80;white-space:nowrap;"></div>
           </div>
           <div class="score-lbl" id="lbl-x">JOUEUR X</div>
           <div class="score-name x" id="sname-x">X</div>
@@ -2014,6 +2014,7 @@
               <circle class="avatar-progress" id="avatar-progress-o" cx="18" cy="18" r="15.9" stroke="var(--o)"/>
             </svg>
             <div class="avatar-emoji" id="avatar-emoji-o">🎮</div>
+            <div id="avatar-timer-o" style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font-size:.48rem;font-family:'Orbitron',sans-serif;opacity:.7;color:#4ade80;white-space:nowrap;"></div>
           </div>
           <div class="score-lbl" id="lbl-o">JOUEUR O</div>
           <div class="score-name o" id="sname-o">O</div>
@@ -2051,12 +2052,12 @@
     </div>
   </div>
 
-  <!-- Timer bar avec chrono à droite -->
-  <div class="hidden" id="timer-wrap" style="display:flex;align-items:center;gap:6px;width:100%;">
+  <!-- Timer — seulement le cercle sur l'avatar, pas de barre -->
+  <div class="hidden" id="timer-wrap" style="display:none!important;">
     <div class="timer-bar-wrap" style="flex:1;margin:0;">
       <div class="timer-bar" id="timer-bar" style="width:100%"></div>
     </div>
-    <div class="timer-label" id="timer-label" style="font-size:.58rem;letter-spacing:.08em;opacity:.5;white-space:nowrap;min-width:28px;text-align:right;"></div>
+    <div class="timer-label" id="timer-label" style="display:none;"></div>
   </div>
   <!-- Tournament banner -->
   <div class="tournament-banner hidden" id="tournament-banner">
@@ -2291,11 +2292,8 @@ function startTimer() {
   updateAvatarTimer('X', 0);
   updateAvatarTimer('O', 0);
   timerLeft = TURN_SECONDS;
-  const wrap  = document.getElementById('timer-wrap');
-  const label = document.getElementById('timer-label');
-  wrap.classList.remove('hidden');
-  wrap.style.display = 'flex';
-  if (label) label.classList.remove('hidden');
+  // La barre est remplacée par le cercle sur l'avatar — on n'affiche plus le timer-wrap
+  // const wrap = document.getElementById('timer-wrap'); // masqué
   updateTimerUI();
   timerInterval = setInterval(() => {
     timerLeft--;
@@ -2307,8 +2305,7 @@ function startTimer() {
 
 function stopTimer() {
   clearInterval(timerInterval); timerInterval = null;
-  const wrap  = document.getElementById('timer-wrap');
-  if (wrap) { wrap.classList.add('hidden'); wrap.style.display = ''; }
+  // timer-wrap déjà caché, réinitialiser seulement les cercles
 }
 
 function updateTimerUI() {
@@ -3938,18 +3935,33 @@ function updateHUD() {
 // Mettre à jour le cercle de timer autour d'un avatar
 // pct : 0 = plein, 1 = vide ; color phase: 'normal'|'warn'|'danger'
 function updateAvatarTimer(player, pct) {
-  const circle = document.getElementById(`avatar-progress-${player.toLowerCase()}`);
+  const pl = player.toLowerCase();
+  const circle = document.getElementById(`avatar-progress-${pl}`);
+  const timerLbl = document.getElementById(`avatar-timer-${pl}`);
   if (!circle) return;
-  const circumference = 100; // stroke-dasharray=100
-  const offset = pct * circumference; // 0=plein, 100=vide
+  const circumference = 100;
+  const offset = pct * circumference;
   circle.style.strokeDashoffset = offset;
-  // Couleur selon urgence : vert → jaune → rouge
+  // Couleur : vert → jaune → rouge
+  let color;
   if (pct > 0.75) {
-    circle.style.stroke = '#ef4444'; // rouge (proche de la fin)
+    color = '#ef4444'; // rouge
   } else if (pct > 0.4) {
-    circle.style.stroke = '#f59e0b'; // jaune/orange (milieu)
+    color = '#f59e0b'; // jaune
   } else {
-    circle.style.stroke = '#4ade80'; // vert (début, beaucoup de temps)
+    color = '#4ade80'; // vert
+  }
+  circle.style.stroke = color;
+  // Label secondes sous l'avatar (seulement si timer actif)
+  if (timerLbl) {
+    if (pct > 0 && timerEnabled && G && !G.winner) {
+      const secsLeft = Math.round(TURN_SECONDS * (1 - pct));
+      timerLbl.textContent = secsLeft + 's';
+      timerLbl.style.color = color;
+      timerLbl.style.display = 'block';
+    } else {
+      timerLbl.style.display = 'none';
+    }
   }
 }
 
