@@ -292,30 +292,30 @@
       max-width:min(calc(100vw - 16px), calc(100dvh - 190px));
       aspect-ratio:1/1; align-self:center; }
 
-    .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--ig);
-      background:var(--border-in); position:relative;
+    .sb { display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+      background:rgba(255,255,255,.15); position:relative;
       transition:background .3s, box-shadow .3s, transform .2s;
       border-radius:6px; overflow:hidden;
-      border:1.5px solid rgba(80,80,160,.35); }
+      border:1px solid rgba(255,255,255,.12); }
 
     /* Active — pulse animé */
-    .sb.active { background:rgba(255,193,7,.07);
+    .sb.active { background:rgba(255,193,7,.6);
       box-shadow:0 0 0 2.5px var(--active), 0 0 20px rgba(255,193,7,.35);
-      border-color:transparent;
+      border-color:rgba(255,193,7,.7);
       animation:sbActivePulse 2s ease-in-out infinite alternate; }
     @keyframes sbActivePulse {
       from { box-shadow:0 0 0 2px var(--active), 0 0 12px rgba(255,193,7,.2); }
       to   { box-shadow:0 0 0 2.5px var(--active), 0 0 28px rgba(255,193,7,.5); }
     }
-    .sb.wx { background:rgba(0,229,255,.07); border-color:rgba(0,229,255,.3); }
-    .sb.wo { background:rgba(255,31,122,.07); border-color:rgba(255,31,122,.3); }
-    .sb.wd { background:rgba(120,120,180,.06); border-color:rgba(120,120,180,.2); }
+    .sb.wx { background:rgba(0,229,255,.4); border-color:rgba(0,229,255,.3); }
+    .sb.wo { background:rgba(255,31,122,.4); border-color:rgba(255,31,122,.3); }
+    .sb.wd { background:rgba(180,180,180,.2); border-color:rgba(120,120,180,.2); }
 
-    .cell { width:var(--cs); height:var(--cs); background:var(--surface);
+    .cell { width:var(--cs); height:var(--cs); background:#05050f;
       display:flex; align-items:center; justify-content:center;
       cursor:pointer; font-family:'Share Tech Mono',monospace; font-weight:400;
       font-size:calc(var(--cs)*.42); user-select:none; transition:background .15s, transform .1s; }
-    .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.08); transform:scale(1.06); }
+    .cell:hover:not(.taken):not(.locked) { background:rgba(255,255,255,.07); transform:scale(1.06); }
     .cell:active:not(.taken):not(.locked) { transform:scale(.94); }
     .cell.taken,.cell.locked { cursor:default; }
     .cell.auto { animation:autopop .4s cubic-bezier(.34,1.56,.64,1); }
