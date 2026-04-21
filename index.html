@@ -3696,14 +3696,33 @@ function connect(onOpen) {
   ws = new WebSocket(`${proto}://${location.host}`);
 
   ws.onopen = () => {
-    // Authentifier le socket avec le JWT
-    if (authToken) ws.send(JSON.stringify({ type: 'auth', token: authToken }));
-    if (onOpen) onOpen();
-    ws.send(JSON.stringify({type:'automode', autoMode, tournament: tournamentMode}));
+    if (authToken) {
+      // Envoyer auth d'abord, attendre auth_ok avant onOpen
+      ws.send(JSON.stringify({ type: 'auth', token: authToken }));
+      ws._pendingOnOpen = onOpen;
+    } else {
+      // Pas d'auth → envoyer directement
+      if (onOpen) onOpen();
+      ws.send(JSON.stringify({type:'automode', autoMode, tournament: tournamentMode}));
+    }
   };
 
   ws.onmessage = ({data}) => {
     const msg = JSON.parse(data);
+
+    // Auth OK → déclencher la commande en attente (create_room/join_room)
+    if (msg.type === 'auth_ok') {
+      if (ws._pendingOnOpen) {
+        ws._pendingOnOpen();
+        ws._pendingOnOpen = null;
+        ws.send(JSON.stringify({type:'automode', autoMode, tournament: tournamentMode}));
+      }
+      return;
+    }
+    if (msg.type === 'auth_error') {
+      if (ws._pendingOnOpen) { ws._pendingOnOpen = null; }
+      return;
+    }
 
     if (msg.type === 'role') {
       myRole = msg.player;
