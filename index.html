@@ -4008,7 +4008,7 @@ function showAbandonWin() {
   const title_el  = document.getElementById('go-title');
   const msg_el    = document.getElementById('go-msg');
   winner_el.textContent = '🏆 VICTOIRE';
-  title_el.textContent  = 'L'adversaire a abandonné !';
+  title_el.textContent  = `L'adversaire a abandonné !`;
   title_el.className    = `go-title ${myRole ? myRole.toLowerCase() : 'x'}`;
   msg_el.textContent    = 'Félicitations, tu gagnes cette partie.';
   // Remplacer les boutons
@@ -4060,7 +4060,7 @@ function replayOnlineAfterAbandon(wasRoom) {
     initOnlineMode(name);
     connect(() => {
       ws.send(JSON.stringify({type:'create_room', name, autoMode, tournament: tournamentMode}));
-      document.getElementById('wait-title').textContent = 'EN ATTENTE D'UN JOUEUR';
+      document.getElementById('wait-title').textContent = "EN ATTENTE D'UN JOUEUR";
     });
   } else {
     // Relancer le matchmaking
