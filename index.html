@@ -1167,6 +1167,56 @@
       background:rgba(245,200,66,.15); color:#f5c842;
       border:1px solid rgba(245,200,66,.4); transition:all .2s; white-space:nowrap; flex-shrink:0; }
     .challenge-claim-btn:hover { background:rgba(245,200,66,.3); }
+
+    /* ── Historique ── */
+    .history-overlay { background:linear-gradient(160deg,#080600 0%,#100900 50%,#060400 100%);
+      gap:0; overflow-y:auto; padding:20px 12px 32px; z-index:600;
+      align-items:center; justify-content:flex-start; }
+    .history-header { display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:420px; margin-bottom:16px; }
+    .history-title { font-family:'Orbitron',sans-serif; font-weight:900; font-size:1rem;
+      letter-spacing:.2em; color:var(--x); filter:drop-shadow(0 0 8px rgba(0,229,255,.4)); }
+    .history-close { font-family:'Orbitron',sans-serif; font-weight:700; font-size:.6rem;
+      padding:8px 14px; background:rgba(0,229,255,.06); color:var(--x);
+      border:1px solid rgba(0,229,255,.2); border-radius:8px; cursor:pointer; }
+    .history-empty { color:rgba(180,180,255,.3); font-size:.7rem; letter-spacing:.1em;
+      text-align:center; margin-top:40px; }
+    .history-card { width:100%; max-width:420px; background:rgba(255,255,255,.03);
+      border:1px solid rgba(180,180,255,.1); border-radius:12px; padding:12px 14px;
+      display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+    .history-card.win  { border-color:rgba(74,222,128,.25); background:rgba(74,222,128,.04); }
+    .history-card.loss { border-color:rgba(248,113,113,.2); background:rgba(248,113,113,.03); }
+    .history-card.draw { border-color:rgba(200,160,40,.2); background:rgba(200,160,40,.03); }
+    .history-result { font-size:1.4rem; flex-shrink:0; }
+    .history-info { flex:1; min-width:0; }
+    .history-main { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:700;
+      letter-spacing:.08em; color:#fff; }
+    .history-card.win  .history-main { color:#4ade80; }
+    .history-card.loss .history-main { color:#f87171; }
+    .history-card.draw .history-main { color:#f5c842; }
+    .history-sub { font-size:.58rem; color:rgba(180,180,255,.4); margin-top:3px; }
+    .history-pts { font-family:'Orbitron',sans-serif; font-size:.65rem; font-weight:900;
+      color:rgba(180,180,255,.5); flex-shrink:0; }
+    .history-card.win .history-pts { color:#4ade80; }
+
+    /* ── Quêtes hebdo ── */
+    .weekly-section { width:100%; max-width:420px; margin-bottom:20px; }
+    .weekly-header-row { display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:10px; }
+    .weekly-title { font-family:'Orbitron',sans-serif; font-size:.6rem; font-weight:700;
+      letter-spacing:.18em; color:rgba(0,229,255,.6); }
+    .weekly-timer { font-size:.55rem; color:rgba(180,180,255,.3); letter-spacing:.08em; }
+    .weekly-card { background:rgba(0,229,255,.03); border:1px solid rgba(0,229,255,.12);
+      border-radius:12px; padding:14px 14px 12px; display:flex; align-items:center;
+      gap:12px; margin-bottom:8px; position:relative; overflow:hidden; }
+    .weekly-card.done { border-color:rgba(74,222,128,.3); background:rgba(74,222,128,.04); }
+    .weekly-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,rgba(0,229,255,.4),transparent); }
+    .weekly-card.done::before { background:linear-gradient(90deg,transparent,#4ade80,transparent); }
+    .weekly-badge { position:absolute; top:6px; right:8px; font-size:.45rem;
+      padding:2px 6px; border-radius:6px; background:rgba(0,229,255,.12);
+      color:var(--x); font-family:'Orbitron',sans-serif; font-weight:700;
+      letter-spacing:.08em; }
   </style>
 </head>
 <body>
@@ -1316,6 +1366,15 @@
 <!-- Challenge completed notification -->
 
 
+
+<!-- Historique -->
+<div class="overlay history-overlay hidden" id="history-overlay">
+  <div class="history-header">
+    <div class="history-title">📜 HISTORIQUE</div>
+    <button class="history-close" onclick="hide('history-overlay')">✕ FERMER</button>
+  </div>
+  <div id="history-content" style="width:100%;max-width:420px;"></div>
+</div>
 <!-- Challenges overlay -->
 <div class="overlay challenges-overlay hidden" id="challenges-overlay">
   <div class="challenges-header">
@@ -1570,9 +1629,10 @@
   </div><!-- fin menu-btns -->
 
   <!-- Boutons secondaires -->
-  <div class="menu-bottom-bar">
+  <div class="menu-bottom-bar" style="flex-wrap:wrap;gap:6px;">
     <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);" onclick="openStats()"><span class="mbb-icon">📊</span>STATS</button>
     <button class="menu-bottom-btn" style="border-color:rgba(245,200,66,.4);color:#f5c842;background:rgba(245,200,66,.07);" onclick="openChallenges()"><span class="mbb-icon">🏅</span>DÉFIS<span class="challenge-badge" id="challenges-badge"></span></button>
+    <button class="menu-bottom-btn" style="border-color:rgba(0,229,255,.3);color:var(--x);background:rgba(0,229,255,.06);" onclick="openHistory()"><span class="mbb-icon">📜</span>HISTORIQUE</button>
     <button class="menu-bottom-btn" style="border-color:rgba(180,180,255,.25);color:rgba(180,180,255,.7);" onclick="show('rules-overlay')"><span class="mbb-icon">📋</span>RÈGLES</button>
     <button class="menu-bottom-btn" style="border-color:rgba(0,229,255,.3);color:var(--x);background:rgba(0,229,255,.06);" onclick="openDesign()"><span class="mbb-icon">🎨</span>DESIGN</button>
   </div>
@@ -4274,6 +4334,14 @@ function recordResult(result) {
   saveStats(all);
   checkChallenges();
 
+  // Historique des parties
+  const _opp = mode==='bot' ? `Bot (${difficulty})` : mode==='online' ? (names[myRole==='X'?'O':'X']||'Adversaire') : null;
+  const _pts = calcScoreDelta(result, moves);
+  saveToHistory(result, getStatKey()||mode, difficulty, _opp, moves, _pts);
+
+  // Quêtes hebdomadaires
+  updateWeeklyQuests(result, mode, difficulty, moves, false);
+
   // Défis journaliers
   updateDailyChallenges(result, mode, difficulty, gameLog.length, false);
 }
@@ -4856,6 +4924,7 @@ function recordTournamentWin(mode, difficulty) {
   saveStats(stats);
   checkChallenges();
   updateDailyChallenges('win', mode, difficulty, 0, true);
+  updateWeeklyQuests('win', mode, difficulty, 0, true);
 }
 
 
@@ -5079,6 +5148,187 @@ function claimChallenge(id, isDaily) {
   renderRankBadge();
   openChallenges(); // Rafraîchir l'affichage
 }
+
+// ════════════════════════════════════════════════════════
+// HISTORIQUE DES PARTIES
+// ════════════════════════════════════════════════════════
+const HISTORY_MAX = 20;
+
+function saveToHistory(result, mode, difficulty, opponent, moves, pts) {
+  try {
+    const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
+    hist.unshift({
+      result,    // 'win'|'loss'|'draw'
+      mode,      // 'bot-easy'|'bot-medium'|'bot-hard'|'online'|'local'
+      opponent,  // pseudo adversaire
+      moves,
+      pts,       // delta de pts
+      date: Date.now()
+    });
+    hist.splice(HISTORY_MAX); // garder les 20 dernières
+    localStorage.setItem('ttt-history', JSON.stringify(hist));
+  } catch(e) {}
+}
+
+function openHistory() {
+  const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
+  const content = document.getElementById('history-content');
+  if (!content) return;
+
+  if (!hist.length) {
+    content.innerHTML = `<div class="history-empty">Aucune partie enregistrée.<br>Joue ta première partie !</div>`;
+    show('history-overlay');
+    return;
+  }
+
+  const modeLabel = {
+    'bot-easy': '🟢 Bot Facile', 'bot-medium': '🟡 Bot Moyen',
+    'bot-hard': '🔴 Bot Difficile', 'online': '🌐 En ligne', 'local': '👥 Local'
+  };
+  const resultLabel = { win: '🏆 VICTOIRE', loss: '💀 DÉFAITE', draw: '🤝 ÉGALITÉ' };
+
+  content.innerHTML = hist.map(h => {
+    const ago = formatAgo(h.date);
+    const label = modeLabel[h.mode] || h.mode;
+    const vs = h.opponent ? `vs ${h.opponent}` : '';
+    const ptsStr = h.pts > 0 ? `+${h.pts}` : h.pts < 0 ? `${h.pts}` : '±0';
+    return `
+      <div class="history-card ${h.result}">
+        <div class="history-result">${h.result==='win'?'🏆':h.result==='loss'?'💀':'🤝'}</div>
+        <div class="history-info">
+          <div class="history-main">${resultLabel[h.result]||h.result}</div>
+          <div class="history-sub">${label} ${vs} · ${h.moves} coups · ${ago}</div>
+        </div>
+        <div class="history-pts">${ptsStr} pts</div>
+      </div>`;
+  }).join('');
+
+  show('history-overlay');
+}
+
+function formatAgo(ts) {
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(diff / 3600000);
+  const d = Math.floor(diff / 86400000);
+  if (m < 1) return "à l'instant";
+  if (m < 60) return `il y a ${m}min`;
+  if (h < 24) return `il y a ${h}h`;
+  if (d < 7) return `il y a ${d}j`;
+  return new Date(ts).toLocaleDateString('fr-FR', {day:'numeric',month:'short'});
+}
+
+// ════════════════════════════════════════════════════════
+// QUÊTES HEBDOMADAIRES
+// ════════════════════════════════════════════════════════
+const WEEKLY_QUESTS_POOL = [
+  { id:'w_win10',     icon:'🎯', name:'Chasseur de la semaine',  desc:'Gagne 10 parties cette semaine',              pts:80,  type:'win',      target:10 },
+  { id:'w_online5',  icon:'🌐', name:'Guerrier en ligne',        desc:'Gagne 5 parties en ligne cette semaine',      pts:100, type:'online_win', target:5 },
+  { id:'w_hard3',    icon:'🔴', name:'Dompteur hebdo',           desc:'Bats le bot Difficile 3 fois cette semaine',  pts:90,  type:'hard_win',  target:3 },
+  { id:'w_streak5',  icon:'🔥', name:'Semaine enflammée',        desc:'Enchaîne 5 victoires cette semaine',          pts:100, type:'streak',    target:5 },
+  { id:'w_play20',   icon:'🎮', name:'Marathonien',              desc:'Joue 20 parties cette semaine',               pts:60,  type:'play',      target:20 },
+  { id:'w_tourney2', icon:'🏆', name:'Double champion',          desc:'Remporte 2 tournois cette semaine',           pts:120, type:'tournament', target:2 },
+  { id:'w_draw3',    icon:'🤝', name:'Pacifiste de la semaine',  desc:'Fais 3 matchs nuls cette semaine',            pts:50,  type:'draw',      target:3 },
+  { id:'w_medium10', icon:'🟡', name:'Semi-pro',                 desc:'Gagne 10 fois contre le bot Moyen',           pts:70,  type:'medium_win', target:10 },
+  { id:'w_speed3',   icon:'⚡', name:'Sprinter de la semaine',   desc:'Gagne 3 parties en moins de 15 coups',        pts:90,  type:'speed_win', target:3 },
+  { id:'w_online10', icon:'👑', name:'Roi de la semaine',        desc:'Gagne 10 parties en ligne cette semaine',     pts:150, type:'online_win', target:10 },
+];
+
+function getWeekKey() {
+  const d = new Date();
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${week}`;
+}
+
+function getWeeklyQuests() {
+  const seed = getWeekKey().split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const pool = [...WEEKLY_QUESTS_POOL];
+  for (let i = pool.length-1; i > 0; i--) {
+    const j = (seed * (i+1) * 2654435761) % (i+1);
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 3);
+}
+
+function getWeeklyData() {
+  try {
+    const saved = localStorage.getItem('ttt-weekly');
+    if (!saved) return null;
+    const data = JSON.parse(saved);
+    if (data.week !== getWeekKey()) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+function saveWeeklyData(data) {
+  data.week = getWeekKey();
+  localStorage.setItem('ttt-weekly', JSON.stringify(data));
+}
+
+function initWeeklyData() {
+  let data = getWeeklyData();
+  if (!data) { data = { week: getWeekKey(), progress: {}, done: [], seen: [] }; saveWeeklyData(data); }
+  return data;
+}
+
+function updateWeeklyQuests(result, mode, difficulty, moves, tournamentWon) {
+  const data = initWeeklyData();
+  const quests = getWeeklyQuests();
+  let newlyDone = [];
+
+  quests.forEach(q => {
+    if (data.done.includes(q.id)) return;
+    if (!data.progress[q.id]) data.progress[q.id] = 0;
+    let progress = false;
+    switch(q.type) {
+      case 'win':        if (result==='win') { data.progress[q.id]++; progress=true; } break;
+      case 'play':       data.progress[q.id]++; progress=true; break;
+      case 'online_win': if (result==='win'&&mode==='online') { data.progress[q.id]++; progress=true; } break;
+      case 'hard_win':   if (result==='win'&&mode==='bot'&&difficulty==='hard') { data.progress[q.id]++; progress=true; } break;
+      case 'medium_win': if (result==='win'&&mode==='bot'&&difficulty==='medium') { data.progress[q.id]++; progress=true; } break;
+      case 'draw':       if (result==='draw') { data.progress[q.id]++; progress=true; } break;
+      case 'tournament': if (tournamentWon) { data.progress[q.id]++; progress=true; } break;
+      case 'streak':     if (result==='win') { data.progress[q.id]++; progress=true; } else data.progress[q.id]=0; break;
+      case 'speed_win':  if (result==='win'&&moves<15) { data.progress[q.id]++; progress=true; } break;
+    }
+    if (progress && data.progress[q.id] >= q.target) {
+      data.done.push(q.id);
+      newlyDone.push(q);
+    }
+  });
+
+  saveWeeklyData(data);
+
+  if (newlyDone.length > 0) {
+    const stats = loadStats();
+    newlyDone.forEach(q => {
+      // Ajouter les pts comme bonus dans les stats
+      stats._weeklyPts = (stats._weeklyPts||0) + q.pts;
+    });
+    saveStats(stats);
+    renderRankBadge();
+    let delay = 300;
+    newlyDone.forEach(q => {
+      setTimeout(() => showChallengeNotif({...q, weekly:true}), delay);
+      delay += 2800;
+    });
+  }
+}
+
+function getWeeklyTimeLeft() {
+  const now = new Date();
+  const nextMonday = new Date(now);
+  const day = now.getDay();
+  const daysUntilMonday = day === 0 ? 1 : 8 - day;
+  nextMonday.setDate(now.getDate() + daysUntilMonday);
+  nextMonday.setHours(0, 0, 0, 0);
+  const diff = nextMonday - now;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  return d > 0 ? `Renouvellement dans ${d}j ${h}h` : `Renouvellement dans ${h}h`;
+}
+
 // ── Ouvrir l'écran challenges ─────────────────────────────────
 function openChallenges() {
   const stats = loadStats();
@@ -5101,6 +5351,30 @@ function openChallenges() {
   const dailyDoneCount = dailies.filter(d => dailyData.done.includes(d.id)).length;
 
   html += `<div class="challenge-section-title">📅 Défis du jour — ${today} (${dailyDoneCount}/${dailies.length})</div>`;
+  // ── Quêtes hebdomadaires ──────────────────────────────────
+  const weeklyQuests = getWeeklyQuests();
+  const weeklyData = getWeeklyData() || { done: [], progress: {}, seen: [] };
+  const weeklyDone = weeklyQuests.filter(q => weeklyData.done.includes(q.id)).length;
+  html += `<div class="challenge-section-title">📅 Quêtes de la semaine (${weeklyDone}/${weeklyQuests.length}) <span style="font-size:.5rem;opacity:.5;">${getWeeklyTimeLeft()}</span></div>`;
+  html += '<div class="challenge-list">';
+  weeklyQuests.forEach(q => {
+    const isDone = weeklyData.done.includes(q.id);
+    const cur = weeklyData.progress[q.id] || 0;
+    const pct = Math.min(100, Math.round((cur/q.target)*100));
+    html += `
+      <div class="weekly-card${isDone?' done':''}">
+        <div class="challenge-icon">${isDone?'✅':q.icon}</div>
+        <div class="challenge-info">
+          <div class="challenge-name">${q.name}</div>
+          <div class="challenge-desc">${q.desc}</div>
+          ${!isDone?`<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>`:''}
+        </div>
+        <div class="challenge-pts">${isDone?'✅':'+'+q.pts+' pts'}</div>
+        <span class="weekly-badge">SEMAINE</span>
+      </div>`;
+  });
+  html += '</div>';
+
   html += '<div class="challenge-list">';
   dailies.forEach(d => {
     const isDone = dailyData.done.includes(d.id);
