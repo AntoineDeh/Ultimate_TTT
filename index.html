@@ -4812,8 +4812,35 @@ function checkChallenges() {
 }
 
 function showChallengeNotif(challenge) {
-  // Plus de popup — juste mettre à jour le badge rouge sur le bouton DÉFIS
   updateChallengesBadge();
+  // Afficher une popup avec bouton fermer
+  const existing = document.getElementById('challenge-popup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'challenge-popup';
+  popup.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);
+    background:rgba(10,10,28,.97);border:1px solid rgba(245,200,66,.5);border-radius:16px;
+    padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:950;
+    box-shadow:0 8px 30px rgba(0,0,0,.7),0 0 20px rgba(245,200,66,.2);
+    max-width:min(320px,88vw);animation:fadeIn .3s ease;`;
+
+  popup.innerHTML = `
+    <div style="font-size:1.8rem;flex-shrink:0;">${challenge.icon}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:700;color:#f5c842;letter-spacing:.1em;">DÉFI COMPLÉTÉ !</div>
+      <div style="font-size:.7rem;color:#fff;margin:2px 0;">${challenge.name}</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.6rem;color:#4ade80;font-weight:700;">+${challenge.pts} pts</div>
+    </div>
+    <button onclick="document.getElementById('challenge-popup')?.remove()"
+      style="background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.3);
+      color:#f5c842;border-radius:8px;padding:6px 10px;cursor:pointer;
+      font-family:'Orbitron',sans-serif;font-size:.55rem;font-weight:700;flex-shrink:0;">✕</button>`;
+
+  document.body.appendChild(popup);
+  renderRankBadge();
+  // Auto-fermeture après 8 secondes si pas fermé manuellement
+  setTimeout(() => { document.getElementById('challenge-popup')?.remove(); }, 8000);
 }
 
 // ── Enregistrer victoire de tournoi ──────────────────────────
@@ -5015,21 +5042,13 @@ function closeDailyNotif() {
 function updateChallengesBadge() {
   const stats = loadStats();
   const done   = stats._challengesDone || [];
-  // Migration : si _challengesClaimed n'existe pas encore, marquer tout comme réclamé
-  if (!stats._challengesClaimed) {
-    stats._challengesClaimed = [...done];
-    saveStats(stats);
-  }
-  const claimed = stats._challengesClaimed || [];
-  // Défis permanents complétés mais non réclamés
-  const unclaimed = CHALLENGES.filter(c => done.includes(c.id) && !claimed.includes(c.id));
-  // Défis journaliers complétés mais non réclamés
-  const dailyData = getDailyStats() || { done: [], claimed: [] };
-  const dailyClaimed = dailyData.claimed || [];
+  const seen   = stats._challengesSeen || [];
+  const unseen = done.filter(id => !seen.includes(id));
+  const dailyData = getDailyStats() || { done: [], seen: [] };
+  const dailySeen = dailyData.seen || [];
   const dailies = getDailyChallenges();
-  const unclaimedDaily = dailies.filter(d => dailyData.done.includes(d.id) && !dailyClaimed.includes(d.id));
-
-  const total = unclaimed.length + unclaimedDaily.length;
+  const unseenDaily = dailies.filter(d => dailyData.done.includes(d.id) && !dailySeen.includes(d.id));
+  const total = unseen.length + unseenDaily.length;
   const badge = document.getElementById('challenges-badge');
   if (badge) badge.style.display = total > 0 ? 'block' : 'none';
 }
@@ -5064,6 +5083,12 @@ function claimChallenge(id, isDaily) {
 function openChallenges() {
   const stats = loadStats();
   const done  = stats._challengesDone || [];
+  // Marquer tous les défis complétés comme vus
+  stats._challengesSeen = [...done];
+  saveStats(stats);
+  const dailyData2 = getDailyStats();
+  if (dailyData2) { dailyData2.seen = [...(dailyData2.done||[])]; saveDailyStats(dailyData2); }
+  updateChallengesBadge();
   const content = document.getElementById('challenges-content');
   if (!content) return;
 
@@ -5079,8 +5104,6 @@ function openChallenges() {
   html += '<div class="challenge-list">';
   dailies.forEach(d => {
     const isDone = dailyData.done.includes(d.id);
-    const dailyClaimed = dailyData.claimed || [];
-    const isClaimed = dailyClaimed.includes(d.id);
     const cur = dailyData.progress[d.id] || 0;
     const pct = Math.min(100, Math.round((cur / d.target) * 100));
     html += `
@@ -5091,10 +5114,7 @@ function openChallenges() {
           <div class="challenge-desc">${d.desc}</div>
           ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
         </div>
-        ${isDone && !isClaimed
-          ? `<button class="challenge-claim-btn" onclick="claimChallenge('${d.id}',true)">+${d.pts} pts</button>`
-          : `<div class="challenge-pts">${isClaimed ? '✅' : '+'+d.pts+' pts'}</div>`
-        }
+        <div class="challenge-pts">${isDone ? '✅' : '+'+d.pts+' pts'}</div>
         <span class="daily-badge">JOUR</span>
       </div>`;
   });
@@ -5113,8 +5133,6 @@ function openChallenges() {
     html += '<div class="challenge-list">';
     challenges.forEach(c => {
       const isDone = done.includes(c.id);
-      const claimed = stats._challengesClaimed || [];
-      const isClaimed = claimed.includes(c.id);
       const [cur, max] = c.progress(stats);
       const pct = Math.round((cur/max)*100);
       html += `
@@ -5125,10 +5143,7 @@ function openChallenges() {
             <div class="challenge-desc">${c.desc}</div>
             ${!isDone ? `<div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>` : ''}
           </div>
-          ${isDone && !isClaimed
-            ? `<button class="challenge-claim-btn" onclick="claimChallenge('${c.id}',false)">+${c.pts} pts</button>`
-            : `<div class="challenge-pts">${isClaimed ? '✅' : '+'+c.pts+' pts'}</div>`
-          }
+          <div class="challenge-pts">${isDone ? '✅' : '+'+c.pts+' pts'}</div>
         </div>`;
     });
     html += '</div>';
