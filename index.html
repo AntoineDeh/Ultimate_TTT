@@ -1576,6 +1576,9 @@
     </div>
     <button class="menu-user-logout" onclick="toggleUserMenu()" id="user-menu-btn">⋯</button>
     <div class="more-dropdown hidden" id="user-dropdown" style="top:calc(100% + 4px);right:0;min-width:160px;">
+      <button class="more-item" onclick="openHistory();closeUserMenu()">
+        <span class="more-item-icon">📜</span><span class="more-item-label">Historique</span>
+      </button>
       <button class="more-item" onclick="openAvatarPicker();closeUserMenu()">
         <span class="more-item-icon">🎨</span><span class="more-item-label">Changer l'avatar</span>
       </button>
@@ -1629,10 +1632,9 @@
   </div><!-- fin menu-btns -->
 
   <!-- Boutons secondaires -->
-  <div class="menu-bottom-bar" style="flex-wrap:wrap;gap:6px;">
+  <div class="menu-bottom-bar">
     <button class="menu-bottom-btn" style="border-color:rgba(200,160,40,.35);color:#f5c842;background:rgba(200,134,10,.08);" onclick="openStats()"><span class="mbb-icon">📊</span>STATS</button>
     <button class="menu-bottom-btn" style="border-color:rgba(245,200,66,.4);color:#f5c842;background:rgba(245,200,66,.07);" onclick="openChallenges()"><span class="mbb-icon">🏅</span>DÉFIS<span class="challenge-badge" id="challenges-badge"></span></button>
-    <button class="menu-bottom-btn" style="border-color:rgba(0,229,255,.3);color:var(--x);background:rgba(0,229,255,.06);" onclick="openHistory()"><span class="mbb-icon">📜</span>HISTORIQUE</button>
     <button class="menu-bottom-btn" style="border-color:rgba(180,180,255,.25);color:rgba(180,180,255,.7);" onclick="show('rules-overlay')"><span class="mbb-icon">📋</span>RÈGLES</button>
     <button class="menu-bottom-btn" style="border-color:rgba(0,229,255,.3);color:var(--x);background:rgba(0,229,255,.06);" onclick="openDesign()"><span class="mbb-icon">🎨</span>DESIGN</button>
   </div>
