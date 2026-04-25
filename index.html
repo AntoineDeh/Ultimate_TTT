@@ -2684,7 +2684,7 @@ async function onLoggedIn(migrate) {
       if (h < 7) stats._playedEarlyMorning = true;
 
       saveStats(stats);
-      checkChallenges();
+      checkChallenges(true); // silencieux au login
     }
   })();
 
@@ -4856,7 +4856,7 @@ function calcChallengeBonus() {
 }
 
 // ── Vérifier les challenges après chaque partie ───────────────
-function checkChallenges() {
+function checkChallenges(silent = false) {
   const stats = loadStats();
   if (!stats._challengesDone) stats._challengesDone = [];
   const done = stats._challengesDone;
@@ -4871,13 +4871,15 @@ function checkChallenges() {
 
   if (newlyDone.length > 0) {
     saveStats(stats);
-    // Afficher les notifications en séquence
-    let delay = 300;
-    newlyDone.forEach(c => {
-      setTimeout(() => showChallengeNotif(c), delay);
-      delay += 2800;
-    });
     renderRankBadge();
+    updateChallengesBadge();
+    if (!silent) {
+      let delay = 300;
+      newlyDone.forEach(c => {
+        setTimeout(() => showChallengeNotif(c), delay);
+        delay += 2800;
+      });
+    }
   }
 }
 
