@@ -5452,7 +5452,7 @@ function openHistory() {
     const vs = h.opponent ? `vs ${h.opponent}` : '';
     const ptsStr = h.pts > 0 ? `+${h.pts}` : h.pts < 0 ? `${h.pts}` : '±0';
     return `
-      <div class="history-card ${h.result}" onclick="openHistoryDetail(${idx})" style="cursor:pointer;">
+      <button class="history-card ${h.result}" onclick="openHistoryDetail(${idx})" style="cursor:pointer;width:100%;text-align:left;background:inherit;border:inherit;font:inherit;">
         <div class="history-result">${h.result==='win'?'🏆':h.result==='loss'?'💀':'🤝'}</div>
         <div class="history-info">
           <div class="history-main">${resultLabel[h.result]||h.result}</div>
@@ -5460,9 +5460,9 @@ function openHistory() {
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
           <div class="history-pts">${ptsStr} pts</div>
-          <div style="font-size:.55rem;color:rgba(180,180,255,.3);">▶ détails</div>
+          <div style="font-size:.55rem;color:rgba(180,180,255,.3);">▶</div>
         </div>
-      </div>`;
+      </button>`;
   }).join('');
 
   show('history-overlay');
