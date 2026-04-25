@@ -32,11 +32,14 @@ async function initDB() {
       password_hash TEXT NOT NULL,
       avatar       TEXT DEFAULT '🎮',
       stats        JSONB DEFAULT '{}',
+      history      JSONB DEFAULT '[]',
       reset_token  TEXT,
       reset_expires BIGINT,
       created_at   TEXT
     )
   `);
+  // Ajouter la colonne history si elle n'existe pas (migration)
+  await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS history JSONB DEFAULT '[]'`);
   console.log('[DB] Table users prête');
 }
 
@@ -67,6 +70,7 @@ async function updateUser(id, fields) {
   if (fields.pseudo)       { sets.push(`pseudo=$${i++}`);        vals.push(fields.pseudo); }
   if (fields.avatar)       { sets.push(`avatar=$${i++}`);        vals.push(fields.avatar); }
   if (fields.stats)        { sets.push(`stats=$${i++}`);         vals.push(JSON.stringify(fields.stats)); }
+  if (fields.history)      { sets.push(`history=$${i++}`);       vals.push(JSON.stringify(fields.history)); }
   if (fields.passwordHash) { sets.push(`password_hash=$${i++}`); vals.push(fields.passwordHash); }
   if ('resetToken'   in fields) { sets.push(`reset_token=$${i++}`);   vals.push(fields.resetToken); }
   if ('resetExpires' in fields) { sets.push(`reset_expires=$${i++}`); vals.push(fields.resetExpires); }
@@ -342,6 +346,23 @@ const server = http.createServer(async (req, res) => {
     return sendJSON(res,200,{user:publicProfile(await findUserById(user.id))});
   }
 
+  // POST /auth/history — Sauvegarder une partie dans l'historique
+  if (req.method==='POST' && url==='/auth/history') {
+    const user=await authMiddleware(req);
+    if (!user) return sendJSON(res,401,{error:'Non authentifié.'});
+    const body=await readBody(req);
+    if (body.entry && typeof body.entry==='object') {
+      const history = user.history || [];
+      // Dédoublonner par date
+      if (!history.find(h => h.date === body.entry.date)) {
+        history.unshift(body.entry);
+        history.splice(20); // garder les 20 dernières
+        await updateUser(user.id, { history });
+      }
+    }
+    return sendJSON(res,200,{ok:true});
+  }
+
   // POST /auth/forgot
   if (req.method==='POST' && url==='/auth/forgot') {
     const {email}=await readBody(req);
@@ -497,8 +518,8 @@ wss.on('connection', ws => {
     const room=ws.roomId?rooms.get(ws.roomId):null;
     if (!room) return;
     clearTurnTimer(room);
-    if (room.players.X===ws) { room.players.X=null; room.names.X='Joueur X'; broadcastRoom(room,{type:'waiting'}); }
-    else if (room.players.O===ws) { room.players.O=null; room.names.O='Joueur O'; broadcastRoom(room,{type:'waiting'}); }
+    if (room.players.X===ws) { room.players.X=null; broadcastRoom(room,{type:'waiting'}); }
+    else if (room.players.O===ws) { room.players.O=null; broadcastRoom(room,{type:'waiting'}); }
     else { room.spectators=room.spectators.filter(s=>s!==ws); }
     if (!room.players.X&&!room.players.O&&room.spectators.length===0) deleteRoom(room.id);
   });

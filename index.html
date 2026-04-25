@@ -2732,6 +2732,8 @@ async function onLoggedIn(migrate) {
   prefillUserName();
   // Défis journaliers : notif uniquement quand complété
   updateChallengesBadge();
+  // Charger l'historique depuis la DB et fusionner avec localStorage
+  syncHistoryFromDB();
 }
 
 function updateMenuUserBar() {
@@ -5206,6 +5208,11 @@ function saveToHistory(result, mode, difficulty, opponent, moves, pts) {
     });
     hist.splice(HISTORY_MAX);
     localStorage.setItem('ttt-history', JSON.stringify(hist));
+    // Sauvegarder aussi en base de données si connecté
+    if (typeof authToken !== 'undefined' && authToken) {
+      // Ne pas attendre la réponse pour ne pas bloquer
+      authFetch('POST', '/auth/history', { entry: hist[0] }, authToken).catch(()=>{});
+    }
   } catch(e) {}
 }
 
@@ -5296,6 +5303,26 @@ function replayFromHistory(idx) {
   mode = h.mode && h.mode.startsWith('bot') ? 'bot' : h.mode || 'bot';
   myRole = h.myRole || 'X';
   startAnalysis();
+}
+
+// ── Synchronisation historique DB ────────────────────────────
+async function syncHistoryFromDB() {
+  if (!authToken) return;
+  try {
+    const { status, data } = await authFetch('GET', '/auth/me', null, authToken);
+    if (status !== 200 || !data.user) return;
+    const dbHistory = data.user.history || [];
+    if (!dbHistory.length) return;
+    // Fusionner avec localStorage (dédoublonner par date)
+    const local = JSON.parse(localStorage.getItem('ttt-history') || '[]');
+    const merged = [...local];
+    dbHistory.forEach(h => {
+      if (!merged.find(m => m.date === h.date)) merged.push(h);
+    });
+    merged.sort((a, b) => b.date - a.date);
+    merged.splice(20);
+    localStorage.setItem('ttt-history', JSON.stringify(merged));
+  } catch(e) {}
 }
 function openHistory() {
   const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
