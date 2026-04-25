@@ -5236,6 +5236,7 @@ function openHistoryDetail(idx) {
     }
   } else if (h.finalState) {
     histReplayGame = h.finalState;
+    histReplayStep = 0; // Pas de navigation possible sans log
   }
 
   const modeLabel = {'bot-easy':'🟢 Bot Facile','bot-medium':'🟡 Bot Moyen','bot-hard':'🔴 Bot Difficile','online':'🌐 En ligne','local':'👥 Local'};
@@ -5267,7 +5268,8 @@ function openHistoryDetail(idx) {
   hd.classList.remove('hidden');
   hd.style.display = 'flex';
 
-  renderHistMiniBoard();
+  // Attendre que le DOM soit rendu avant de dessiner la grille
+  requestAnimationFrame(() => renderHistMiniBoard());
 }
 
 function closeHistoryDetail() {
@@ -5346,9 +5348,11 @@ function renderHistMiniBoard() {
   const label = document.getElementById('hist-step-label');
   if (!wrap || !label) return;
 
-  label.textContent = histReplayStep === 0
-    ? 'Position initiale'
-    : `Coup ${histReplayStep} / ${h.log.length}${histReplayStep <= h.log.length ? ' — ' + (h.log[histReplayStep-1]?.player||'?') + ' joue' : ''}`;
+  label.textContent = !h.log || h.log.length === 0
+    ? 'Position finale (navigation indisponible)'
+    : histReplayStep === 0
+      ? 'Position initiale'
+      : `Coup ${histReplayStep} / ${h.log.length}${histReplayStep <= h.log.length ? ' — ' + (h.log[histReplayStep-1]?.player||'?') + ' joue' : ''}`;
 
   // Construire la grille en mini
   const G2 = histReplayGame;
