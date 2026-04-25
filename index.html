@@ -5221,47 +5221,53 @@ function saveToHistory(result, mode, difficulty, opponent, moves, pts) {
 function openHistoryDetail(idx) {
   const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
   const h = hist[idx];
-  if (!h) { console.error('No history entry at idx', idx); return; }
+  if (!h) return;
 
-  const title = document.getElementById('hd-title');
-  const meta  = document.getElementById('hd-meta');
-  const acts  = document.getElementById('hd-actions');
-  const cont  = document.getElementById('hd-content');
-  if (!title || !meta || !acts || !cont) {
-    console.error('Missing history-detail elements');
-    return;
+  // Pas d'écran intermédiaire — lancer directement le mini-replay
+  histReplayIdx = idx;
+  histReplayStep = h.log && h.log.length > 0 ? h.log.length : 0;
+  histReplayGame = newGame();
+
+  // Reconstituer l'état final
+  if (h.log && h.log.length > 0) {
+    for (let i = 0; i < h.log.length; i++) {
+      const entry = h.log[i];
+      if (entry && entry.move) histReplayGame = applyMove(histReplayGame, ...entry.move);
+    }
+  } else if (h.finalState) {
+    histReplayGame = h.finalState;
   }
 
-  const modeLabel = {
-    'bot-easy':'🟢 Bot Facile','bot-medium':'🟡 Bot Moyen',
-    'bot-hard':'🔴 Bot Difficile','online':'🌐 En ligne','local':'👥 Local'
-  };
-  const resultLabel = { win:'🏆 VICTOIRE', loss:'💀 DÉFAITE', draw:'🤝 ÉGALITÉ' };
-  const resultColor = { win:'#4ade80', loss:'#f87171', draw:'#f5c842' };
+  const modeLabel = {'bot-easy':'🟢 Bot Facile','bot-medium':'🟡 Bot Moyen','bot-hard':'🔴 Bot Difficile','online':'🌐 En ligne','local':'👥 Local'};
+  const resultLabel = {win:'🏆 VICTOIRE', loss:'💀 DÉFAITE', draw:'🤝 ÉGALITÉ'};
+  const resultColor = {win:'#4ade80', loss:'#f87171', draw:'#f5c842'};
+  const totalMoves = h.log ? h.log.length : h.moves || 0;
 
-  title.innerHTML = `<span style="color:${resultColor[h.result]||'#fff'}">${resultLabel[h.result]||h.result}</span>`;
-  meta.textContent = `${modeLabel[h.mode]||h.mode}${h.opponent?' · vs '+h.opponent:''} · ${h.moves} coups · ${formatAgo(h.date)}`;
-
-  const hasLog = h.log && h.log.length > 0;
-  acts.innerHTML = `
-    <button class="btn" onclick="showHistoryMoves(${idx})"
-      style="flex:1;font-size:.6rem;padding:12px 8px;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);display:flex;align-items:center;justify-content:center;">
-      📋 VOIR LES COUPS
-    </button>
-    ${hasLog ? `<button class="btn" onclick="replayFromHistory(${idx})"
-      style="flex:1;font-size:.6rem;padding:12px 8px;color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08);display:flex;align-items:center;justify-content:center;">
-      🔍 ANALYSER
-    </button>` : ''}`;
-
-  showHistoryMoves(idx);
-
-  // Cacher l'overlay historique
-  document.getElementById('history-overlay').classList.add('hidden');
-
-  // Afficher le detail
   const hd = document.getElementById('history-detail');
+  hd.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-shrink:0;">
+      <button onclick="closeHistoryDetail()" style="font-family:'Orbitron',sans-serif;font-size:.55rem;font-weight:700;padding:8px 12px;background:rgba(0,229,255,.06);color:var(--x);border:1px solid rgba(0,229,255,.2);border-radius:8px;cursor:pointer;flex-shrink:0;">← RETOUR</button>
+      <div style="font-family:'Orbitron',sans-serif;font-size:.7rem;font-weight:900;letter-spacing:.1em;color:${resultColor[h.result]||'#fff'}">${resultLabel[h.result]||h.result}</div>
+    </div>
+    <div style="font-size:.58rem;color:rgba(180,180,255,.4);margin-bottom:10px;flex-shrink:0;">${modeLabel[h.mode]||h.mode}${h.opponent?' · vs '+h.opponent:''} · ${totalMoves} coups · ${formatAgo(h.date)}</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;flex:1;">
+      <div id="hist-step-label" style="font-family:'Orbitron',sans-serif;font-size:.55rem;color:rgba(180,180,255,.4);letter-spacing:.1em;"></div>
+      <div id="hist-mini-board" style="width:min(calc(100vw - 32px),340px);aspect-ratio:1/1;position:relative;"></div>
+      <div style="display:flex;gap:8px;width:min(calc(100vw - 32px),340px);">
+        <button onclick="histReplayGo(-1)" style="flex:1;font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;padding:10px;background:rgba(180,180,255,.06);color:rgba(180,180,255,.6);border:1px solid rgba(180,180,255,.2);border-radius:10px;cursor:pointer;">◀ PRÉC</button>
+        <button onclick="histReplayGo(1)"  style="flex:1;font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;padding:10px;background:rgba(0,229,255,.08);color:var(--x);border:1px solid rgba(0,229,255,.3);border-radius:10px;cursor:pointer;">SUIV ▶</button>
+      </div>
+      <div style="display:flex;gap:8px;width:min(calc(100vw - 32px),340px);">
+        <button onclick="histReplayGo(-9999)" style="flex:1;font-family:'Orbitron',sans-serif;font-size:.52rem;padding:8px;background:transparent;color:rgba(180,180,255,.3);border:1px solid rgba(180,180,255,.1);border-radius:8px;cursor:pointer;">⏮ DÉBUT</button>
+        <button onclick="histReplayGo(9999)"  style="flex:1;font-family:'Orbitron',sans-serif;font-size:.52rem;padding:8px;background:transparent;color:rgba(180,180,255,.3);border:1px solid rgba(180,180,255,.1);border-radius:8px;cursor:pointer;">FIN ⏭</button>
+      </div>
+    </div>`;
+
+  document.getElementById('history-overlay').classList.add('hidden');
   hd.classList.remove('hidden');
   hd.style.display = 'flex';
+
+  renderHistMiniBoard();
 }
 
 function closeHistoryDetail() {
