@@ -3854,6 +3854,9 @@ function connect(onOpen) {
     }
     if (msg.type === 'automode') {
       autoMode = msg.autoMode;
+      // Synchroniser le toggle visuel
+      const tog = document.getElementById('auto-online');
+      if (tog) tog.checked = autoMode;
       if (msg.tournament !== undefined) {
         initTournament(msg.tournament);
         renderTournamentBanner();

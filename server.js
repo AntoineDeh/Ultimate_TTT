@@ -448,8 +448,8 @@ wss.on('connection', ws => {
         if (!room) { send(ws,{type:'error',message:'Room introuvable.'}); return; }
         if (room.players.X&&room.players.O) { send(ws,{type:'error',message:'Room pleine.'}); return; }
         joinRoom(room,ws,ws.playerName||'Joueur',!room.players.X?'X':'O',ws.playerAvatar||'🎮');
-        // Envoyer les params du créateur au rejoignant
-        send(ws,{type:'automode', autoMode:room.autoMode, tournament:room.tournament});
+        // Envoyer les params du créateur aux deux joueurs
+        broadcastRoom(room,{type:'automode', autoMode:room.autoMode, tournament:room.tournament});
       }
 
       if (msg.type==='matchmake') {
