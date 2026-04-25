@@ -1217,6 +1217,28 @@
       padding:2px 6px; border-radius:6px; background:rgba(0,229,255,.12);
       color:var(--x); font-family:'Orbitron',sans-serif; font-weight:700;
       letter-spacing:.08em; }
+
+    /* ── Drawer détail partie historique ── */
+    .history-detail { position:fixed; inset:0; background:rgba(5,5,15,.97);
+      z-index:700; display:flex; flex-direction:column;
+      padding:20px 12px 24px; overflow-y:auto; }
+    .history-detail-header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+    .history-detail-back { font-family:"Orbitron",sans-serif; font-size:.6rem; font-weight:700;
+      padding:8px 14px; background:rgba(0,229,255,.06); color:var(--x);
+      border:1px solid rgba(0,229,255,.2); border-radius:8px; cursor:pointer; }
+    .history-detail-title { font-family:"Orbitron",sans-serif; font-size:.8rem; font-weight:900;
+      letter-spacing:.15em; flex:1; }
+    .history-detail-actions { display:flex; gap:10px; margin-bottom:20px; }
+    .history-detail-actions .btn { flex:1; font-size:.65rem; padding:12px 8px; }
+    .moves-list { display:flex; flex-direction:column; gap:4px; }
+    .move-item { display:flex; align-items:center; gap:10px; padding:8px 12px;
+      border-radius:8px; background:rgba(255,255,255,.03);
+      border:1px solid rgba(180,180,255,.06); font-size:.65rem; }
+    .move-num { font-family:"Orbitron",sans-serif; font-size:.5rem;
+      color:rgba(180,180,255,.3); width:20px; flex-shrink:0; }
+    .move-player { font-size:1rem; flex-shrink:0; }
+    .move-pos { color:rgba(180,180,255,.6); flex:1; }
+    .move-pos span { color:rgba(180,180,255,.3); }
   </style>
 </head>
 <body>
@@ -1367,6 +1389,17 @@
 
 
 
+
+<!-- Detail partie historique -->
+<div class="hidden" id="history-detail" style="position:fixed;inset:0;background:rgba(5,5,15,.97);z-index:700;display:flex;flex-direction:column;padding:20px 12px 24px;overflow-y:auto;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+    <button onclick="closeHistoryDetail()" style="font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;padding:8px 14px;background:rgba(0,229,255,.06);color:var(--x);border:1px solid rgba(0,229,255,.2);border-radius:8px;cursor:pointer;">← RETOUR</button>
+    <div id="hd-title" style="font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:900;letter-spacing:.15em;flex:1;"></div>
+  </div>
+  <div id="hd-meta" style="font-size:.62rem;color:rgba(180,180,255,.4);margin-bottom:16px;letter-spacing:.08em;"></div>
+  <div style="display:flex;gap:10px;margin-bottom:20px;" id="hd-actions"></div>
+  <div id="hd-content"></div>
+</div>
 <!-- Historique -->
 <div class="overlay history-overlay hidden" id="history-overlay">
   <div class="history-header">
@@ -5161,19 +5194,109 @@ const HISTORY_MAX = 20;
 function saveToHistory(result, mode, difficulty, opponent, moves, pts) {
   try {
     const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
+    // Sauvegarder le gameLog pour pouvoir rejouer/analyser
+    const log = (typeof gameLog !== 'undefined') ? JSON.parse(JSON.stringify(gameLog)) : [];
+    const finalState = (typeof G !== 'undefined' && G) ? JSON.parse(JSON.stringify(G)) : null;
     hist.unshift({
-      result,    // 'win'|'loss'|'draw'
-      mode,      // 'bot-easy'|'bot-medium'|'bot-hard'|'online'|'local'
-      opponent,  // pseudo adversaire
-      moves,
-      pts,       // delta de pts
-      date: Date.now()
+      result, mode, opponent, moves, pts,
+      date: Date.now(),
+      log,         // liste des coups joués
+      finalState,  // état final de la partie
+      myRole: (typeof myRole !== 'undefined') ? myRole : 'X'
     });
-    hist.splice(HISTORY_MAX); // garder les 20 dernières
+    hist.splice(HISTORY_MAX);
     localStorage.setItem('ttt-history', JSON.stringify(hist));
   } catch(e) {}
 }
 
+
+// ── Détail d'une partie depuis l'historique ──────────────────
+function openHistoryDetail(idx) {
+  const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
+  const h = hist[idx];
+  if (!h) return;
+
+  const modeLabel = {
+    'bot-easy':'🟢 Bot Facile','bot-medium':'🟡 Bot Moyen',
+    'bot-hard':'🔴 Bot Difficile','online':'🌐 En ligne','local':'👥 Local'
+  };
+  const resultLabel = { win:'🏆 VICTOIRE', loss:'💀 DÉFAITE', draw:'🤝 ÉGALITÉ' };
+  const resultColor = { win:'#4ade80', loss:'#f87171', draw:'#f5c842' };
+
+  document.getElementById('hd-title').innerHTML =
+    `<span style="color:${resultColor[h.result]}">${resultLabel[h.result]||h.result}</span>`;
+  document.getElementById('hd-meta').textContent =
+    `${modeLabel[h.mode]||h.mode}${h.opponent?' · vs '+h.opponent:''} · ${h.moves} coups · ${formatAgo(h.date)}`;
+
+  // Boutons actions
+  const hasLog = h.log && h.log.length > 0;
+  document.getElementById('hd-actions').innerHTML = `
+    <button class="btn" onclick="showHistoryMoves(${idx})"
+      style="flex:1;font-size:.6rem;padding:12px 8px;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);">
+      📋 VOIR LES COUPS
+    </button>
+    ${hasLog ? `<button class="btn" onclick="replayFromHistory(${idx})"
+      style="flex:1;font-size:.6rem;padding:12px 8px;color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08);">
+      🔍 ANALYSER
+    </button>` : ''}
+  `;
+
+  // Afficher les coups par défaut
+  showHistoryMoves(idx);
+
+  hide('history-overlay');
+  show('history-detail');
+}
+
+function closeHistoryDetail() {
+  hide('history-detail');
+  show('history-overlay');
+}
+
+function showHistoryMoves(idx) {
+  const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
+  const h = hist[idx];
+  if (!h) return;
+  const content = document.getElementById('hd-content');
+
+  if (!h.log || h.log.length === 0) {
+    content.innerHTML = `<div style="color:rgba(180,180,255,.3);font-size:.65rem;text-align:center;margin-top:20px;">
+      Pas de détail disponible pour cette partie.<br>Les parties jouées après la mise à jour afficheront les coups.
+    </div>`;
+    return;
+  }
+
+  const subNames = ['haut-gauche','haut-centre','haut-droite','milieu-gauche','centre','milieu-droite','bas-gauche','bas-centre','bas-droite'];
+  let html = '<div class="moves-list">';
+  h.log.forEach((entry, i) => {
+    const player = entry.player || (i%2===0?'X':'O');
+    const mark = player === 'X' ? '❎' : '🅾️';
+    const [sb, cell] = entry.move || ['-','-'];
+    html += `
+      <div class="move-item">
+        <div class="move-num">${i+1}</div>
+        <div class="move-player">${mark}</div>
+        <div class="move-pos">Grille <span>${subNames[sb]||sb}</span> → case <span>${subNames[cell]||cell}</span></div>
+      </div>`;
+  });
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+function replayFromHistory(idx) {
+  const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
+  const h = hist[idx];
+  if (!h || !h.log || !h.finalState) return;
+
+  // Charger l'état final et le log pour l'analyse
+  hide('history-detail');
+  analysisLog = h.log;
+  analysisStep = h.log.length;
+  G = h.finalState;
+  mode = h.mode && h.mode.startsWith('bot') ? 'bot' : h.mode || 'bot';
+  myRole = h.myRole || 'X';
+  startAnalysis();
+}
 function openHistory() {
   const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
   const content = document.getElementById('history-content');
@@ -5191,19 +5314,22 @@ function openHistory() {
   };
   const resultLabel = { win: '🏆 VICTOIRE', loss: '💀 DÉFAITE', draw: '🤝 ÉGALITÉ' };
 
-  content.innerHTML = hist.map(h => {
+  content.innerHTML = hist.map((h, idx) => {
     const ago = formatAgo(h.date);
     const label = modeLabel[h.mode] || h.mode;
     const vs = h.opponent ? `vs ${h.opponent}` : '';
     const ptsStr = h.pts > 0 ? `+${h.pts}` : h.pts < 0 ? `${h.pts}` : '±0';
     return `
-      <div class="history-card ${h.result}">
+      <div class="history-card ${h.result}" onclick="openHistoryDetail(${idx})" style="cursor:pointer;">
         <div class="history-result">${h.result==='win'?'🏆':h.result==='loss'?'💀':'🤝'}</div>
         <div class="history-info">
           <div class="history-main">${resultLabel[h.result]||h.result}</div>
           <div class="history-sub">${label} ${vs} · ${h.moves} coups · ${ago}</div>
         </div>
-        <div class="history-pts">${ptsStr} pts</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+          <div class="history-pts">${ptsStr} pts</div>
+          <div style="font-size:.55rem;color:rgba(180,180,255,.3);">▶ détails</div>
+        </div>
       </div>`;
   }).join('');
 
