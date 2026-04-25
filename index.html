@@ -5221,7 +5221,16 @@ function saveToHistory(result, mode, difficulty, opponent, moves, pts) {
 function openHistoryDetail(idx) {
   const hist = JSON.parse(localStorage.getItem('ttt-history') || '[]');
   const h = hist[idx];
-  if (!h) return;
+  if (!h) { console.error('No history entry at idx', idx); return; }
+
+  const title = document.getElementById('hd-title');
+  const meta  = document.getElementById('hd-meta');
+  const acts  = document.getElementById('hd-actions');
+  const cont  = document.getElementById('hd-content');
+  if (!title || !meta || !acts || !cont) {
+    console.error('Missing history-detail elements');
+    return;
+  }
 
   const modeLabel = {
     'bot-easy':'🟢 Bot Facile','bot-medium':'🟡 Bot Moyen',
@@ -5230,28 +5239,26 @@ function openHistoryDetail(idx) {
   const resultLabel = { win:'🏆 VICTOIRE', loss:'💀 DÉFAITE', draw:'🤝 ÉGALITÉ' };
   const resultColor = { win:'#4ade80', loss:'#f87171', draw:'#f5c842' };
 
-  document.getElementById('hd-title').innerHTML =
-    `<span style="color:${resultColor[h.result]}">${resultLabel[h.result]||h.result}</span>`;
-  document.getElementById('hd-meta').textContent =
-    `${modeLabel[h.mode]||h.mode}${h.opponent?' · vs '+h.opponent:''} · ${h.moves} coups · ${formatAgo(h.date)}`;
+  title.innerHTML = `<span style="color:${resultColor[h.result]||'#fff'}">${resultLabel[h.result]||h.result}</span>`;
+  meta.textContent = `${modeLabel[h.mode]||h.mode}${h.opponent?' · vs '+h.opponent:''} · ${h.moves} coups · ${formatAgo(h.date)}`;
 
-  // Boutons actions
   const hasLog = h.log && h.log.length > 0;
-  document.getElementById('hd-actions').innerHTML = `
+  acts.innerHTML = `
     <button class="btn" onclick="showHistoryMoves(${idx})"
-      style="flex:1;font-size:.6rem;padding:12px 8px;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;">
+      style="flex:1;font-size:.6rem;padding:12px 8px;color:rgba(180,180,255,.7);border-color:rgba(180,180,255,.2);display:flex;align-items:center;justify-content:center;">
       📋 VOIR LES COUPS
     </button>
     ${hasLog ? `<button class="btn" onclick="replayFromHistory(${idx})"
-      style="flex:1;font-size:.6rem;padding:12px 8px;color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08);display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;">
+      style="flex:1;font-size:.6rem;padding:12px 8px;color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08);display:flex;align-items:center;justify-content:center;">
       🔍 ANALYSER
-    </button>` : ''}
-  `;
+    </button>` : ''}`;
 
-  // Afficher les coups par défaut
   showHistoryMoves(idx);
 
-  hide('history-overlay');
+  // Cacher l'overlay historique
+  document.getElementById('history-overlay').classList.add('hidden');
+
+  // Afficher le detail
   const hd = document.getElementById('history-detail');
   hd.classList.remove('hidden');
   hd.style.display = 'flex';
