@@ -156,6 +156,25 @@ function checkResult(cells) {
   return null;
 }
 
+const LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function findWinningCell(board, player) {
+  for (const [a,b,c] of LINES) {
+    const empty=[a,b,c].filter(i=>!board[i]);
+    if (empty.length===1 && [board[a],board[b],board[c]].filter(v=>v===player).length===2) return empty[0];
+  }
+  return -1;
+}
+function serverAutoComplete(G) {
+  if (G.winner) return null;
+  const activeBs = G.active!==null ? (!G.bw[G.active]?[G.active]:null) : [...Array(9).keys()].filter(b=>!G.bw[b]);
+  if (!activeBs||activeBs.length===0) return null;
+  for (const b of activeBs) {
+    const win=findWinningCell(G.boards[b], G.player);
+    if (win!==-1) return [b,win];
+  }
+  return null;
+}
+
 function processMove(G, b, c) {
   if (G.winner) return false;
   if (G.active !== null && G.active !== b) return false;
@@ -476,6 +495,16 @@ wss.on('connection', ws => {
       if (msg.type==='move') {
         if (ws.role==='spectator'||ws.role!==room.G.player) return;
         if (processMove(room.G,msg.board,msg.cell)) {
+          // Auto-complétion côté serveur si activée
+          if (room.autoMode && !room.G.winner) {
+            for (let i=0;i<9;i++) {
+              if (room.G.winner) break;
+              const auto=serverAutoComplete(room.G);
+              if (!auto) break;
+              processMove(room.G, auto[0], auto[1]);
+              room.G._lastAuto = auto;
+            }
+          }
           broadcastRoom(room,{type:'state',state:room.G});
           if (!room.G.winner) { startTurnTimer(room); }
           else {
