@@ -3935,12 +3935,16 @@ function connect(onOpen) {
 
     if (msg.type === 'waiting') {
       stopTimer();
-      show('waiting-screen');
-      document.getElementById('wait-title').textContent = "EN ATTENTE D'UN JOUEUR";
-      if (currentRoomId) {
-        const display = document.getElementById('room-code-display');
-        const val = document.getElementById('room-code-value');
-        if (display && val) { display.style.display = 'flex'; val.textContent = currentRoomId; }
+      // Ne pas afficher le waiting si la partie est déjà terminée (gameover visible)
+      const gameoverVisible = !document.getElementById('gameover').classList.contains('hidden');
+      if (!gameoverVisible) {
+        show('waiting-screen');
+        document.getElementById('wait-title').textContent = "EN ATTENTE D'UN JOUEUR";
+        if (currentRoomId) {
+          const display = document.getElementById('room-code-display');
+          const val = document.getElementById('room-code-value');
+          if (display && val) { display.style.display = 'flex'; val.textContent = currentRoomId; }
+        }
       }
     }
     if (msg.type === 'ready') {
@@ -3952,6 +3956,9 @@ function connect(onOpen) {
 
   ws.onclose = () => {
     if (mode !== 'online') return;
+    // Ne pas afficher waiting si gameover déjà visible
+    const gameoverVis = !document.getElementById('gameover').classList.contains('hidden');
+    if (gameoverVis) return;
     show('waiting-screen');
     document.getElementById('wait-title').textContent = 'CONNEXION PERDUE…';
     document.getElementById('wait-sub').innerHTML = 'Reconnexion<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
@@ -4185,6 +4192,7 @@ function replayOnlineAfterAbandon() {
 function showGameOver(abandon=false) {
   hintCell = null;
   stopTimer();
+  hideChatBar(); // Chat caché à la fin de partie
   const abandonItem = document.getElementById('more-abandon-item');
   if (abandonItem) abandonItem.style.display = 'none';
   const w=G.winner;
@@ -4270,7 +4278,19 @@ function showTournamentOver(champion) {
 
 function resetGame() {
   hide('gameover');
-  if (mode==='online') { ws.send(JSON.stringify({type:'reset'})); return; }
+  if (mode==='online') {
+    // En room privée : afficher waiting en attendant l'adversaire
+    ws.send(JSON.stringify({type:'reset'}));
+    if (currentRoomId) {
+      show('waiting-screen');
+      document.getElementById('wait-title').textContent = "EN ATTENTE DE L'ADVERSAIRE…";
+      document.getElementById('wait-sub').innerHTML = "En attente que l'adversaire rejoue" + '<div class="wait-dots"><span>.</span><span>.</span><span>.</span></div>';
+      // Cacher l'affichage du code de room
+      const display = document.getElementById('room-code-display');
+      if (display) display.style.display = 'none';
+    }
+    return;
+  }
   const nextStarter = G && G._firstPlayer === 'X' ? 'O' : 'X';
   if (mode === 'bot') humanSide = nextStarter;
   G=newState(); G._firstPlayer = nextStarter; G.player = nextStarter;
