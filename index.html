@@ -1391,7 +1391,7 @@
 
 
 <!-- Detail partie historique -->
-<div class="hidden" id="history-detail" style="position:fixed;inset:0;background:rgba(5,5,15,.97);z-index:700;display:flex;flex-direction:column;padding:20px 12px 24px;overflow-y:auto;">
+<div class="hidden" id="history-detail" style="position:fixed;inset:0;background:rgba(5,5,15,.97);z-index:700;flex-direction:column;padding:20px 12px 24px;overflow-y:auto;">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
     <button onclick="closeHistoryDetail()" style="font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;padding:8px 14px;background:rgba(0,229,255,.06);color:var(--x);border:1px solid rgba(0,229,255,.2);border-radius:8px;cursor:pointer;">← RETOUR</button>
     <div id="hd-title" style="font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:900;letter-spacing:.15em;flex:1;"></div>
@@ -5252,11 +5252,15 @@ function openHistoryDetail(idx) {
   showHistoryMoves(idx);
 
   hide('history-overlay');
-  show('history-detail');
+  const hd = document.getElementById('history-detail');
+  hd.classList.remove('hidden');
+  hd.style.display = 'flex';
 }
 
 function closeHistoryDetail() {
-  hide('history-detail');
+  const hd = document.getElementById('history-detail');
+  hd.classList.add('hidden');
+  hd.style.display = 'none';
   show('history-overlay');
 }
 
